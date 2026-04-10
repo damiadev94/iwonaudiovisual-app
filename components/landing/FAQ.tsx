@@ -9,9 +9,9 @@ import {
 
 const faqs = [
   {
-    question: "Que es Iwon Audiovisual?",
+    question: "Que es IWON?",
     answer:
-      "Iwon Audiovisual es una productora audiovisual que funciona como plataforma de impulso para artistas urbanos independientes en Argentina. No es una academia de cursos ni un marketplace: es un programa de impulso artistico con produccion real.",
+      "Somos la respuesta al problema más grande de la música independiente: la invisibilidad. En Iwon no solo filmamos videoclips, damos oportunidades TODOS LOS MESES de ser seleccionado, filmar con calidad de cine, ganarte un Video, Ep o un DISCO, acceder a promociones, ver contenido que se actualiza todo el tiempo y mostrar tu musica por el precio de una suscripción.",
   },
   {
     question: "Que incluye la suscripcion?",

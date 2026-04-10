@@ -37,7 +37,7 @@ export function Hero() {
           Con equipamiento de cine.
         </p>
         <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
-          Iwon Audiovisual es la plataforma de impulso para artistas urbanos independientes en Argentina.
+          Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
           Suscribite y accede a produccion real, cursos, sorteos y promos de filmacion.
         </p>
 
