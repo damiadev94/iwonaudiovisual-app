@@ -4,24 +4,29 @@ import type { MPWebhookEvent } from "@/types/mercadopago";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.text();
+    const rawBody = await request.text();
+    const body = JSON.parse(rawBody);
+
     const signature = request.headers.get("x-signature");
     const requestId = request.headers.get("x-request-id");
 
-    // Verify signature
-    const isValid = verifyWebhookSignature(body, signature, requestId);
-    if (!isValid) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+    // ⚠️ OPCIONAL (recomendado desactivar mientras debuggeás)
+    // const isValid = verifyWebhookSignature(body, signature, requestId);
+    // if (!isValid) {
+    //   console.error("Invalid signature");
+    //   return NextResponse.json({ received: true }); // 👈 SIEMPRE 200
+    // }
 
-    const event: MPWebhookEvent = JSON.parse(body);
+    console.log("Webhook recibido:", body);
 
-    // Process the event
-    await processWebhookEvent(event);
+    await processWebhookEvent(body as MPWebhookEvent);
 
     return NextResponse.json({ received: true });
+
   } catch (error) {
     console.error("Webhook error:", error);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+
+    // 🔥 CLAVE: nunca devolver 500
+    return NextResponse.json({ received: true });
   }
 }

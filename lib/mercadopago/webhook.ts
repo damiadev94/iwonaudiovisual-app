@@ -7,7 +7,7 @@ import { mercadopago } from "./client";
 export function verifyWebhookSignature(
   body: any,
   signature: string | null,
-  requestId: string | null
+  requestId: string | null,
 ): boolean {
   if (!signature || !requestId) return false;
 
@@ -22,9 +22,7 @@ export function verifyWebhookSignature(
 
   const manifest = `id:${body.data.id};request-id:${requestId};ts:${ts};`;
 
-  const hmac = createHmac("sha256", secret)
-    .update(manifest)
-    .digest("hex");
+  const hmac = createHmac("sha256", secret).update(manifest).digest("hex");
 
   return hmac === v1;
 }
@@ -34,66 +32,73 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
 
   if (event.type === "subscription_preapproval") {
     try {
-    const preApproval = new PreApproval(mercadopago);
-    const preapprovalData = await preApproval.get({ id: event.data.id });
+      const preApproval = new PreApproval(mercadopago);
+      const preapprovalData = await preApproval.get({ id: event.data.id });
 
-    const statusMap: Record<string, string> = {
-      authorized: "active",
-      paused: "paused",
-      cancelled: "cancelled",
-      pending: "pending",
-    };
+      const statusMap: Record<string, string> = {
+        authorized: "active",
+        paused: "paused",
+        cancelled: "cancelled",
+        pending: "pending",
+      };
 
-    const status = statusMap[preapprovalData.status || ""] || "pending";
+      const status = statusMap[preapprovalData.status || ""] || "pending";
 
-    await supabase
-      .from("subscriptions")
-      .update({
-        status,
-        mp_preapproval_id: preapprovalData.id,
-        current_period_start: preapprovalData.date_created,
-      })
-      .eq("mp_subscription_id", preapprovalData.id);
+      await supabase
+        .from("subscriptions")
+        .update({
+          status,
+          mp_preapproval_id: preapprovalData.id,
+          current_period_start: preapprovalData.date_created,
+        })
+        .eq("mp_subscription_id", preapprovalData.id);
     } catch (error) {
       console.error("Error fetching preapproval data:", error);
     }
   }
 
   if (event.type === "payment") {
-    const payment = new Payment(mercadopago);
-    const paymentData = await payment.get({ id: event.data.id });
+    try {
+      const payment = new Payment(mercadopago);
 
-    const statusMap: Record<string, string> = {
-      approved: "approved",
-      pending: "pending",
-      rejected: "rejected",
-      refunded: "refunded",
-    };
+      const paymentData = await payment.get({
+        id: event.data.id,
+      });
 
-    const paymentStatus = statusMap[paymentData.status || ""] || "pending";
+      const statusMap: Record<string, string> = {
+        approved: "approved",
+        pending: "pending",
+        rejected: "rejected",
+        refunded: "refunded",
+      };
 
-    // Find subscription by external reference (user_id)
-    const externalRef = paymentData.external_reference;
-    if (externalRef) {
-      const { data: subscription } = await supabase
-        .from("subscriptions")
-        .select("id")
-        .eq("user_id", externalRef)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+      const paymentStatus = statusMap[paymentData.status || ""] || "pending";
 
-      if (subscription) {
-        await supabase.from("payments").insert({
-          user_id: externalRef,
-          subscription_id: subscription.id,
-          mp_payment_id: String(paymentData.id),
-          amount: paymentData.transaction_amount || 0,
-          currency: paymentData.currency_id || "ARS",
-          status: paymentStatus,
-          payment_method: paymentData.payment_method_id || null,
-        });
+      const externalRef = paymentData.external_reference;
+
+      if (externalRef) {
+        const { data: subscription } = await supabase
+          .from("subscriptions")
+          .select("id")
+          .eq("user_id", externalRef)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (subscription) {
+          await supabase.from("payments").insert({
+            user_id: externalRef,
+            subscription_id: subscription.id,
+            mp_payment_id: String(paymentData.id),
+            amount: paymentData.transaction_amount || 0,
+            currency: paymentData.currency_id || "ARS",
+            status: paymentStatus,
+            payment_method: paymentData.payment_method_id || null,
+          });
+        }
       }
+    } catch (error) {
+      console.error("Error fetching payment data:", error);
     }
   }
 }
