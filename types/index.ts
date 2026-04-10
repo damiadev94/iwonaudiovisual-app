@@ -11,4 +11,5 @@ export type {
   RaffleEntry,
   Promo,
   PromoBooking,
+  SongSubmission,
 } from "./database";

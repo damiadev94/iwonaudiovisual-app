@@ -142,3 +142,17 @@ export type PromoBooking = {
   status: "pending" | "confirmed" | "cancelled";
   created_at: string;
 };
+
+export type SongSubmission = {
+  id: string;
+  user_id: string;
+  file_path: string;
+  file_name: string;
+  file_size: number | null;
+  file_type: string | null;
+  notes: string | null;
+  status: "pending" | "reviewing" | "selected" | "rejected";
+  admin_notes: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+};

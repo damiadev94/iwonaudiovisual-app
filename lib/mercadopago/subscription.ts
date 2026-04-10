@@ -16,7 +16,7 @@ export async function createSubscription(email: string, userId: string) {
         currency_id: "ARS",
       },
       payer_email: email,
-      back_url: `${appUrl}/dashboard`,
+      back_url: `${appUrl}/subir-cancion`,
       external_reference: userId,
     },
   });

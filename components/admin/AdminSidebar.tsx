@@ -13,6 +13,7 @@ import {
   LogOut,
   ArrowLeft,
   X,
+  Music,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/suscriptores", label: "Suscriptores", icon: Users },
+  { href: "/admin/canciones", label: "Canciones", icon: Music },
   { href: "/admin/selecciones", label: "Selecciones", icon: Star },
   { href: "/admin/sorteos", label: "Sorteos", icon: Gift },
   { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
