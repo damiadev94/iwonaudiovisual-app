@@ -4,7 +4,7 @@ import { mercadopago } from "./client";
 const preApproval = new PreApproval(mercadopago);
 
 export async function createSubscription(email: string, userId: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const backUrl = process.env.MERCADOPAGO_BACK_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   const result = await preApproval.create({
     body: {
@@ -16,7 +16,7 @@ export async function createSubscription(email: string, userId: string) {
         currency_id: "ARS",
       },
       payer_email: email,
-      back_url: `${appUrl}/subir-cancion`,
+      back_url: `${backUrl}/subir-cancion`,
       external_reference: userId,
     },
   });

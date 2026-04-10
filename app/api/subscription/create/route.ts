@@ -42,9 +42,10 @@ export async function GET() {
       return NextResponse.redirect(result.init_point);
     }
 
+    console.error("[subscription/create] init_point missing. Full MP result:", JSON.stringify(result, null, 2));
     return NextResponse.redirect(new URL("/dashboard?error=payment", process.env.NEXT_PUBLIC_APP_URL));
   } catch (error) {
-    console.error("Subscription creation error:", error);
+    console.error("[subscription/create] Error:", error instanceof Error ? { message: error.message, stack: error.stack, cause: (error as any).cause } : error);
     return NextResponse.redirect(new URL("/dashboard?error=payment", process.env.NEXT_PUBLIC_APP_URL));
   }
 }

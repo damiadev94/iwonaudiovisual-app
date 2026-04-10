@@ -35,7 +35,7 @@ export default function RegisterPage() {
     }
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -51,9 +51,21 @@ export default function RegisterPage() {
       return;
     }
 
-    toast.success("Cuenta creada. Revisa tu email para confirmar.");
-    router.push("/dashboard");
-    router.refresh();
+    // Enviar email de bienvenida via Resend (fire and forget)
+    fetch("/api/auth/welcome", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: data.email, name: data.full_name }),
+    }).catch(() => {});
+
+    if (authData.session) {
+      // Confirmacion de email desactivada: sesion inmediata
+      router.push("/dashboard");
+      router.refresh();
+    } else {
+      // Confirmacion de email activada: esperar confirmacion
+      router.push("/confirm-email");
+    }
   }
 
   async function handleGoogleRegister() {
