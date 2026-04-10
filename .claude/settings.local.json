@@ -3,7 +3,13 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npx shadcn@latest init -d --base-color zinc)",
-      "Bash(npx shadcn@latest init -d)"
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add card input label badge separator sheet accordion tabs table dialog select textarea dropdown-menu avatar progress toast sonner checkbox switch -y)",
+      "Bash(npm run:*)",
+      "Bash(node -e \"const z = require\\('zod'\\); console.log\\(z.version || 'unknown'\\)\")",
+      "Bash(node -e \"const z = require\\('zod'\\); const r = z.string\\(\\).safeParse\\(1\\); if\\(!r.success\\) console.log\\(Object.keys\\(r.error\\)\\)\")",
+      "Bash(node -e \"const z = require\\('zod'\\); const r = z.object\\({email: z.string\\(\\).email\\(\\)}\\).safeParse\\({email: 'bad'}\\); if\\(!r.success\\) { console.log\\('issues:', r.error.issues\\); console.log\\('has issues:', 'issues' in r.error\\); }\")",
+      "Bash(xargs grep:*)"
     ]
   }
 }
