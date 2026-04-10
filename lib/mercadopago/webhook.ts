@@ -33,6 +33,7 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
   const supabase = createAdminClient();
 
   if (event.type === "subscription_preapproval") {
+    try {
     const preApproval = new PreApproval(mercadopago);
     const preapprovalData = await preApproval.get({ id: event.data.id });
 
@@ -53,6 +54,9 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
         current_period_start: preapprovalData.date_created,
       })
       .eq("mp_subscription_id", preapprovalData.id);
+    } catch (error) {
+      console.error("Error fetching preapproval data:", error);
+    }
   }
 
   if (event.type === "payment") {
