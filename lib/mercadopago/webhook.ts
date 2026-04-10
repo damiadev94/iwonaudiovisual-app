@@ -5,7 +5,7 @@ import { PreApproval, Payment } from "mercadopago";
 import { mercadopago } from "./client";
 
 export function verifyWebhookSignature(
-  body: string,
+  body: any,
   signature: string | null,
   requestId: string | null
 ): boolean {
@@ -20,8 +20,11 @@ export function verifyWebhookSignature(
 
   if (!ts || !v1) return false;
 
-  const manifest = `id:;request-id:${requestId};ts:${ts};`;
-  const hmac = createHmac("sha256", secret).update(manifest).digest("hex");
+  const manifest = `id:${body.data.id};request-id:${requestId};ts:${ts};`;
+
+  const hmac = createHmac("sha256", secret)
+    .update(manifest)
+    .digest("hex");
 
   return hmac === v1;
 }
