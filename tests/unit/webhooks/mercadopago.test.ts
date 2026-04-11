@@ -1,18 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMPWebhookEvent } from "@/tests/factories/mp-webhook.factory";
-
-// 🔥 Ajustá estas rutas según tu proyecto
+import { Payment, PreApproval } from "mercadopago";
 import {
   verifyWebhookSignature,
   processWebhookEvent,
 } from "@/lib/mercadopago/webhook";
 
+import { createAdminClient } from "@/lib/supabase/admin";
+
+const mockGet = vi.fn();
+
 // Mock de dependencias externas
+vi.mock("mercadopago", () => {
+  return {
+    MercadoPagoConfig: vi.fn(),
+
+    Payment: vi.fn().mockImplementation(() => ({
+      get: mockGet,
+    })),
+
+    PreApproval: vi.fn().mockImplementation(() => ({
+      get: mockGet,
+    })),
+  };
+});
+
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
 }));
-
-import { createAdminClient } from "@/lib/supabase/admin";
 
 describe("MercadoPago Webhook", () => {
   beforeEach(() => {
@@ -69,57 +84,50 @@ describe("MercadoPago Webhook", () => {
     });
 
     it("should handle approved payment", async () => {
+      mockGet.mockResolvedValue({
+        status: "approved",
+        external_reference: "user-1",
+      });
+
       const event = createMPWebhookEvent({
         type: "payment",
         data: { id: "pay-1" },
       });
 
-      const mockMP = {
-        getPayment: vi.fn().mockResolvedValue({
-          status: "approved",
-          external_reference: "user-1",
-        }),
-      };
-
       await processWebhookEvent(event);
 
-      expect(mockMP.getPayment).toHaveBeenCalled();
+      expect(mockGet).toHaveBeenCalledWith({ id: "pay-1" });
     });
 
     it("should handle rejected payment", async () => {
+      mockGet.mockResolvedValue({
+        status: "rejected",
+      });
+
       const event = createMPWebhookEvent({
         type: "payment",
         data: { id: "pay-1" },
       });
 
-      const mockMP = {
-        getPayment: vi.fn().mockResolvedValue({
-          status: "rejected",
-        }),
-      };
-
       await processWebhookEvent(event);
 
-      expect(mockMP.getPayment).toHaveBeenCalled();
+      expect(mockGet).toHaveBeenCalled();
     });
 
     it("should handle subscription authorized", async () => {
+      mockGet.mockResolvedValue({
+        status: "authorized",
+        external_reference: "user-1",
+      });
+
       const event = createMPWebhookEvent({
         type: "subscription_preapproval",
-        action: "authorized",
         data: { id: "sub-1" },
       });
 
-      const mockMP = {
-        getSubscription: vi.fn().mockResolvedValue({
-          status: "authorized",
-          external_reference: "user-1",
-        }),
-      };
-
       await processWebhookEvent(event);
 
-      expect(mockMP.getSubscription).toHaveBeenCalled();
+      expect(mockGet).toHaveBeenCalledWith({ id: "sub-1" });
     });
 
     it("should ignore unknown event type", async () => {
@@ -134,18 +142,14 @@ describe("MercadoPago Webhook", () => {
     });
 
     it("should handle errors without crashing", async () => {
+      mockGet.mockRejectedValue(new Error("MP error"));
+
       const event = createMPWebhookEvent({
         type: "payment",
         data: { id: "pay-1" },
       });
 
-      const mockMP = {
-        getPayment: vi.fn().mockRejectedValue(new Error("MP error")),
-      };
-
-      await expect(
-        processWebhookEvent(event)
-      ).resolves.not.toThrow();
+      await expect(processWebhookEvent(event)).resolves.not.toThrow();
     });
   });
 });
