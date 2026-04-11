@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createHmac } from "crypto";
+import { createHmac, randomUUID } from "crypto";
 
 // ─── DB en memoria ────────────────────────────────────────────────────────────
 interface Subscription {
@@ -82,7 +82,7 @@ function createMockSupabaseClient() {
             };
           },
           insert: async (data: Omit<Subscription, "id">) => {
-            const record = { id: `SUB_${Date.now()}`, ...data };
+            const record = { id: randomUUID(), ...data };
             db.subscriptions.push(record);
             return { data: record, error: null };
           },

@@ -1,73 +1,49 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+/**
+ * 🔥 Lógica pura (testeable)
+ */
+export async function checkUserAccess(userId: string | null) {
+  if (!userId) {
+    return { allowed: false, status: 401 };
+  }
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  const admin = createAdminClient();
+
+  const { data: sub } = await admin
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", userId)
+    .in("status", ["active", "pending"])
+    .maybeSingle();
+
+  if (!sub) {
+    return { allowed: false, status: 403 };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * 🌐 Middleware HTTP
+ */
+export async function middleware(request: Request) {
+  const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
+  const result = await checkUserAccess(user?.id ?? null);
 
-  // Redirect logged-in users away from auth/marketing pages
-  if (user && (pathname === "/" || pathname === "/login" || pathname === "/register")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+  if (!result.allowed) {
+    return NextResponse.json(
+      { error: "No autorizado" },
+      { status: result.status }
+    );
   }
 
-  // Protect platform routes
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/cursos") || pathname.startsWith("/seleccion") || pathname.startsWith("/promos") || pathname.startsWith("/sorteos") || pathname.startsWith("/perfil")) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // Protect admin routes
-  if (pathname.startsWith("/admin")) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-
-    // Check admin role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
-    }
-  }
-
-  return supabaseResponse;
+  return NextResponse.next();
 }
