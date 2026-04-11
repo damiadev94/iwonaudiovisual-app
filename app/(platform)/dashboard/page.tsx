@@ -40,7 +40,7 @@ export default async function DashboardPage() {
         </p>
         <Link href="/api/subscription/create">
           <Button className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto">
-            Suscribite por $9.999/mes
+            Enviar mi canción por $9.999/mes
             <ArrowRight className="ml-2" />
           </Button>
         </Link>

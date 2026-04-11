@@ -7,7 +7,7 @@ export function Hero() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-iwon-bg via-iwon-bg to-iwon-bg-secondary" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
 
       {/* Grid pattern overlay */}
       <div
@@ -27,9 +27,9 @@ export function Hero() {
 
         {/* Main title */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-          Vamos a seleccionar a los{" "}
-          <span className="text-gold">50 mejores artistas</span>{" "}
-          y filmarles su disco.
+          Vamos a seleccionar a {" "}
+          <span className="text-gold">50 artistas y firlmarles su mejor canción </span>{" "}
+          con equipos de cine.
         </h1>
 
         {/* Subtitle */}
