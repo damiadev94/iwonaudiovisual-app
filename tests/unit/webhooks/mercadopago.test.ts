@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMPWebhookEvent } from "@/tests/factories/mp-webhook.factory";
-import { Payment, PreApproval } from "mercadopago";
 import {
   verifyWebhookSignature,
   processWebhookEvent,
@@ -8,22 +7,17 @@ import {
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const mockGet = vi.fn();
+// vi.hoisted garantiza que mockGet esté disponible cuando el factory del mock
+// se ejecuta (los vi.mock se elevan al tope del archivo antes que el resto)
+const { mockGet } = vi.hoisted(() => ({ mockGet: vi.fn() }));
 
 // Mock de dependencias externas
-vi.mock("mercadopago", () => {
-  return {
-    MercadoPagoConfig: vi.fn(),
-
-    Payment: vi.fn().mockImplementation(() => ({
-      get: mockGet,
-    })),
-
-    PreApproval: vi.fn().mockImplementation(() => ({
-      get: mockGet,
-    })),
-  };
-});
+// Payment y PreApproval se usan con `new`, por eso necesitan function() regular
+vi.mock("mercadopago", () => ({
+  MercadoPagoConfig: vi.fn(),
+  Payment: vi.fn(function () { return { get: mockGet }; }),
+  PreApproval: vi.fn(function () { return { get: mockGet }; }),
+}));
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),

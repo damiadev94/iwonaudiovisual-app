@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+const AUTH_ROUTES = ["/login", "/register"];
+
 export async function middleware(request: NextRequest) {
   // Inicializar respuesta permitiendo que la request continúe
   let supabaseResponse = NextResponse.next({ request });
@@ -32,17 +34,27 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    // Usuario no autenticado → redirigir al login
+  const pathname = request.nextUrl.pathname;
+
+  if (user && AUTH_ROUTES.includes(pathname)) {
+    // Usuario autenticado en ruta de auth → redirigir al dashboard
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  if (!user && !AUTH_ROUTES.includes(pathname)) {
+    // Usuario no autenticado en ruta protegida → redirigir al login
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return supabaseResponse;
 }
 
-// Solo aplica a rutas de plataforma y admin — la landing, auth y APIs quedan libres
+// Aplica a rutas de auth (para redirigir usuarios ya logueados)
+// y a rutas de plataforma/admin (para proteger contenido)
 export const config = {
   matcher: [
+    "/login",
+    "/register",
     "/dashboard/:path*",
     "/subir-cancion/:path*",
     "/perfil/:path*",

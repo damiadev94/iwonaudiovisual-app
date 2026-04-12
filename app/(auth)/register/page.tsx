@@ -51,6 +51,14 @@ export default function RegisterPage() {
       return;
     }
 
+    // Supabase no retorna error cuando el email ya existe (con confirmación activa):
+    // en su lugar devuelve un usuario con identities vacío.
+    if (authData.user?.identities?.length === 0) {
+      toast.error("Ya tenés una cuenta con este email. Iniciá sesión.");
+      setLoading(false);
+      return;
+    }
+
     // Enviar email de bienvenida via Resend (fire and forget)
     fetch("/api/auth/welcome", {
       method: "POST",

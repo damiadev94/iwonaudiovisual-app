@@ -101,6 +101,77 @@ describe("Flujo de registro con email y contraseña", () => {
     });
   });
 
+  // ─── Email ya registrado ─────────────────────────────────────────────────────
+
+  describe("Email ya registrado", () => {
+    it("detecta email duplicado: signUp retorna user con identities vacío (sin error explícito)", async () => {
+      // Comportamiento de Supabase con confirmación activa + email ya existente:
+      // no lanza error, sino que devuelve un user con identities = []
+      mockSignUp.mockResolvedValue({
+        data: {
+          user: { id: "uid-existing", email: VALID_USER.email, identities: [] },
+          session: null,
+        },
+        error: null,
+      });
+
+      const supabase = createBrowserClient();
+      const { data, error } = await supabase.auth.signUp({
+        email: VALID_USER.email,
+        password: VALID_USER.password,
+        options: { data: { full_name: VALID_USER.full_name } },
+      });
+
+      // No hay error explícito de Supabase...
+      expect(error).toBeNull();
+      // ...pero identities vacío indica que el email ya estaba registrado
+      expect(data.user?.identities?.length).toBe(0);
+    });
+
+    it("detecta email duplicado: signUp retorna error explícito", async () => {
+      // Comportamiento de Supabase con confirmación desactivada + email ya existente
+      mockSignUp.mockResolvedValue({
+        data: { user: null, session: null },
+        error: { message: "User already registered" },
+      });
+
+      const supabase = createBrowserClient();
+      const { error } = await supabase.auth.signUp({
+        email: VALID_USER.email,
+        password: VALID_USER.password,
+        options: { data: { full_name: VALID_USER.full_name } },
+      });
+
+      expect(error).toBeTruthy();
+      expect(error?.message).toBe("User already registered");
+    });
+
+    it("usuario nuevo tiene identities con al menos una entrada", async () => {
+      mockSignUp.mockResolvedValue({
+        data: {
+          user: {
+            id: "uid-new",
+            email: VALID_USER.email,
+            identities: [{ id: "uid-new", provider: "email" }],
+          },
+          session: null,
+        },
+        error: null,
+      });
+
+      const supabase = createBrowserClient();
+      const { data, error } = await supabase.auth.signUp({
+        email: VALID_USER.email,
+        password: VALID_USER.password,
+        options: { data: { full_name: VALID_USER.full_name } },
+      });
+
+      expect(error).toBeNull();
+      // identities con datos → registro exitoso, el componente redirige a /confirm-email
+      expect(data.user?.identities?.length).toBeGreaterThan(0);
+    });
+  });
+
   // ─── Paso 1a: signUp con confirmación de email activada ─────────────────────
 
   describe("Paso 1a — signUp con confirmación de email (sin sesión inmediata)", () => {
@@ -133,22 +204,6 @@ describe("Flujo de registro con email y contraseña", () => {
       expect(data.session).toBeNull();
     });
 
-    it("devuelve error si el email ya está registrado", async () => {
-      mockSignUp.mockResolvedValue({
-        data: { user: null, session: null },
-        error: { message: "User already registered" },
-      });
-
-      const supabase = createBrowserClient();
-      const { error } = await supabase.auth.signUp({
-        email: VALID_USER.email,
-        password: VALID_USER.password,
-        options: { data: { full_name: VALID_USER.full_name } },
-      });
-
-      expect(error).toBeTruthy();
-      expect(error?.message).toBe("User already registered");
-    });
   });
 
   // ─── Paso 1b: signUp con confirmación de email desactivada ──────────────────
