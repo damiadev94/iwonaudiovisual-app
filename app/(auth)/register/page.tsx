@@ -67,8 +67,7 @@ export default function RegisterPage() {
     }).catch(() => {});
 
     if (authData.session) {
-      // Confirmacion de email desactivada: sesion inmediata
-      router.push("/dashboard");
+      // Email confirmation disabled: immediate session — middleware redirects to /dashboard
       router.refresh();
     } else {
       // Confirmacion de email activada: esperar confirmacion

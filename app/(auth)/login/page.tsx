@@ -42,7 +42,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // Middleware detects session and redirects to /dashboard automatically
     router.refresh();
   }
 

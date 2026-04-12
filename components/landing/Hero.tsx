@@ -28,7 +28,7 @@ export function Hero() {
         {/* Main title */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
           Vamos a seleccionar a {" "}
-          <span className="text-gold">50 artistas y firlmarles su mejor canción </span>{" "}
+          <span className="text-gold">50 artistas y filmarles su mejor canción </span>{" "}
           con equipos de cine.
         </h1>
 
