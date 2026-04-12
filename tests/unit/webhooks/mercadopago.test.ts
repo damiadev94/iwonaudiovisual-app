@@ -67,10 +67,17 @@ describe("MercadoPago Webhook", () => {
   // =============================
 
   describe("processWebhookEvent", () => {
-    const mockDb = {
+    const mockDb: any = {
       from: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: { id: "sub-1" }, error: null }),
+      // Makes the object thenable so `await supabase.from(...).update(...).eq(...)` resolves
+      then: (resolve: (v: unknown) => void) => resolve({ data: null, error: null }),
     };
 
     beforeEach(() => {
