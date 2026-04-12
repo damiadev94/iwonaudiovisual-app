@@ -9,7 +9,8 @@
       "Bash(node -e \"const z = require\\('zod'\\); console.log\\(z.version || 'unknown'\\)\")",
       "Bash(node -e \"const z = require\\('zod'\\); const r = z.string\\(\\).safeParse\\(1\\); if\\(!r.success\\) console.log\\(Object.keys\\(r.error\\)\\)\")",
       "Bash(node -e \"const z = require\\('zod'\\); const r = z.object\\({email: z.string\\(\\).email\\(\\)}\\).safeParse\\({email: 'bad'}\\); if\\(!r.success\\) { console.log\\('issues:', r.error.issues\\); console.log\\('has issues:', 'issues' in r.error\\); }\")",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(npm test:*)"
     ]
   }
 }
