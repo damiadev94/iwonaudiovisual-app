@@ -3,32 +3,35 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createSubscription } from "@/lib/mercadopago/subscription";
 
-export async function GET() {
+export async function POST() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const adminClient = createAdminClient();
+
+  const { data: existing } = await adminClient
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (existing) {
+    return NextResponse.json({ redirect: "/dashboard" });
+  }
+
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_APP_URL));
-    }
-
-    // Check if already has active subscription
-    const adminClient = createAdminClient();
-    const { data: existing } = await adminClient
-      .from("subscriptions")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .single();
-
-    if (existing) {
-      return NextResponse.redirect(new URL("/dashboard", process.env.NEXT_PUBLIC_APP_URL));
-    }
-
-    // Create MP subscription
     const result = await createSubscription(user.email!, user.id);
 
-    // Store pending subscription
+    if (!result.init_point) {
+      console.error("[subscription/create] init_point missing:", JSON.stringify(result, null, 2));
+      return NextResponse.json({ error: "payment_error" }, { status: 500 });
+    }
+
     await adminClient.from("subscriptions").insert({
       user_id: user.id,
       mp_subscription_id: result.id,
@@ -37,15 +40,12 @@ export async function GET() {
       currency: "ARS",
     });
 
-    // Redirect to MP checkout
-    if (result.init_point) {
-      return NextResponse.redirect(result.init_point);
-    }
-
-    console.error("[subscription/create] init_point missing. Full MP result:", JSON.stringify(result, null, 2));
-    return NextResponse.redirect(new URL("/dashboard?error=payment", process.env.NEXT_PUBLIC_APP_URL));
+    return NextResponse.json({ init_point: result.init_point });
   } catch (error) {
-    console.error("[subscription/create] Error:", error instanceof Error ? { message: error.message, stack: error.stack, cause: (error as any).cause } : error);
-    return NextResponse.redirect(new URL("/dashboard?error=payment", process.env.NEXT_PUBLIC_APP_URL));
+    console.error("[subscription/create] MP Error:", error instanceof Error ? error.message : error);
+    return NextResponse.json(
+      { error: "payment_error", message: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
   }
 }

@@ -21,10 +21,9 @@ vi.mock("@/lib/mercadopago/subscription", () => ({
   createSubscription: mockCreateSub,
 }));
 
-import { GET } from "@/app/api/subscription/create/route";
+import { POST } from "@/app/api/subscription/create/route";
 
 // ─── helpers ────────────────────────────────────────────────
-/** Mocks adminFrom para el escenario "ya tiene suscripción activa" */
 function mockExistingActiveSub() {
   const mockSingle = vi
     .fn()
@@ -38,7 +37,6 @@ function mockExistingActiveSub() {
   });
 }
 
-/** Mocks adminFrom para el escenario "sin suscripción previa" */
 function mockNoExistingSub() {
   const mockSingle = vi
     .fn()
@@ -56,35 +54,37 @@ function mockNoExistingSub() {
 }
 
 // ─── tests ──────────────────────────────────────────────────
-describe("GET /api/subscription/create", () => {
+describe("POST /api/subscription/create", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
   });
 
-  it("redirige a /login si el usuario no está autenticado", async () => {
+  it("retorna 401 si el usuario no está autenticado", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
-    const response = await GET();
+    const response = await POST();
+    const data = await response.json();
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toContain("/login");
+    expect(response.status).toBe(401);
+    expect(data.error).toBe("unauthorized");
   });
 
-  it("redirige a /dashboard si el usuario ya tiene suscripción activa", async () => {
+  it("retorna redirect:/dashboard si el usuario ya tiene suscripción activa", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
     });
     mockExistingActiveSub();
 
-    const response = await GET();
+    const response = await POST();
+    const data = await response.json();
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toContain("/dashboard");
+    expect(response.status).toBe(200);
+    expect(data.redirect).toBe("/dashboard");
   });
 
-  it("crea suscripción en MP y redirige al init_point", async () => {
+  it("crea suscripción en MP y retorna init_point", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
@@ -98,7 +98,8 @@ describe("GET /api/subscription/create", () => {
       init_point: mpInitPoint,
     });
 
-    const response = await GET();
+    const response = await POST();
+    const data = await response.json();
 
     expect(mockCreateSub).toHaveBeenCalledWith("test@example.com", "user-123");
     expect(mockInsert).toHaveBeenCalledWith({
@@ -108,11 +109,11 @@ describe("GET /api/subscription/create", () => {
       plan_amount: 9999,
       currency: "ARS",
     });
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe(mpInitPoint);
+    expect(response.status).toBe(200);
+    expect(data.init_point).toBe(mpInitPoint);
   });
 
-  it("redirige a /dashboard?error=payment si init_point está ausente", async () => {
+  it("retorna 500 si init_point está ausente", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
@@ -121,16 +122,15 @@ describe("GET /api/subscription/create", () => {
     mockCreateSub.mockResolvedValue({ id: "PREAPPROVAL_123", init_point: null });
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const response = await GET();
+    const response = await POST();
+    const data = await response.json();
     consoleSpy.mockRestore();
 
-    expect(response.status).toBe(307);
-    const location = response.headers.get("location") ?? "";
-    expect(location).toContain("/dashboard");
-    expect(location).toContain("error=payment");
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("payment_error");
   });
 
-  it("redirige a /dashboard?error=payment si MP lanza error inesperado", async () => {
+  it("retorna 500 con mensaje si MP lanza error inesperado", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
@@ -139,11 +139,12 @@ describe("GET /api/subscription/create", () => {
     mockCreateSub.mockRejectedValue(new Error("MP API error"));
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const response = await GET();
+    const response = await POST();
+    const data = await response.json();
     consoleSpy.mockRestore();
 
-    expect(response.status).toBe(307);
-    const location = response.headers.get("location") ?? "";
-    expect(location).toContain("error=payment");
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("payment_error");
+    expect(data.message).toBe("MP API error");
   });
 });

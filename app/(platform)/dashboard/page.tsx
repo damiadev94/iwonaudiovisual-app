@@ -4,10 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { EventCalendar } from "@/components/platform/EventCalendar";
-import { BookOpen, Film, Gift, Users, ArrowRight, Crown } from "lucide-react";
+import { BookOpen, Film, Gift, Users, Crown } from "lucide-react";
 import Link from "next/link";
+import { SubscribeButton } from "@/components/platform/SubscribeButton";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -38,12 +38,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground mb-8">
           Para acceder a todos los beneficios de Iwon Audiovisual necesitas una suscripcion activa.
         </p>
-        <Link href="/api/subscription/create">
-          <Button className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto">
-            Enviar mi canción por $9.999/mes
-            <ArrowRight className="ml-2" />
-          </Button>
-        </Link>
+        <SubscribeButton />
       </div>
     );
   }
