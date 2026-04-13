@@ -12,7 +12,7 @@ async function getOrCreatePlan(): Promise<{ id: string; init_point: string }> {
 
   const existingPlanId = process.env.MERCADOPAGO_PLAN_ID;
   if (existingPlanId) {
-    const plan = await preApprovalPlan.get({ id: existingPlanId });
+    const plan = await preApprovalPlan.get({ preApprovalPlanId: existingPlanId });
     return { id: plan.id!, init_point: plan.init_point! };
   }
 
