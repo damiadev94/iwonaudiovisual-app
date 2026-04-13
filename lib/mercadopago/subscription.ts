@@ -3,7 +3,7 @@ import { mercadopago } from "./client";
 
 const preApproval = new PreApproval(mercadopago);
 
-export async function createSubscription(email: string, userId: string) {
+export async function createSubscription(userId: string) {
   const backUrl = process.env.MERCADOPAGO_BACK_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   try {
@@ -16,7 +16,6 @@ export async function createSubscription(email: string, userId: string) {
           transaction_amount: 9999,
           currency_id: "ARS",
         },
-        payer_email: email,
         back_url: `${backUrl}/subir-cancion`,
         external_reference: userId,
       },
