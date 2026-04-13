@@ -4,22 +4,19 @@ import { mercadopago } from "./client";
 const preApproval = new PreApproval(mercadopago);
 const preApprovalPlan = new PreApprovalPlan(mercadopago);
 
-async function getOrCreatePlan(): Promise<{ id: string; init_point: string }> {
+async function getPlanId(): Promise<string> {
+  const existingPlanId = process.env.MERCADOPAGO_PLAN_ID;
+  if (existingPlanId) return existingPlanId;
+
   const backUrl =
     process.env.MERCADOPAGO_BACK_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000";
 
-  const existingPlanId = process.env.MERCADOPAGO_PLAN_ID;
-  if (existingPlanId) {
-    const plan = await preApprovalPlan.get({ preApprovalPlanId: existingPlanId });
-    return { id: plan.id!, init_point: plan.init_point! };
-  }
-
   // Primera vez: crear el plan y loguear el ID para guardarlo en .env
   const plan = await preApprovalPlan.create({
     body: {
-      reason: "Iwon Audiovisual - Suscripcion Mensual",
+      reason: "Iwon Audiovisual - Suscripción Mensual",
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
@@ -38,13 +35,24 @@ async function getOrCreatePlan(): Promise<{ id: string; init_point: string }> {
     plan.id
   );
 
-  return { id: plan.id!, init_point: plan.init_point! };
+  return plan.id!;
 }
 
-export async function getSubscribeUrl(): Promise<string> {
-  const { init_point } = await getOrCreatePlan();
-  return init_point;
+export async function getSubscribeUrl(userId: string, email: string): Promise<string> {
+  const planId = await getPlanId();
+
+  const subscription = await preApproval.create({
+    body: {
+      preapproval_plan_id: planId,
+      payer_email: email,
+      external_reference: userId,
+      back_url: `${process.env.MERCADOPAGO_BACK_URL || process.env.NEXT_PUBLIC_APP_URL}/suscripcion/exito`,
+    }
+  });
+
+  return subscription.init_point!;
 }
+
 
 export async function cancelSubscription(preapprovalId: string) {
   const result = await preApproval.update({

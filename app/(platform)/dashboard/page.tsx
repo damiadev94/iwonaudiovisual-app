@@ -30,19 +30,6 @@ export default async function DashboardPage() {
 
   const isActive = subscription?.status === "active";
 
-  if (!isActive) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-20">
-        <Crown className="h-16 w-16 text-gold mx-auto mb-6" />
-        <h1 className="text-3xl font-bold mb-4">Activa tu suscripcion</h1>
-        <p className="text-muted-foreground mb-8">
-          Para acceder a todos los beneficios de Iwon Audiovisual necesitas una suscripcion activa.
-        </p>
-        <SubscribeButton />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
       {/* Welcome */}

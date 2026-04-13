@@ -44,32 +44,29 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
 
       const status = statusMap[preapprovalData.status || ""] || "pending";
       const payerEmail = (preapprovalData as any).payer_email as string | undefined;
+      const externalRef = (preapprovalData as any).external_reference as string | undefined;
 
-      // Intentar crear/actualizar la suscripción buscando al usuario por email
-      if (payerEmail) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("email", payerEmail)
-          .single();
-
-        if (profile) {
-          await supabase.from("subscriptions").upsert(
-            {
-              user_id: profile.id,
-              mp_subscription_id: preapprovalData.id,
-              mp_preapproval_id: preapprovalData.id,
-              status,
-              plan_amount: (preapprovalData as any).auto_recurring?.transaction_amount ?? 9999,
-              currency: "ARS",
-              current_period_start:
-                preapprovalData.last_modified ?? preapprovalData.date_created,
-            },
-            { onConflict: "mp_subscription_id" }
-          );
-          return;
-        }
+      // Intentar crear/actualizar la suscripción buscando por external_reference (User ID)
+      if (externalRef) {
+        await supabase.from("subscriptions").upsert(
+          {
+            user_id: externalRef,
+            mp_subscription_id: preapprovalData.id,
+            mp_preapproval_id: preapprovalData.id,
+            status,
+            plan_amount: (preapprovalData as any).auto_recurring?.transaction_amount ?? 9999,
+            currency: "ARS",
+            current_period_start:
+              preapprovalData.last_modified ?? preapprovalData.date_created,
+          },
+          { onConflict: "user_id" }
+        );
+        return;
       }
+
+      // Fallback: si no hay external_reference, intentar por email
+      if (payerEmail) {
+
 
       // Fallback: actualizar por mp_subscription_id si ya existe el registro
       await supabase

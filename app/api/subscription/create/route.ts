@@ -27,7 +27,19 @@ export async function POST() {
   }
 
   try {
-    const init_point = await getSubscribeUrl();
+    const init_point = await getSubscribeUrl(user.id, user.email!);
+
+    // Pre-crear la suscripción en estado pendiente para que la app lo reconozca
+    await adminClient.from("subscriptions").upsert(
+      {
+        user_id: user.id,
+        status: "pending",
+        plan_amount: 9999,
+        currency: "ARS",
+      },
+      { onConflict: "user_id" }
+    );
+
     return NextResponse.json({ init_point });
   } catch (error: any) {
     console.error("[subscription/create] MP Error:", error);
