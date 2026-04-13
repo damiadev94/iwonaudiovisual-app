@@ -1,80 +1,21 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { loginSchema } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/shared/Logo";
 import { toast } from "sonner";
 
 function LoginContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(false);
 
-  // Mostrar mensajes según parámetros de URL
   useEffect(() => {
-    if (searchParams.get("confirmed") === "true") {
-      toast.success("Email confirmado. Ya podés iniciar sesión.");
-    }
-    if (searchParams.get("error") === "invalid_token") {
-      toast.error("El link de confirmación es inválido.");
-    }
-    if (searchParams.get("error") === "server_error") {
-      toast.error("Ocurrió un error. Intentá de nuevo.");
+    if (searchParams.get("error")) {
+      toast.error("Ocurrió un error al autenticar. Intentá de nuevo.");
     }
   }, [searchParams]);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    };
-
-    const result = loginSchema.safeParse(data);
-    if (!result.success) {
-      toast.error(result.error.issues[0].message);
-      setLoading(false);
-      return;
-    }
-
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword(data);
-
-    if (error) {
-      toast.error("Credenciales incorrectas");
-      setLoading(false);
-      return;
-    }
-
-    // Verificar que el email esté confirmado en nuestra tabla profiles.
-    // Usamos el cliente del usuario (RLS garantiza que solo lee su propio perfil).
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("email_confirmed")
-      .eq("id", user!.id)
-      .single();
-
-    if (!profile?.email_confirmed) {
-      // Cerrar sesión para no dejar al usuario en estado inconsistente
-      await supabase.auth.signOut();
-      router.push(`/confirm-email?email=${encodeURIComponent(data.email)}`);
-      return;
-    }
-
-    // Sesión válida y email confirmado → middleware redirige a /dashboard
-    router.refresh();
-  }
 
   async function handleGoogleLogin() {
     const supabase = createClient();
@@ -84,7 +25,7 @@ function LoginContent() {
         redirectTo: `${window.location.origin}/callback`,
       },
     });
-    if (error) toast.error("Error al iniciar sesion con Google");
+    if (error) toast.error("Error al iniciar sesión con Google");
   }
 
   return (
@@ -94,10 +35,10 @@ function LoginContent() {
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl">Iniciar sesion</CardTitle>
-          <CardDescription>Ingresa a tu cuenta de Iwon Audiovisual</CardDescription>
+          <CardTitle className="text-2xl">Acceder</CardTitle>
+          <CardDescription>Ingresá o creá tu cuenta de Iwon Audiovisual</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <Button
             variant="outline"
             className="w-full border-iwon-border hover:bg-iwon-bg-secondary"
@@ -111,54 +52,6 @@ function LoginContent() {
             </svg>
             Continuar con Google
           </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-iwon-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-iwon-card px-2 text-muted-foreground">o</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="tu@email.com"
-                required
-                className="bg-iwon-bg border-iwon-border"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contrasena</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                required
-                className="bg-iwon-bg border-iwon-border"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-gold hover:bg-gold-light text-black font-semibold"
-              disabled={loading}
-            >
-              {loading ? "Ingresando..." : "Ingresar"}
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-muted-foreground">
-            No tenes cuenta?{" "}
-            <Link href="/register" className="text-gold hover:text-gold-light transition-colors">
-              Registrate
-            </Link>
-          </p>
         </CardContent>
       </Card>
     </div>
@@ -167,7 +60,6 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    // Suspense requerido por useSearchParams en componentes client
     <Suspense>
       <LoginContent />
     </Suspense>
