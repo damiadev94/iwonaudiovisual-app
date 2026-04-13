@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-const AUTH_ROUTES = ["/login"];
+const AUTH_ROUTES = ["/login", "/"];
 
 export async function middleware(request: NextRequest) {
   // Inicializar respuesta permitiendo que la request continúe
@@ -58,6 +58,7 @@ export async function middleware(request: NextRequest) {
 // y a rutas de plataforma/admin (para proteger contenido)
 export const config = {
   matcher: [
+    "/",
     "/login",
     "/register",
     "/dashboard/:path*",
