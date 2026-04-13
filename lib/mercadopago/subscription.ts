@@ -24,13 +24,7 @@ export async function createSubscription(email: string, userId: string) {
 
     return result;
   } catch (error: any) {
-    console.error("--- MERCADO PAGO CREATE PREAPPROVAL ERROR ---");
-    console.error("MERCADOPAGO_ACCESS_TOKEN starts with:", process.env.MERCADOPAGO_ACCESS_TOKEN?.substring(0, 8));
-    console.error("Error instance type:", typeof error);
-    console.error("Error keys:", Object.keys(error || {}));
-    console.error("Error status:", error?.status);
-    console.error("Error response:", JSON.stringify(error?.response || {}));
-    console.error("Error message property:", error?.message);
+    console.error("--- MERCADO PAGO CREATE PREAPPROVAL ERROR ---", error);
     throw error;
   }
 }
