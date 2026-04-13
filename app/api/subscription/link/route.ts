@@ -15,6 +15,7 @@ export async function POST(request: Request) {
 
   try {
     const { preapproval_id } = await request.json();
+    console.log("[subscription/link] Iniciando vinculación para ID:", preapproval_id);
 
     if (!preapproval_id) {
       return NextResponse.json({ error: "missing_id" }, { status: 400 });
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
 
     // Consultar el estado real en Mercado Pago
     const mpData = await getSubscriptionStatus(preapproval_id);
+    console.log("[subscription/link] Datos recibidos de MP:", JSON.stringify(mpData));
 
     const statusMap: Record<string, string> = {
       authorized: "active",
@@ -31,27 +33,33 @@ export async function POST(request: Request) {
     };
 
     const status = statusMap[mpData.status || ""] || "pending";
+    console.log("[subscription/link] Estado mapeado:", status);
 
     // Vincular al usuario en nuestra DB usando Admin Client
     const adminClient = createAdminClient();
-    const { data, error } = await adminClient.from("subscriptions").upsert(
+    const { data: upsertData, error: upsertError } = await adminClient.from("subscriptions").upsert(
       {
         user_id: user.id,
         mp_subscription_id: preapproval_id,
         mp_preapproval_id: preapproval_id,
         status,
-        plan_amount: (mpData as any).auto_recurring?.transaction_amount ?? 9999,
+        plan_amount: (mpData as any).auto_recurring?.transaction_amount ?? 1000,
         currency: "ARS",
         current_period_start: mpData.date_created,
       },
       { onConflict: "user_id" }
-    );
+    ).select();
 
-    if (error) throw error;
+    if (upsertError) {
+      console.error("[subscription/link] Error en UPSERT:", upsertError);
+      throw upsertError;
+    }
 
+    console.log("[subscription/link] Vinculación exitosa en DB:", JSON.stringify(upsertData));
     return NextResponse.json({ success: true, status });
   } catch (error: any) {
-    console.error("[subscription/link] Error:", error);
-    return NextResponse.json({ error: "link_error" }, { status: 500 });
+    console.error("[subscription/link] Error FATAL:", error);
+    return NextResponse.json({ error: "link_error", message: error.message }, { status: 500 });
   }
 }
+

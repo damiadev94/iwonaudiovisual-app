@@ -16,21 +16,26 @@ function SuscripcionExitoContent() {
 
   // Efecto 1: Vincular la suscripción si viene el preapproval_id
   useEffect(() => {
+    console.log("[Exito] ID de suscripción detectado en URL:", preapproval_id);
     if (!preapprovalId || activated) return;
 
     async function linkSubscription() {
       try {
-        await fetch("/api/subscription/link", {
+        console.log("[Exito] Llamando a /api/subscription/link...");
+        const res = await fetch("/api/subscription/link", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ preapproval_id: preapprovalId }),
         });
+        const data = await res.json();
+        console.log("[Exito] Respuesta de vinculación:", data);
       } catch (error) {
-        console.error("Error linking subscription:", error);
+        console.error("[Exito] Error vinculando suscripción:", error);
       } finally {
         setLinking(false);
       }
     }
+
 
     linkSubscription();
   }, [preapprovalId, activated]);
