@@ -20,15 +20,20 @@ async function getPlanId(): Promise<string> {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        transaction_amount: 9999,
+        transaction_amount: 1000, // Monto ajustado para pruebas
         currency_id: "ARS",
       },
       back_url: `${backUrl}/suscripcion/exito`,
       payment_methods_allowed: {
-        payment_types: [{ id: "credit_card" }, { id: "debit_card" }, { id: "account_money" }]
+        payment_types: [
+          { id: "account_money" }, // Saldo Mercado Pago
+          { id: "credit_card" }, 
+          { id: "debit_card" }
+        ]
       },
     },
   });
+
 
   console.warn(
     "[mercadopago] Plan creado. Guardá este ID en MERCADOPAGO_PLAN_ID:",
