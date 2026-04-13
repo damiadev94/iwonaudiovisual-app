@@ -44,14 +44,16 @@ export async function getSubscribeUrl(userId: string, email: string): Promise<st
   const subscription = await preApproval.create({
     body: {
       preapproval_plan_id: planId,
-      payer_email: email,
+      // Quitamos payer_email para que no pida card_token_id (Checkout Pro flow)
       external_reference: userId,
+      status: 'pending',
       back_url: `${process.env.MERCADOPAGO_BACK_URL || process.env.NEXT_PUBLIC_APP_URL}/suscripcion/exito`,
     }
   });
 
   return subscription.init_point!;
 }
+
 
 
 export async function cancelSubscription(preapprovalId: string) {
