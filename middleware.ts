@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
 const AUTH_ROUTES = ["/login", "/"];
@@ -62,11 +63,21 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
 
   if (user && isAdminRoute) {
-    const { data: profile } = await supabase
+    // Usar service role key para bypassear RLS y leer el rol del usuario
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: profile, error: profileError } = await adminClient
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
+
+    if (profileError) {
+      console.error("[middleware] Error fetching profile:", profileError.message);
+    }
 
     if (!profile || profile.role !== "admin") {
       // API routes: devolver 403 en vez de redirect HTML
