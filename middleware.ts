@@ -119,6 +119,7 @@ export const config = {
     "/sorteos/:path*",
     "/promos/:path*",
     "/seleccion/:path*",
+    "/suscripcion/:path*",
     "/admin/:path*",
     "/api/admin/:path*",
   ],

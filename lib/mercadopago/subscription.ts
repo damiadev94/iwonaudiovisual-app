@@ -26,7 +26,7 @@ async function getOrCreatePlan(): Promise<{ id: string; init_point: string }> {
         transaction_amount: 9999,
         currency_id: "ARS",
       },
-      back_url: `${backUrl}/dashboard`,
+      back_url: `${backUrl}/suscripcion/exito`,
       payment_methods_allowed: {
         payment_types: [{ id: "credit_card" }, { id: "debit_card" }, { id: "account_money" }]
       },
