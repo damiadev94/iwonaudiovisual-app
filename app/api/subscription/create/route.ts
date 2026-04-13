@@ -25,20 +25,31 @@ export async function POST() {
   }
 
   try {
-    const result = await createSubscription(user.email!, user.id);
+    let result;
+    try {
+      result = await createSubscription(user.email!, user.id);
+    } catch (e: any) {
+      e.source = "createSubscription";
+      throw e;
+    }
 
     if (!result.init_point) {
       console.error("[subscription/create] init_point missing:", JSON.stringify(result, null, 2));
       return NextResponse.json({ error: "payment_error" }, { status: 500 });
     }
 
-    await adminClient.from("subscriptions").insert({
-      user_id: user.id,
-      mp_subscription_id: result.id,
-      status: "pending",
-      plan_amount: 9999,
-      currency: "ARS",
-    });
+    try {
+      await adminClient.from("subscriptions").insert({
+        user_id: user.id,
+        mp_subscription_id: result.id,
+        status: "pending",
+        plan_amount: 9999,
+        currency: "ARS",
+      });
+    } catch (e: any) {
+      e.source = "supabaseInsert";
+      throw e;
+    }
 
     return NextResponse.json({ init_point: result.init_point });
   } catch (error: any) {
