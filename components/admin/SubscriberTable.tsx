@@ -23,8 +23,9 @@ import { toast } from "sonner";
 import { Search, PowerOff, Power } from "lucide-react";
 import type { Profile, Subscription } from "@/types";
 
-interface SubscriberWithSub extends Profile {
-  subscriptions: Subscription[];
+interface SubscriberWithSub
+  extends Pick<Profile, "id" | "email" | "full_name" | "artist_name" | "role" | "is_active" | "created_at"> {
+  subscriptions: Pick<Subscription, "id" | "status">[];
 }
 
 const subStatusConfig: Record<string, { label: string; className: string }> = {
