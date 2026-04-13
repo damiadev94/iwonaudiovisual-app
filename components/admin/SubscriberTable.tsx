@@ -211,7 +211,7 @@ export function SubscriberTable({
                     <TableCell>
                       <Select
                         value={sub.role}
-                        onValueChange={(v) => handleRoleChange(sub.id, v)}
+                        onValueChange={(v) => v && handleRoleChange(sub.id, v)}
                         disabled={isLoading}
                       >
                         <SelectTrigger className="h-7 w-32 text-xs bg-iwon-bg border-iwon-border">
