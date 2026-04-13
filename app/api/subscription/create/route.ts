@@ -25,7 +25,7 @@ export async function POST() {
   }
 
   try {
-    const result = await createSubscription(user.id);
+    const result = await createSubscription(user.id, user.email!);
 
     if (!result.init_point) {
       console.error("[subscription/create] init_point missing:", JSON.stringify(result, null, 2));

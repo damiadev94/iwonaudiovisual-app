@@ -3,13 +3,14 @@ import { mercadopago } from "./client";
 
 const preApproval = new PreApproval(mercadopago);
 
-export async function createSubscription(userId: string) {
+export async function createSubscription(userId: string, payerEmail: string) {
   const backUrl = process.env.MERCADOPAGO_BACK_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   try {
     const result = await preApproval.create({
       body: {
         reason: "Iwon Audiovisual - Suscripcion Mensual",
+        payer_email: payerEmail,
         auto_recurring: {
           frequency: 1,
           frequency_type: "months",
