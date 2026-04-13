@@ -28,7 +28,7 @@ async function getOrCreatePlan(): Promise<{ id: string; init_point: string }> {
       },
       back_url: `${backUrl}/dashboard`,
       payment_methods_allowed: {
-        payment_types: [{ id: "credit_card" }, { id: "debit_card" }],
+        payment_types: [{ id: "credit_card" }, { id: "debit_card" }, { id: "account_money" }]
       },
     },
   });
