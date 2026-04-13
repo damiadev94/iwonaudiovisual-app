@@ -24,7 +24,12 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
 
   if (error || !profile) {
-    console.warn("[confirm] Token no encontrado:", token.slice(0, 8) + "...");
+    // Log del error completo para diagnóstico en consola del servidor
+    if (error) {
+      console.error("[confirm] Error en query:", error.message, "| code:", error.code);
+    } else {
+      console.warn("[confirm] Token no encontrado en DB:", token.slice(0, 8) + "...");
+    }
     return NextResponse.redirect(`${origin}/login?error=invalid_token`);
   }
 
