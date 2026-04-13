@@ -48,8 +48,7 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
         .from("subscriptions")
         .update({
           status,
-          mp_preapproval_id: preapprovalData.id,
-          current_period_start: preapprovalData.date_created,
+          current_period_start: preapprovalData.last_modified ?? preapprovalData.date_created,
         })
         .eq("mp_subscription_id", preapprovalData.id);
     } catch (error) {

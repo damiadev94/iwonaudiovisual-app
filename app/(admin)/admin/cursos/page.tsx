@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, BookOpen, GripVertical, Eye, EyeOff } from "lucide-react";
+import { Plus, BookOpen, GripVertical, Eye, EyeOff, ListVideo } from "lucide-react";
 import type { Course } from "@/types";
 
 const categories = [
@@ -162,8 +163,18 @@ export default function CursosAdminPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
+                <Link href={`/admin/cursos/${course.id}`}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-7 border-iwon-border"
+                  >
+                    <ListVideo className="h-3.5 w-3.5 mr-1" />
+                    Lecciones
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-1.5">
                   {course.is_published ? (
                     <Eye className="h-4 w-4 text-iwon-success" />
                   ) : (
