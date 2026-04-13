@@ -4,6 +4,14 @@ import { type NextRequest, NextResponse } from "next/server";
 const AUTH_ROUTES = ["/login", "/"];
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // 1. EXCEPCIÓN PARA MERCADO PAGO
+  // Permitimos que esta ruta pase sin verificar usuario ni sesión
+  if (pathname.startsWith("/api/webhooks/mercadopago")) {
+    return NextResponse.next();
+  }
+
   // Inicializar respuesta permitiendo que la request continúe
   let supabaseResponse = NextResponse.next({ request });
 
@@ -33,8 +41,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
 
   // /register is no longer a form — always redirect to /login
   if (pathname === "/register") {
