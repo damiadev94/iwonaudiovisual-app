@@ -10,12 +10,11 @@ export async function POST(request: Request) {
     const signature = request.headers.get("x-signature");
     const requestId = request.headers.get("x-request-id");
 
-    // ⚠️ OPCIONAL (recomendado desactivar mientras debuggeás)
-    // const isValid = verifyWebhookSignature(body, signature, requestId);
-    // if (!isValid) {
-    //   console.error("Invalid signature");
-    //   return NextResponse.json({ received: true }); // 👈 SIEMPRE 200
-    // }
+    const isValid = verifyWebhookSignature(body, signature, requestId);
+    if (!isValid) {
+      console.error("Webhook: firma inválida", { signature, requestId });
+      return NextResponse.json({ received: true });
+    }
 
     console.log("Webhook recibido:", body);
 
