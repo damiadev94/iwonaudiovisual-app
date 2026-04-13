@@ -41,18 +41,13 @@ async function getPlanId(): Promise<string> {
 export async function getSubscribeUrl(userId: string, email: string): Promise<string> {
   const planId = await getPlanId();
 
-  const subscription = await preApproval.create({
-    body: {
-      preapproval_plan_id: planId,
-      // Quitamos payer_email para que no pida card_token_id (Checkout Pro flow)
-      external_reference: userId,
-      status: 'pending',
-      back_url: `${process.env.MERCADOPAGO_BACK_URL || process.env.NEXT_PUBLIC_APP_URL}/suscripcion/exito`,
-    }
-  });
-
-  return subscription.init_point!;
+  // Usamos la URL directa del checkout de planes de Mercado Pago.
+  // Esto evita errores de 'card_token_id is required' y es el flujo oficial de Checkout Pro.
+  // El usuario será vinculado al finalizar en el back_url mediante el preapproval_id.
+  const domain = "www.mercadopago.com.ar"; // Ajustado para ARS (Argentina)
+  return `https://${domain}/subscriptions/checkout?preapproval_plan_id=${planId}`;
 }
+
 
 
 
