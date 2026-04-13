@@ -34,45 +34,27 @@ export default function RegisterPage() {
       return;
     }
 
-    const supabase = createClient();
-    const { data: authData, error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: {
-          full_name: data.full_name,
-        },
-      },
-    });
-
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-      return;
-    }
-
-    // Supabase no retorna error cuando el email ya existe (con confirmación activa):
-    // en su lugar devuelve un usuario con identities vacío.
-    if (authData.user?.identities?.length === 0) {
-      toast.error("Ya tenés una cuenta con este email. Iniciá sesión.");
-      setLoading(false);
-      return;
-    }
-
-    // Enviar email de bienvenida via Resend (fire and forget)
-    fetch("/api/auth/welcome", {
+    // Registro via API server-side: crea el usuario con admin client,
+    // genera token y envía email de confirmación con Resend.
+    const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: data.email, name: data.full_name }),
-    }).catch(() => {});
+      body: JSON.stringify(data),
+    });
 
-    if (authData.session) {
-      // Email confirmation disabled: immediate session — middleware redirects to /dashboard
-      router.refresh();
-    } else {
-      // Confirmacion de email activada: esperar confirmacion
-      router.push("/confirm-email");
+    if (!response.ok) {
+      const json = await response.json().catch(() => ({}));
+      if (json.error === "EMAIL_EXISTS") {
+        toast.error("Ya tenés una cuenta con este email. Iniciá sesión.");
+      } else {
+        toast.error("Error al crear la cuenta. Intentá de nuevo.");
+      }
+      setLoading(false);
+      return;
     }
+
+    // Registro exitoso: redirigir a pantalla "revisá tu email"
+    router.push(`/confirm-email?email=${encodeURIComponent(data.email)}`);
   }
 
   async function handleGoogleRegister() {

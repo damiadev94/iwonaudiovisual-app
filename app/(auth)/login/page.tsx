@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { loginSchema } from "@/lib/validations/auth";
@@ -14,7 +14,21 @@ import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+
+  // Mostrar mensajes según parámetros de URL
+  useEffect(() => {
+    if (searchParams.get("confirmed") === "true") {
+      toast.success("Email confirmado. Ya podés iniciar sesión.");
+    }
+    if (searchParams.get("error") === "invalid_token") {
+      toast.error("El link de confirmación es inválido.");
+    }
+    if (searchParams.get("error") === "server_error") {
+      toast.error("Ocurrió un error. Intentá de nuevo.");
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,7 +56,23 @@ export default function LoginPage() {
       return;
     }
 
-    // Middleware detects session and redirects to /dashboard automatically
+    // Verificar que el email esté confirmado en nuestra tabla profiles.
+    // Usamos el cliente del usuario (RLS garantiza que solo lee su propio perfil).
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email_confirmed")
+      .eq("id", user!.id)
+      .single();
+
+    if (!profile?.email_confirmed) {
+      // Cerrar sesión para no dejar al usuario en estado inconsistente
+      await supabase.auth.signOut();
+      router.push(`/confirm-email?email=${encodeURIComponent(data.email)}`);
+      return;
+    }
+
+    // Sesión válida y email confirmado → middleware redirige a /dashboard
     router.refresh();
   }
 
