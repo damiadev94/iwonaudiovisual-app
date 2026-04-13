@@ -51,11 +51,45 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Verificar role=admin para rutas /admin/* y /api/admin/*
+  const isAdminRoute =
+    pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+
+  if (user && isAdminRoute) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.role !== "admin") {
+      // API routes: devolver 403 en vez de redirect HTML
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // Pasar el rol verificado como request header para que el layout
+    // no necesite hacer otra query a la DB
+    const adminHeaders = new Headers(request.headers);
+    adminHeaders.set("x-user-role", profile.role);
+
+    const response = NextResponse.next({
+      request: { headers: adminHeaders },
+    });
+
+    // Preservar las cookies de sesión que Supabase pudo haber refrescado
+    for (const { name, value, ...options } of supabaseResponse.cookies.getAll()) {
+      response.cookies.set(name, value, options);
+    }
+
+    return response;
+  }
+
   return supabaseResponse;
 }
 
-// Aplica a rutas de auth (para redirigir usuarios ya logueados)
-// y a rutas de plataforma/admin (para proteger contenido)
 export const config = {
   matcher: [
     "/",
@@ -69,5 +103,6 @@ export const config = {
     "/promos/:path*",
     "/seleccion/:path*",
     "/admin/:path*",
+    "/api/admin/:path*",
   ],
 };
