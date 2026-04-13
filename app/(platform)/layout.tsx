@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { PlatformLayoutShell } from "@/components/platform/PlatformLayoutShell";
 import { SubscribeButton } from "@/components/platform/SubscribeButton";
 import { Crown } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default async function PlatformLayout({
   children,
@@ -16,15 +19,18 @@ export default async function PlatformLayout({
     redirect("/login");
   }
 
-  // Verificar suscripción
-  const { data: subscription } = await supabase
+  // Verificar suscripción usando Admin Client para evitar problemas de RLS
+  const adminClient = createAdminClient();
+  const { data: subscription } = await adminClient
     .from("subscriptions")
     .select("status")
     .eq("user_id", user.id)
-    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
     .single();
 
   const isActive = subscription?.status === "active";
+
 
   // Si no está activo, bloquear contenido excepto en la página de éxito de suscripción
   // (Otras sub-rutas de plataforma como /dashboard, /cursos, etc. quedan bloqueadas)
