@@ -1,42 +1,56 @@
-import { PreApproval } from "mercadopago";
+import { PreApproval, PreApprovalPlan } from "mercadopago";
 import { mercadopago } from "./client";
 
 const preApproval = new PreApproval(mercadopago);
+const preApprovalPlan = new PreApprovalPlan(mercadopago);
 
-export async function createSubscription(userId: string, payerEmail: string) {
-  const backUrl = process.env.MERCADOPAGO_BACK_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+async function getOrCreatePlan(): Promise<{ id: string; init_point: string }> {
+  const backUrl =
+    process.env.MERCADOPAGO_BACK_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000";
 
-  try {
-    const result = await preApproval.create({
-      body: {
-        reason: "Iwon Audiovisual - Suscripcion Mensual",
-        payer_email: payerEmail,
-        auto_recurring: {
-          frequency: 1,
-          frequency_type: "months",
-          transaction_amount: 9999,
-          currency_id: "ARS",
-        },
-        back_url: `${backUrl}/subir-cancion`,
-        external_reference: userId,
-      },
-    });
-
-    return result;
-  } catch (error: any) {
-    console.error("--- MERCADO PAGO CREATE PREAPPROVAL ERROR ---", error);
-    throw error;
+  const existingPlanId = process.env.MERCADOPAGO_PLAN_ID;
+  if (existingPlanId) {
+    const plan = await preApprovalPlan.get({ id: existingPlanId });
+    return { id: plan.id!, init_point: plan.init_point! };
   }
+
+  // Primera vez: crear el plan y loguear el ID para guardarlo en .env
+  const plan = await preApprovalPlan.create({
+    body: {
+      reason: "Iwon Audiovisual - Suscripcion Mensual",
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: "months",
+        transaction_amount: 9999,
+        currency_id: "ARS",
+      },
+      back_url: `${backUrl}/dashboard`,
+      payment_methods_allowed: {
+        payment_types: [{ id: "credit_card" }, { id: "debit_card" }],
+      },
+    },
+  });
+
+  console.warn(
+    "[mercadopago] Plan creado. Guardá este ID en MERCADOPAGO_PLAN_ID:",
+    plan.id
+  );
+
+  return { id: plan.id!, init_point: plan.init_point! };
+}
+
+export async function getSubscribeUrl(): Promise<string> {
+  const { init_point } = await getOrCreatePlan();
+  return init_point;
 }
 
 export async function cancelSubscription(preapprovalId: string) {
   const result = await preApproval.update({
     id: preapprovalId,
-    body: {
-      status: "cancelled",
-    },
+    body: { status: "cancelled" },
   });
-
   return result;
 }
 

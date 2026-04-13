@@ -43,12 +43,41 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
       };
 
       const status = statusMap[preapprovalData.status || ""] || "pending";
+      const payerEmail = (preapprovalData as any).payer_email as string | undefined;
 
+      // Intentar crear/actualizar la suscripción buscando al usuario por email
+      if (payerEmail) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", payerEmail)
+          .single();
+
+        if (profile) {
+          await supabase.from("subscriptions").upsert(
+            {
+              user_id: profile.id,
+              mp_subscription_id: preapprovalData.id,
+              mp_preapproval_id: preapprovalData.id,
+              status,
+              plan_amount: (preapprovalData as any).auto_recurring?.transaction_amount ?? 9999,
+              currency: "ARS",
+              current_period_start:
+                preapprovalData.last_modified ?? preapprovalData.date_created,
+            },
+            { onConflict: "mp_subscription_id" }
+          );
+          return;
+        }
+      }
+
+      // Fallback: actualizar por mp_subscription_id si ya existe el registro
       await supabase
         .from("subscriptions")
         .update({
           status,
-          current_period_start: preapprovalData.last_modified ?? preapprovalData.date_created,
+          current_period_start:
+            preapprovalData.last_modified ?? preapprovalData.date_created,
         })
         .eq("mp_subscription_id", preapprovalData.id);
     } catch (error) {
