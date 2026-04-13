@@ -64,10 +64,6 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
         return;
       }
 
-      // Fallback: si no hay external_reference, intentar por email
-      if (payerEmail) {
-
-
       // Fallback: actualizar por mp_subscription_id si ya existe el registro
       await supabase
         .from("subscriptions")
@@ -80,9 +76,8 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
     } catch (error) {
       console.error("Error fetching preapproval data:", error);
     }
-  }
+  } else if (event.type === "payment") {
 
-  if (event.type === "payment") {
     try {
       const payment = new Payment(mercadopago);
 
