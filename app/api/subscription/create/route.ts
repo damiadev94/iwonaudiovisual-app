@@ -41,10 +41,24 @@ export async function POST() {
     });
 
     return NextResponse.json({ init_point: result.init_point });
-  } catch (error) {
-    console.error("[subscription/create] MP Error:", error instanceof Error ? error.message : error);
+  } catch (error: any) {
+    console.error("[subscription/create] MP Error:", error);
+    
+    // Attempt to stringify the MercadoPagoError response or cause if available
+    let detailedMessage = "Unknown error";
+    if (error?.message) {
+      detailedMessage = error.message;
+    }
+    if (error?.cause || error?.api_response || error?.response) {
+      detailedMessage += " - " + JSON.stringify(error.cause || error.api_response || error.response);
+    } else if (typeof error === 'object') {
+      try {
+        detailedMessage = JSON.stringify(error);
+      } catch(e) {}
+    }
+
     return NextResponse.json(
-      { error: "payment_error", message: error instanceof Error ? error.message : "Unknown error" },
+      { error: "payment_error", message: detailedMessage },
       { status: 500 }
     );
   }
