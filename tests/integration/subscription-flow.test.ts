@@ -149,7 +149,7 @@ vi.mock("mercadopago", () => ({
 vi.mock("@/lib/mercadopago/client", () => ({ mercadopago: {} }));
 
 // ─── Imports de los handlers bajo prueba ─────────────────────────────────────
-import { GET as createRoute } from "@/app/api/subscription/create/route";
+import { POST as createRoute } from "@/app/api/subscription/create/route";
 import { POST as webhookRoute } from "@/app/api/webhooks/mercadopago/route";
 import { POST as cancelRoute } from "@/app/api/subscription/cancel/route";
 
@@ -186,10 +186,11 @@ describe("Flujo de suscripción completo (integración)", () => {
     });
 
     const createResponse = await createRoute();
+    const createData = await createResponse.json();
 
-    // Redirige al checkout de MP
-    expect(createResponse.status).toBe(307);
-    expect(createResponse.headers.get("location")).toBe(MP_INIT_POINT);
+    // Devuelve init_point para que el cliente redirija
+    expect(createResponse.status).toBe(200);
+    expect(createData.init_point).toBe(MP_INIT_POINT);
 
     // DB tiene una suscripción en estado pending
     expect(db.subscriptions).toHaveLength(1);
@@ -320,9 +321,10 @@ describe("Flujo de suscripción completo (integración)", () => {
     mockGetUser.mockResolvedValue({ data: { user: USER }, error: null });
 
     const response = await createRoute();
+    const data = await response.json();
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toContain("/dashboard");
+    expect(response.status).toBe(200);
+    expect(data.redirect).toBe("/dashboard");
     // MP no fue contactado
     expect(mockMPCreate).not.toHaveBeenCalled();
     // No se creó una segunda suscripción

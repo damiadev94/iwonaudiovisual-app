@@ -10,7 +10,23 @@
       "Bash(node -e \"const z = require\\('zod'\\); const r = z.string\\(\\).safeParse\\(1\\); if\\(!r.success\\) console.log\\(Object.keys\\(r.error\\)\\)\")",
       "Bash(node -e \"const z = require\\('zod'\\); const r = z.object\\({email: z.string\\(\\).email\\(\\)}\\).safeParse\\({email: 'bad'}\\); if\\(!r.success\\) { console.log\\('issues:', r.error.issues\\); console.log\\('has issues:', 'issues' in r.error\\); }\")",
       "Bash(xargs grep:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(npx vitest:*)",
+      "Bash(node -e \"require\\('puppeteer'\\)\")",
+      "Bash(ls \"d:/Mis Documentos/0 - TRABAJO/2 - IWON/iwonaudiovisual.app/iwonaudiovisual-app/informe-avance-iwon\"*)",
+      "Bash(node -e \"require\\('playwright'\\)\")",
+      "Bash(node -e \"require\\('html-pdf'\\)\")",
+      "Bash(npm list:*)",
+      "Bash(node -e \"const p=require\\('./node_modules/puppeteer/package.json'\\);console.log\\(p.version\\)\")",
+      "Bash(where chrome:*)",
+      "Bash(where chromium:*)",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Read(//c/Program Files \\(x86\\)/Google/Chrome/Application/**)",
+      "Bash(\"C:/Program Files/Google/Chrome/Application/chrome.exe\" --headless --print-to-pdf=\"d:/Mis Documentos/0 - TRABAJO/2 - IWON/iwonaudiovisual.app/iwonaudiovisual-app/informe-avance-iwon.pdf\" --no-margins --print-to-pdf-no-header \"file:///d:/Mis%20Documentos/0%20-%20TRABAJO/2%20-%20IWON/iwonaudiovisual.app/iwonaudiovisual-app/informe-avance-iwon.html\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(ls supabase/migrations/)",
+      "Bash(cat vitest.config.*)",
+      "Bash(cat vite.config.*)"
     ]
   }
 }
