@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
