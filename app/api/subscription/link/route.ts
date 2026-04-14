@@ -37,29 +37,51 @@ export async function POST(request: Request) {
 
     // Vincular al usuario en nuestra DB usando Admin Client
     const adminClient = createAdminClient();
-    const { data: upsertData, error: upsertError } = await adminClient.from("subscriptions").upsert(
-      {
-        user_id: user.id,
-        mp_subscription_id: preapproval_id,
-        mp_preapproval_id: preapproval_id,
-        status,
-        plan_amount: (mpData as any).auto_recurring?.transaction_amount ?? 1000,
-        currency: "ARS",
-        current_period_start: mpData.date_created,
-      },
-      { onConflict: "user_id" }
-    ).select();
+    
+    // Primero buscamos si ya existe una suscripción para este usuario
+    const { data: existingSub } = await adminClient
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (upsertError) {
-      console.error("[subscription/link] Error en UPSERT:", upsertError);
-      throw upsertError;
+    const subData = {
+      user_id: user.id,
+      mp_subscription_id: preapproval_id,
+      mp_preapproval_id: preapproval_id,
+      status,
+      plan_amount: (mpData as any).auto_recurring?.transaction_amount ?? 1000,
+      currency: "ARS",
+      current_period_start: mpData.date_created,
+    };
+
+    let result;
+    if (existingSub) {
+      console.log("[subscription/link] Actualizando suscripción existente:", existingSub.id);
+      result = await adminClient
+        .from("subscriptions")
+        .update(subData)
+        .eq("id", existingSub.id)
+        .select();
+    } else {
+      console.log("[subscription/link] Insertando suscripción nueva");
+      result = await adminClient
+        .from("subscriptions")
+        .insert(subData)
+        .select();
     }
 
-    console.log("[subscription/link] Vinculación exitosa en DB:", JSON.stringify(upsertData));
+    if (result.error) {
+      console.error("[subscription/link] Error en DB:", result.error);
+      throw result.error;
+    }
+
+    console.log("[subscription/link] Operación exitosa en DB");
     return NextResponse.json({ success: true, status });
   } catch (error: any) {
     console.error("[subscription/link] Error FATAL:", error);
     return NextResponse.json({ error: "link_error", message: error.message }, { status: 500 });
   }
 }
+
 
