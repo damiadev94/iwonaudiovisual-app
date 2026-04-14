@@ -13,92 +13,103 @@ function SuscripcionExitoContent() {
   const [polls, setPolls] = useState(0);
   const [activated, setActivated] = useState(false);
   const [linking, setLinking] = useState(!!preapprovalId);
+  const [error, setError] = useState<string | null>(null);
 
-  // Efecto 1: Vincular la suscripción si viene el preapproval_id
-  useEffect(() => {
-    console.log("[Exito] ID de suscripción detectado en URL:", preapprovalId);
-    if (!preapprovalId || activated) return;
-
-
-    async function linkSubscription() {
-      try {
-        console.log("[Exito] Llamando a /api/subscription/link...");
-        const res = await fetch("/api/subscription/link", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ preapproval_id: preapprovalId }),
-        });
-        const data = await res.json();
-        console.log("[Exito] Respuesta de vinculación:", data);
-      } catch (error) {
-        console.error("[Exito] Error vinculando suscripción:", error);
-      } finally {
-        setLinking(false);
+  async function linkSubscription() {
+    if (!preapprovalId) return;
+    setLinking(true);
+    setError(null);
+    console.log("[Exito] Iniciando vinculación para ID:", preapprovalId);
+    
+    try {
+      const res = await fetch("/api/subscription/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preapproval_id: preapprovalId }),
+      });
+      
+      const data = await res.json();
+      console.log("[Exito] Respuesta del servidor:", data);
+      
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Error desconocido");
       }
+      
+      console.log("[Exito] Vinculación completada con éxito");
+    } catch (err: any) {
+      console.error("[Exito] Error fatal vinculando:", err);
+      setError(err.message);
+    } finally {
+      setLinking(false);
     }
+  }
 
-
-    linkSubscription();
-  }, [preapprovalId, activated]);
-
-  // Efecto 2: Polling para verificar activación
   useEffect(() => {
-    if (activated || polls >= 15 || linking) return;
+    if (preapprovalId && !activated) {
+      linkSubscription();
+    }
+  }, [preapprovalId]);
+
+  useEffect(() => {
+    if (activated || polls >= 15 || linking || error) return;
 
     const timeout = setTimeout(async () => {
       try {
         const res = await fetch("/api/subscription/status");
         const data = await res.json();
+        console.log("[Exito] Verificando estado en DB:", data.status);
         if (data.status === "active") {
           setActivated(true);
-          setTimeout(() => router.replace("/dashboard"), 2000);
-          return;
+          setTimeout(() => router.replace("/dashboard"), 1500);
         }
       } catch {
-        // ignorar errores de red y reintentar
+        // reintentar
       }
       setPolls((p) => p + 1);
     }, 3000);
 
     return () => clearTimeout(timeout);
-  }, [polls, activated, router, linking]);
+  }, [polls, activated, router, linking, error]);
 
   if (activated) {
     return (
       <div className="max-w-md mx-auto text-center py-20 space-y-4 animate-in fade-in zoom-in duration-500">
-        <CheckCircle className="h-16 w-16 text-iwon-success mx-auto" />
-        <h1 className="text-2xl font-bold">¡Suscripción activada!</h1>
-        <p className="text-muted-foreground">Bienvenido a la comunidad IWON. Redirigiendo...</p>
-      </div>
-    );
-  }
-
-  if (polls >= 15) {
-    return (
-      <div className="max-w-md mx-auto text-center py-20 space-y-4">
-        <CheckCircle className="h-16 w-16 text-gold mx-auto" />
-        <h1 className="text-2xl font-bold">¡Pago recibido!</h1>
-        <p className="text-muted-foreground">
-          Tu suscripción se está procesando. Puede demorar unos minutos en activarse.
-        </p>
-        <Button onClick={() => router.replace("/dashboard")} className="bg-gold hover:bg-gold-light text-black font-bold">
-          Ir al dashboard
-        </Button>
+        <CheckCircle className="h-20 w-20 text-iwon-success mx-auto" />
+        <h1 className="text-3xl font-bold">¡Bienvenido!</h1>
+        <p className="text-muted-foreground">Tu suscripción está activa. Entrando...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto text-center py-20 space-y-4">
-      <CheckCircle className="h-16 w-16 text-iwon-success mx-auto" />
-      <h1 className="text-2xl font-bold">¡Pago realizado!</h1>
-      <p className="text-muted-foreground">
-        {linking ? "Vinculando suscripción..." : "Activando tu acceso..."}
+    <div className="max-w-md mx-auto text-center py-20 space-y-6">
+      <CheckCircle className="h-16 w-16 text-iwon-success mx-auto opacity-50" />
+      <h1 className="text-2xl font-bold">Procesando tu acceso</h1>
+      
+      {error ? (
+        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <p className="font-bold mb-2">Hubo un problema al vincular tu pago:</p>
+          <p className="text-sm mb-4">{error}</p>
+          <Button onClick={linkSubscription} variant="destructive">
+            Reintentar Vinculación
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            {linking ? "Vinculando tu cuenta con Mercado Pago..." : "Esperando confirmación final..."}
+          </p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-gold" />
+        </div>
+      )}
+      
+      <p className="text-xs text-muted-foreground pt-10">
+        ID de Operación: {preapprovalId || "No detectado"}
       </p>
-      <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
     </div>
   );
 }
+
 
 export default function SuscripcionExitoPage() {
   return (
