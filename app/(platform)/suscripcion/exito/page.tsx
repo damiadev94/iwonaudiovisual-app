@@ -16,8 +16,9 @@ function SuscripcionExitoContent() {
 
   // Efecto 1: Vincular la suscripción si viene el preapproval_id
   useEffect(() => {
-    console.log("[Exito] ID de suscripción detectado en URL:", preapproval_id);
+    console.log("[Exito] ID de suscripción detectado en URL:", preapprovalId);
     if (!preapprovalId || activated) return;
+
 
     async function linkSubscription() {
       try {
