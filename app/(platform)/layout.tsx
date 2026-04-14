@@ -63,7 +63,7 @@ export default async function PlatformLayout({
             <SubscribeButton />
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            Suscripción mensual de $1.000 ARS. Cancela cuando quieras.
+            Suscripción mensual de $14.999 ARS. Cancela cuando quieras.
           </p>
         </div>
       ) : (
