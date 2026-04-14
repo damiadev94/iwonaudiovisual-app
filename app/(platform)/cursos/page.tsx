@@ -1,82 +1,45 @@
-export const dynamic = "force-dynamic";
-
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
-import { CourseCard } from "@/components/platform/CourseCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Course } from "@/types";
+import { CourseExplorer } from "@/components/platform/CourseExplorer";
 
-const categories = [
-  { value: "all", label: "Todos" },
-  { value: "finanzas", label: "Finanzas" },
-  { value: "marketing", label: "Marketing" },
-  { value: "branding", label: "Branding" },
-  { value: "distribucion", label: "Distribución" },
-  { value: "legal", label: "Legal" },
-  { value: "estrategia", label: "Estrategia" },
-];
+export const dynamic = "force-dynamic";
 
 export default async function CursosPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("*")
-    .eq("is_published", true)
-    .order("sort_order", { ascending: true });
+  if (!user) {
+    redirect("/login");
+  }
 
-  const typedCourses = (courses || []) as Course[];
+  // Use Admin Client to fetch subscription status for the explorer
+  const adminClient = createAdminClient();
+  const { data: subscription } = await adminClient
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  const userProps = {
+    id: user.id,
+    subscriptionStatus: subscription?.status || "inactive",
+  };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Cursos</h1>
-        <p className="text-muted-foreground">Formación para impulsar tu carrera musical.</p>
+    <div className="h-full space-y-6">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+          Cursos y Formación
+        </h1>
+        <p className="text-muted-foreground">
+          Explora nuestro catálogo de contenido exclusivo y potencia tu carrera musical.
+        </p>
       </div>
 
-      <Tabs defaultValue="all">
-        <TabsList className="bg-iwon-card border border-iwon-border">
-          {categories.map((cat) => (
-            <TabsTrigger
-              key={cat.value}
-              value={cat.value}
-              className="data-[state=active]:bg-gold data-[state=active]:text-black"
-            >
-              {cat.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="all" className="mt-6">
-          {typedCourses.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">Próximamente: nuevos cursos disponibles.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {typedCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {categories.slice(1).map((cat) => (
-          <TabsContent key={cat.value} value={cat.value} className="mt-6">
-            {typedCourses.filter((c) => c.category === cat.value).length === 0 ? (
-              <p className="text-center text-muted-foreground py-12">No hay cursos de {cat.label} disponibles aún.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {typedCourses
-                  .filter((c) => c.category === cat.value)
-                  .map((course) => (
-                    <CourseCard key={course.id} course={course} />
-                  ))}
-              </div>
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+      <CourseExplorer user={userProps} />
     </div>
   );
 }

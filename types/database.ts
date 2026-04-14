@@ -49,7 +49,8 @@ export type Course = {
   slug: string;
   description: string | null;
   thumbnail_url: string | null;
-  category: "finanzas" | "marketing" | "branding" | "distribucion" | "legal" | "estrategia";
+  thumbnail_public_id: string | null;
+  category: "negocio" | "audiovisual" | "marketing" | "publicidad" | "estrategias";
   is_published: boolean;
   sort_order: number;
   created_at: string;
