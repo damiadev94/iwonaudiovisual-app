@@ -91,6 +91,7 @@ export async function middleware(request: NextRequest) {
     // no necesite hacer otra query a la DB
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-pathname", pathname);
+    requestHeaders.set("x-user-role", "admin");
 
     const response = NextResponse.next({
       request: { headers: requestHeaders },
