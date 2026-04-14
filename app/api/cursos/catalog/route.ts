@@ -29,29 +29,54 @@ export async function GET() {
       // If it doesn't have at least 'cursos/course/lesson', we skip it
       if (pathParts.length < 3) return;
 
-      const courseName = pathParts[1];
+      const courseSlug = pathParts[1];
       const lessonTitle = pathParts.slice(2).join(" / ").replace(/\//g, " - ");
       
-      if (!coursesMap[courseName]) {
-        coursesMap[courseName] = {
-          name: courseName.replace(/[-_]/g, " "),
-          slug: courseName,
+      // Look for release_date in contextual metadata
+      const releaseDate = resource.context?.custom?.release_date || null;
+
+      if (!coursesMap[courseSlug]) {
+        coursesMap[courseSlug] = {
+          name: courseSlug.replace(/[-_]/g, " "),
+          slug: courseSlug,
+          releaseDate: null,
+          isUpcoming: false,
           lessons: [],
         };
       }
 
-      coursesMap[courseName].lessons.push({
+      // If this resource has a release_date, track it for the course
+      if (releaseDate) {
+        // We keep the release date if it's the first one found or it's later? 
+        // Actually, usually it should be consistent per folder.
+        coursesMap[courseSlug].releaseDate = releaseDate;
+        
+        // Check if it's in the future
+        const now = new Date();
+        const releaseTime = new Date(releaseDate);
+        if (releaseTime > now) {
+          coursesMap[courseSlug].isUpcoming = true;
+        }
+      }
+
+      coursesMap[courseSlug].lessons.push({
         id: resource.public_id,
         title: resource.context?.custom?.caption || resource.context?.custom?.alt || lessonTitle,
         description: resource.context?.custom?.description || null,
         public_id: resource.public_id,
         duration: resource.duration || 0,
         thumbnail: resource.secure_url.replace(/\.[^/.]+$/, ".jpg"), // auto-thumb
+        releaseDate: releaseDate,
       });
     });
 
     // Convert map to array and return
     const catalog = Object.values(coursesMap);
+    
+    // Sort lessons within courses by ID
+    catalog.forEach((course: any) => {
+      course.lessons.sort((a: any, b: any) => a.id.localeCompare(b.id));
+    });
 
     return NextResponse.json(catalog);
   } catch (error: any) {

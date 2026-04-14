@@ -36,6 +36,28 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Validate if the content is already released
+    const resource = await cloudinary.api.resource(publicId, {
+      resource_type: "video",
+      context: true,
+    });
+
+    const releaseDate = resource.context?.custom?.release_date;
+    if (releaseDate) {
+      const now = new Date();
+      const releaseTime = new Date(releaseDate);
+      if (releaseTime > now) {
+        return NextResponse.json(
+          { 
+            error: "Este contenido aún no está disponible.", 
+            releaseDate,
+            message: "Regresa pronto para ver este estreno." 
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Generate a signed playback URL (or token)
     // Cloudinary video_url with sign_url: true and expires_at
     // TTL of 2 hours (7200 seconds)

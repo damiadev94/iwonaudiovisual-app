@@ -20,11 +20,14 @@ interface Lesson {
   public_id: string;
   duration: number;
   thumbnail: string;
+  releaseDate?: string | null;
 }
 
 interface Course {
   name: string;
   slug: string;
+  releaseDate: string | null;
+  isUpcoming: boolean;
   lessons: Lesson[];
 }
 
@@ -39,15 +42,22 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Consider admins as active regardless of subscription
-  const isAdmin = false; // We could get this from props if needed, but layout handles it.
   const isActive = user.subscriptionStatus === "active";
 
   useEffect(() => {
     fetchCatalog();
+    
+    // Timer for countdowns
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    
+    return () => clearInterval(timer);
   }, []);
 
   async function fetchCatalog() {
@@ -56,9 +66,12 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
       if (!res.ok) throw new Error("Error al cargar el catálogo");
       const data = await res.json();
       setCourses(data);
-
-      if (data.length > 0 && data[0].lessons.length > 0) {
-        handleSelectLesson(data[0].lessons[0]);
+      
+      if (data.length > 0) {
+        setSelectedCourse(data[0]);
+        if (data[0].lessons.length > 0 && !data[0].isUpcoming) {
+          handleSelectLesson(data[0].lessons[0], data[0]);
+        }
       }
     } catch (error) {
       toast.error("No se pudo cargar el catálogo de cursos.");
@@ -67,20 +80,25 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
     }
   }
 
-  async function handleSelectLesson(lesson: Lesson) {
+  async function handleSelectLesson(lesson: Lesson, course: Course) {
+    setSelectedCourse(course);
     setSelectedLesson(lesson);
     setVideoUrl(null);
-
+    
+    if (course.isUpcoming) return;
     if (!isActive) return;
 
     setVideoLoading(true);
     try {
       const res = await fetch(`/api/cursos/video-token?publicId=${encodeURIComponent(lesson.public_id)}`);
-      if (!res.ok) throw new Error("Error al obtener acceso al video");
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Error al obtener acceso al video");
+      }
       const { url } = await res.json();
       setVideoUrl(url);
-    } catch (error) {
-      toast.error("No se pudo cargar el video.");
+    } catch (error: any) {
+      toast.error(error.message || "No se pudo cargar el video.");
     } finally {
       setVideoLoading(false);
     }
@@ -104,33 +122,65 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
           <Accordion type="single" collapsible className="space-y-1">
             {courses.map((course, idx) => (
               <AccordionItem key={course.slug} value={course.slug} className="border-none">
-                <AccordionTrigger className="px-3 py-2.5 hover:bg-white/5 rounded-xl transition-all hover:no-underline group data-[state=open]:bg-white/5">
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="bg-gold/10 p-2 rounded-lg text-gold shrink-0 group-hover:bg-gold group-hover:text-black transition-colors">
+                <AccordionTrigger 
+                  className={`px-3 py-2.5 hover:bg-white/5 rounded-xl transition-all hover:no-underline group data-[state=open]:bg-white/5 relative overflow-hidden ${
+                    course.isUpcoming ? "opacity-90 grayscale-[0.5] hover:grayscale-0" : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedCourse(course);
+                    if (course.isUpcoming) setSelectedLesson(null);
+                  }}
+                >
+                  <div className="flex items-center gap-3 text-left w-full">
+                    <div className={`p-2 rounded-lg shrink-0 transition-colors ${
+                      course.isUpcoming 
+                        ? "bg-muted text-muted-foreground" 
+                        : "bg-gold/10 text-gold group-hover:bg-gold group-hover:text-black"
+                    }`}>
                       <span className="text-xs font-bold">{idx + 1}</span>
                     </div>
-                    <span className="text-sm font-semibold truncate text-white/90">{course.name}</span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-sm font-semibold truncate text-white/90">{course.name}</span>
+                      {course.isUpcoming && (
+                        <span className="text-[10px] text-gold font-bold uppercase tracking-widest mt-0.5">
+                          Próximamente
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  {course.isUpcoming && (
+                    <div className="absolute inset-0 bg-gold/5 pointer-events-none border-l-2 border-gold/30"></div>
+                  )}
                 </AccordionTrigger>
                 <AccordionContent className="pt-1 pb-2">
                   <div className="space-y-1 pl-4 pr-1">
-                    {course.lessons.map((lesson) => (
-                      <button
-                        key={lesson.id}
-                        onClick={() => handleSelectLesson(lesson)}
-                        className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center gap-3 group relative overflow-hidden ${selectedLesson?.id === lesson.id
-                          ? "bg-gold text-black font-bold shadow-[0_4px_15px_rgba(212,175,55,0.3)]"
-                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                    {course.lessons.map((lesson) => {
+                      const isLocked = course.isUpcoming;
+                      return (
+                        <button
+                          key={lesson.id}
+                          onClick={() => handleSelectLesson(lesson, course)}
+                          disabled={isLocked}
+                          className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center gap-3 group relative overflow-hidden ${
+                            selectedLesson?.id === lesson.id 
+                              ? "bg-gold text-black font-bold shadow-[0_4px_15px_rgba(212,175,55,0.3)]" 
+                              : isLocked 
+                                ? "text-muted-foreground/30 border border-white/5 cursor-not-allowed"
+                                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                           }`}
-                      >
-                        {isActive ? (
-                          <PlayCircle className={`h-4 w-4 shrink-0 ${selectedLesson?.id === lesson.id ? "text-black" : "text-gold group-hover:scale-110 transition-transform"}`} />
-                        ) : (
-                          <Lock className="h-4 w-4 shrink-0 text-muted-foreground/30" />
-                        )}
-                        <span className="truncate flex-1">{lesson.title}</span>
-                      </button>
-                    ))}
+                        >
+                          {isLocked ? (
+                            <Info className="h-4 w-4 shrink-0 opacity-50" />
+                          ) : isActive ? (
+                            <PlayCircle className={`h-4 w-4 shrink-0 ${selectedLesson?.id === lesson.id ? "text-black" : "text-gold group-hover:scale-110 transition-transform"}`} />
+                          ) : (
+                            <Lock className="h-4 w-4 shrink-0 text-muted-foreground/30" />
+                          )}
+                          <span className="truncate flex-1">{lesson.title}</span>
+                          {isLocked && <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -141,8 +191,29 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
 
       {/* Main Area - Video Player */}
       <div className="flex-1 flex flex-col gap-6">
-        <div className="aspect-video relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-iwon-border ring-1 ring-white/10">
-          {isActive ? (
+        <div className={`aspect-video relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-iwon-border ring-1 ring-white/10 ${
+          selectedCourse?.isUpcoming ? "ring-gold/30" : ""
+        }`}>
+          {selectedCourse?.isUpcoming ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-iwon-bg/95 via-black to-iwon-bg z-30 overflow-hidden">
+               {/* Animated Background effects */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[120px] animate-pulse"></div>
+               
+               <Badge className="mb-6 bg-gold/10 text-gold border-gold/30 px-4 py-1.5 text-sm uppercase font-black tracking-widest animate-bounce">
+                 Estreno Exclusivo
+               </Badge>
+               
+               <h3 className="text-4xl md:text-5xl font-black mb-8 tracking-tighter text-white">
+                 {selectedCourse.name}
+               </h3>
+               
+               <Countdown targetDate={selectedCourse.releaseDate} currentTime={currentTime} />
+               
+               <p className="text-muted-foreground max-w-sm mx-auto mt-10 text-lg leading-relaxed font-light italic">
+                 "La excelencia requiere preparación. Estamos puliendo los últimos detalles de esta clase magistral."
+               </p>
+            </div>
+          ) : isActive ? (
             <>
               {videoLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-iwon-bg/50 backdrop-blur-md z-20">
@@ -200,7 +271,7 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
                 <>
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge className="text-[10px] uppercase font-bold tracking-[0.2em] border-gold/30 text-gold bg-gold/10 px-3 py-1">
-                      En Curso
+                      {selectedCourse?.isUpcoming ? "Próximo Lanzamiento" : "En Curso"}
                     </Badge>
                     {selectedLesson.duration > 0 && (
                       <Badge variant="outline" className="text-[10px] font-medium border-white/10 text-muted-foreground flex items-center gap-1.5 px-3 py-1">
@@ -213,6 +284,17 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
                     {selectedLesson.title}
                   </h1>
                 </>
+              ) : selectedCourse ? (
+                <>
+                   <div className="flex flex-wrap items-center gap-3">
+                    <Badge className="text-[10px] uppercase font-bold tracking-[0.2em] border-gold/30 text-gold bg-gold/10 px-3 py-1">
+                      Información del Curso
+                    </Badge>
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-black text-white tracking-tighter">
+                    {selectedCourse.name}
+                  </h1>
+                </>
               ) : (
                 <div className="space-y-3">
                   <Skeleton className="h-6 w-24 bg-white/5" />
@@ -220,22 +302,60 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
                 </div>
               )}
             </div>
-
-            {isActive && (
+            
+            {isActive && !selectedCourse?.isUpcoming && (
               <Button variant="outline" size="lg" className="bg-white/5 border-white/10 hover:bg-gold hover:text-black transition-all group shrink-0 rounded-xl h-12 px-6">
                 <FileText className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
                 Material Extra
               </Button>
             )}
           </div>
-
+          
           <div className="prose prose-invert max-w-none relative z-10">
             <p className="text-muted-foreground text-lg leading-relaxed font-light italic">
-              {selectedLesson?.description || "Inicia tu camino hacia la excelencia audiovisual con esta clase magistral. Descubre técnicas avanzadas y optimiza tu proceso de trabajo con los mejores consejos de la industria."}
+              {selectedLesson?.description || 
+               `Explora los secretos de ${selectedCourse?.name || "nuestros cursos"} con esta formación de nivel profesional. Diseñada para transformar tu carrera.`}
             </p>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Countdown({ targetDate, currentTime }: { targetDate: string | null; currentTime: Date }) {
+  if (!targetDate) return null;
+  
+  const target = new Date(targetDate);
+  const diff = target.getTime() - currentTime.getTime();
+  
+  if (diff <= 0) return <div className="text-gold font-bold text-2xl animate-pulse">¡YA DISPONIBLE!</div>;
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  return (
+    <div className="grid grid-cols-4 gap-4 md:gap-8">
+      {[
+        { label: "Días", val: days },
+        { label: "Horas", val: hours },
+        { label: "Mins", val: minutes },
+        { label: "Segs", val: seconds }
+      ].map((item, i) => (
+        <div key={i} className="flex flex-col items-center">
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 w-16 h-16 md:w-24 md:h-24 rounded-2xl flex items-center justify-center mb-2 shadow-2xl relative group overflow-hidden">
+            <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <span className="text-2xl md:text-5xl font-black text-gold tabular-nums z-10">
+              {item.val.toString().padStart(2, "0")}
+            </span>
+          </div>
+          <span className="text-[10px] md:text-xs uppercase font-bold tracking-widest text-muted-foreground">
+            {item.label}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
