@@ -23,7 +23,7 @@ export function StatsCards({
       format: (v: number) => v.toString(),
     },
     {
-      label: "Revenue mensual",
+      label: "Ingresos mensuales",
       value: monthlyRevenue,
       icon: CreditCard,
       color: "text-iwon-success",

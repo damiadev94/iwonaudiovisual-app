@@ -56,7 +56,7 @@ export default function SorteosPage() {
       }
 
       setEntries([...entries, raffleId]);
-      toast.success("Ya estas participando en el sorteo!");
+      toast.success("¡Ya estás participando en el sorteo!");
     } catch {
       toast.error("Error al participar");
     } finally {
@@ -77,7 +77,7 @@ export default function SorteosPage() {
       <div>
         <h1 className="text-2xl font-bold">Sorteos</h1>
         <p className="text-muted-foreground">
-          Participa en sorteos exclusivos para suscriptores y gana premios increibles.
+          Participá en sorteos exclusivos para suscriptores y ganá premios increíbles.
         </p>
       </div>
 
@@ -86,7 +86,7 @@ export default function SorteosPage() {
           <CardContent className="py-12 text-center">
             <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-semibold mb-2">No hay sorteos activos</h3>
-            <p className="text-muted-foreground">Proximamente nuevos sorteos exclusivos.</p>
+            <p className="text-muted-foreground">Próximamente nuevos sorteos exclusivos.</p>
           </CardContent>
         </Card>
       ) : (
@@ -156,7 +156,7 @@ export default function SorteosPage() {
                   {hasEntered && (
                     <div className="flex items-center gap-2 text-iwon-success text-sm">
                       <CheckCircle className="h-4 w-4" />
-                      Ya estas participando
+                      Ya estás participando
                     </div>
                   )}
                 </CardContent>

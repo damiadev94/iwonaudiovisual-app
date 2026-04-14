@@ -18,7 +18,7 @@ export function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             <a href="#como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Como funciona
+              Cómo funciona
             </a>
             <a href="#beneficios" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Beneficios
@@ -33,7 +33,7 @@ export function Navbar() {
               FAQ
             </a>
             <Link href="/login">
-              <Button variant="ghost" size="sm">Iniciar sesion</Button>
+              <Button variant="ghost" size="sm">Iniciar sesión</Button>
             </Link>
             <Link href="/register">
               <Button size="sm" className="bg-gold hover:bg-gold-light text-black font-semibold">
@@ -55,7 +55,7 @@ export function Navbar() {
         {isOpen && (
           <div className="md:hidden pb-4 space-y-3">
             <a href="#como-funciona" className="block text-sm text-muted-foreground hover:text-foreground" onClick={() => setIsOpen(false)}>
-              Como funciona
+              Cómo funciona
             </a>
             <a href="#beneficios" className="block text-sm text-muted-foreground hover:text-foreground" onClick={() => setIsOpen(false)}>
               Beneficios
@@ -71,7 +71,7 @@ export function Navbar() {
             </a>
             <div className="flex gap-2 pt-2">
               <Link href="/login">
-                <Button variant="ghost" size="sm">Iniciar sesion</Button>
+                <Button variant="ghost" size="sm">Iniciar sesión</Button>
               </Link>
               <Link href="/register">
                 <Button size="sm" className="bg-gold hover:bg-gold-light text-black font-semibold">

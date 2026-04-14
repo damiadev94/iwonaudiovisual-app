@@ -151,8 +151,8 @@ export function SubscriberTable({
           <TableHeader>
             <TableRow className="border-iwon-border bg-iwon-bg-secondary">
               <TableHead>Usuario</TableHead>
-              <TableHead>Nombre artistico</TableHead>
-              <TableHead>Suscripcion</TableHead>
+              <TableHead>Nombre artístico</TableHead>
+              <TableHead>Suscripción</TableHead>
               <TableHead>Rol</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Registro</TableHead>
@@ -203,7 +203,7 @@ export function SubscriberTable({
                         </Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">
-                          Sin suscripcion
+                          Sin suscripción
                         </span>
                       )}
                     </TableCell>

@@ -7,7 +7,7 @@ const categoryLabels: Record<string, string> = {
   finanzas: "Finanzas",
   marketing: "Marketing",
   branding: "Branding",
-  distribucion: "Distribucion",
+  distribucion: "Distribución",
   legal: "Legal",
   estrategia: "Estrategia",
 };

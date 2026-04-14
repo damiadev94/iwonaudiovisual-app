@@ -9,14 +9,14 @@ export function Footer() {
             <Logo />
             <p className="mt-4 text-sm text-muted-foreground max-w-md">
               Plataforma de impulso para artistas independientes en Argentina.
-              Produccion real con equipamiento de cine.
+              Producción real con equipamiento de cine.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold text-sm mb-4">Plataforma</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a></li>
+              <li><a href="#como-funciona" className="hover:text-foreground transition-colors">Cómo funciona</a></li>
               <li><a href="#beneficios" className="hover:text-foreground transition-colors">Beneficios</a></li>
               <li><a href="#pricing" className="hover:text-foreground transition-colors">Precio</a></li>
               <li><a href="#faq" className="hover:text-foreground transition-colors">Preguntas frecuentes</a></li>

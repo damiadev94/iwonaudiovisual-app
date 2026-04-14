@@ -22,7 +22,7 @@ function LoginContent() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/callback`,
+        redirectTo: `${origin}/callback`,
       },
     });
     if (error) toast.error("Error al iniciar sesión con Google");

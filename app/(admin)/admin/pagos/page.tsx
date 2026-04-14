@@ -62,7 +62,7 @@ export default async function PagosPage() {
                 <TableHead>Usuario</TableHead>
                 <TableHead>Monto</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Metodo</TableHead>
+                <TableHead>Método</TableHead>
                 <TableHead>ID MP</TableHead>
                 <TableHead>Fecha</TableHead>
               </TableRow>

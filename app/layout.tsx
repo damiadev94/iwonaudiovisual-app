@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "trap",
     "rap",
     "Argentina",
-    "filmacion",
+    "filmación",
   ],
 };
 

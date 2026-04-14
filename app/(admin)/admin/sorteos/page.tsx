@@ -104,7 +104,7 @@ export default function SorteosAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Sorteos</h1>
-          <p className="text-muted-foreground">Crea y gestiona sorteos para suscriptores.</p>
+          <p className="text-muted-foreground">Creá y gestioná sorteos para suscriptores.</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button className="bg-gold hover:bg-gold-light text-black font-semibold" />}>
@@ -117,11 +117,11 @@ export default function SorteosAdminPage() {
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-2">
-                <Label>Titulo</Label>
+                <Label>Título</Label>
                 <Input name="title" required className="bg-iwon-bg border-iwon-border" />
               </div>
               <div className="space-y-2">
-                <Label>Descripcion</Label>
+                <Label>Descripción</Label>
                 <Textarea name="description" className="bg-iwon-bg border-iwon-border" />
               </div>
               <div className="space-y-2">

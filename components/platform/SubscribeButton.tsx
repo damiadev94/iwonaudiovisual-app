@@ -38,7 +38,7 @@ export function SubscribeButton() {
 
       toast.error("No se pudo obtener el link de pago.");
     } catch {
-      toast.error("Error de conexion. Intenta de nuevo.");
+      toast.error("Error de conexión. Intentá de nuevo.");
     } finally {
       setLoading(false);
     }

@@ -35,15 +35,15 @@ export default function AplicarSeleccionPage() {
       const result = await res.json();
 
       if (!res.ok) {
-        toast.error(result.error || "Error al enviar la aplicacion");
+        toast.error(result.error || "Error al enviar la aplicación");
         setLoading(false);
         return;
       }
 
-      toast.success("Aplicacion enviada exitosamente");
+      toast.success("Aplicación enviada con éxito");
       router.push("/seleccion");
     } catch {
-      toast.error("Error al enviar la aplicacion");
+      toast.error("Error al enviar la aplicación");
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export default function AplicarSeleccionPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-gold" />
-            Aplicar a la Seleccion
+            Aplicar a la Selección
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -71,16 +71,16 @@ export default function AplicarSeleccionPage() {
                 className="bg-iwon-bg border-iwon-border"
               />
               <p className="text-xs text-muted-foreground">
-                Subi tu material a Google Drive, Soundcloud, YouTube o cualquier plataforma accesible.
+                Subí tu material a Google Drive, Soundcloud, YouTube o cualquier plataforma accesible.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="demo_description">Descripcion de tu proyecto</Label>
+              <Label htmlFor="demo_description">Descripción de tu proyecto</Label>
               <Textarea
                 id="demo_description"
                 name="demo_description"
-                placeholder="Conta sobre tu proyecto, tu estilo, que te inspira..."
+                placeholder="Contá sobre tu proyecto, tu estilo, qué te inspira..."
                 required
                 minLength={10}
                 maxLength={500}
@@ -107,7 +107,7 @@ export default function AplicarSeleccionPage() {
               className="w-full bg-gold hover:bg-gold-light text-black font-semibold"
               disabled={loading}
             >
-              {loading ? "Enviando..." : "Enviar aplicacion"}
+              {loading ? "Enviando..." : "Enviar aplicación"}
             </Button>
           </form>
         </CardContent>

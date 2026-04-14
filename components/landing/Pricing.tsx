@@ -5,10 +5,10 @@ import { CheckCircle, ArrowRight } from "lucide-react";
 const features = [
   "Acceso a SER SELECCIONADO",
   "Acceso a SORTEOS EXCLUSIVOS",
-  "Acceso a Promociones de Filmacion",
-  "Acceso a CONTENIDO y FORMACION",
-  "Soporte de el equipo iwon",
-  "Cancela cuando quieras",
+  "Acceso a Promociones de Filmación",
+  "Acceso a CONTENIDO y FORMACIÓN",
+  "Soporte del equipo Iwon",
+  "Cancelá cuando quieras",
 ];
 
 export function Pricing() {
@@ -33,7 +33,7 @@ export function Pricing() {
             <div className="relative">
               {/* Badge */}
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-semibold mb-6">
-                Plan unico
+                Plan único
               </div>
 
               {/* Price */}

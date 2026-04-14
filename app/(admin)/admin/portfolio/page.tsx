@@ -71,7 +71,7 @@ export default function PortfolioAdminPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!imageFile) {
-      toast.error("Selecciona una imagen de portada");
+      toast.error("Seleccioná una imagen de portada");
       return;
     }
     setUploading(true);
@@ -88,7 +88,7 @@ export default function PortfolioAdminPage() {
     if (!res.ok) {
       toast.error(json.error || "Error al subir");
     } else {
-      toast.success("Item agregado al portfolio");
+      toast.success("Ítem agregado al portfolio");
       formRef.current?.reset();
       setImageFile(null);
       if (preview) URL.revokeObjectURL(preview);
@@ -115,7 +115,7 @@ export default function PortfolioAdminPage() {
     if (!res.ok) {
       toast.error(json.error || "Error al actualizar");
     } else {
-      toast.success("Item actualizado");
+      toast.success("Ítem actualizado");
       closeEdit();
       fetchItems();
     }
@@ -131,7 +131,7 @@ export default function PortfolioAdminPage() {
     if (!res.ok) {
       toast.error(json.error || "Error al eliminar");
     } else {
-      toast.success("Item eliminado");
+      toast.success("Ítem eliminado");
       fetchItems();
     }
   }
@@ -153,7 +153,7 @@ export default function PortfolioAdminPage() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Plus className="h-5 w-5 text-gold" />
-            Agregar item
+            Agregar ítem
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -220,14 +220,14 @@ export default function PortfolioAdminPage() {
       {/* Items list */}
       <div>
         <h2 className="text-lg font-semibold mb-4">
-          Items publicados ({items.length})
+          Ítems publicados ({items.length})
         </h2>
 
         {loading ? (
           <div className="animate-pulse text-muted-foreground text-sm">Cargando...</div>
         ) : items.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-12">
-            No hay items en el portfolio. Agrega el primero arriba.
+            No hay ítems en el portfolio. Agregá el primero arriba.
           </p>
         ) : (
           <div className="space-y-3">
@@ -292,7 +292,7 @@ export default function PortfolioAdminPage() {
       <Dialog open={!!editItem} onOpenChange={(open) => { if (!open) closeEdit(); }}>
         <DialogContent className="bg-iwon-card border-iwon-border sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Editar item</DialogTitle>
+            <DialogTitle>Editar ítem</DialogTitle>
           </DialogHeader>
 
           {editItem && (

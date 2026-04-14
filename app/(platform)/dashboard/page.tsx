@@ -37,7 +37,7 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold">
           Hola, {profile?.artist_name || profile?.full_name || "Artista"}
         </h1>
-        <p className="text-muted-foreground">Bienvenido a tu plataforma de impulso artistico.</p>
+        <p className="text-muted-foreground">Bienvenido a tu plataforma de impulso artístico.</p>
       </div>
 
       {/* Subscription status */}
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Crown className="h-5 w-5 text-gold" />
             <div>
-              <p className="font-medium">Suscripcion activa</p>
+              <p className="font-medium">Suscripción activa</p>
               <p className="text-sm text-muted-foreground">Plan Iwon - $14.999/mes</p>
             </div>
           </div>
@@ -57,9 +57,9 @@ export default async function DashboardPage() {
       {/* Quick access grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { href: "/cursos", icon: BookOpen, title: "Cursos", desc: "Formacion continua", color: "text-purple-400" },
-          { href: "/seleccion", icon: Users, title: "Seleccion", desc: 'Aplica a "Los 50"', color: "text-gold" },
-          { href: "/promos", icon: Film, title: "Promos", desc: "Filmacion accesible", color: "text-blue-400" },
+          { href: "/cursos", icon: BookOpen, title: "Cursos", desc: "Formación continua", color: "text-purple-400" },
+          { href: "/seleccion", icon: Users, title: "Selección", desc: 'Aplicá a "Los 50"', color: "text-gold" },
+          { href: "/promos", icon: Film, title: "Promos", desc: "Filmación accesible", color: "text-blue-400" },
           { href: "/sorteos", icon: Gift, title: "Sorteos", desc: "Premios exclusivos", color: "text-iwon-success" },
         ].map((item) => (
           <Link key={item.href} href={item.href}>
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4 text-sm text-muted-foreground">
-              <p>Aun no hay actividad reciente. Explora los cursos o participa en un sorteo para comenzar.</p>
+              <p>Aún no hay actividad reciente. Explorá los cursos o participá en un sorteo para empezar.</p>
             </div>
           </CardContent>
         </Card>

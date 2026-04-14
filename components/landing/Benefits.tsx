@@ -3,20 +3,20 @@ import { BookOpen, Film, Trophy, Star, CheckCircle } from "lucide-react";
 const benefits = [
   {
     icon: BookOpen,
-    title: "Cursos de formacion",
-    description: "Accede a ser elegido, sorteos, promociones, contenido y formación desde el dia 1.",
-    features: ["Negocio Musical", "Marca y Publicidad", "Lanzamientos y Campañas", "Estetica e Industria"],
+    title: "Cursos de formación",
+    description: "Accedé a ser elegida/o, sorteos, promociones, contenido y formación desde el día 1.",
+    features: ["Negocio Musical", "Marca y Publicidad", "Lanzamientos y Campañas", "Estética e Industria"],
   },
   {
     icon: Film,
-    title: "Promos de filmacion",
-    description: "Reserva tu videoclip por un precio que solo esta disponible para SUSCRIPTORES.",
+    title: "Promos de filmación",
+    description: "Reservá tu videoclip por un precio que solo está disponible para SUSCRIPTORES.",
     features: ["Cupos limitados mes a mes", "One shots", "Videoclips", "Descuentos"],
   },
   {
     icon: Trophy,
     title: "Sorteos exclusivos",
-    description: "Participa en sorteos mensuales de videoclips, EP O DISCO completo.",
+    description: "Participá en sorteos mensuales de videoclips, EP O DISCO completo.",
     features: ["Sorteos mensuales", "Videoclips gratis", "EP o Disco completo"],
   },
   {
@@ -33,7 +33,7 @@ export function Benefits() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Beneficios desde el <span className="text-gold">dia 1</span>
+            Beneficios desde el <span className="text-gold">día 1</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             No es solo una suscripción. Es una plataforma de impulso artístico con producciones reales.

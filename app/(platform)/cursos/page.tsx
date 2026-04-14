@@ -11,7 +11,7 @@ const categories = [
   { value: "finanzas", label: "Finanzas" },
   { value: "marketing", label: "Marketing" },
   { value: "branding", label: "Branding" },
-  { value: "distribucion", label: "Distribucion" },
+  { value: "distribucion", label: "Distribución" },
   { value: "legal", label: "Legal" },
   { value: "estrategia", label: "Estrategia" },
 ];
@@ -33,7 +33,7 @@ export default async function CursosPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Cursos</h1>
-        <p className="text-muted-foreground">Formacion para impulsar tu carrera musical.</p>
+        <p className="text-muted-foreground">Formación para impulsar tu carrera musical.</p>
       </div>
 
       <Tabs defaultValue="all">
@@ -51,7 +51,7 @@ export default async function CursosPage() {
 
         <TabsContent value="all" className="mt-6">
           {typedCourses.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">Proximamente: nuevos cursos disponibles.</p>
+            <p className="text-center text-muted-foreground py-12">Próximamente: nuevos cursos disponibles.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {typedCourses.map((course) => (
@@ -64,7 +64,7 @@ export default async function CursosPage() {
         {categories.slice(1).map((cat) => (
           <TabsContent key={cat.value} value={cat.value} className="mt-6">
             {typedCourses.filter((c) => c.category === cat.value).length === 0 ? (
-              <p className="text-center text-muted-foreground py-12">No hay cursos de {cat.label} disponibles aun.</p>
+              <p className="text-center text-muted-foreground py-12">No hay cursos de {cat.label} disponibles aún.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {typedCourses

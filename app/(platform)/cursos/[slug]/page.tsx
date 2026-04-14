@@ -52,7 +52,7 @@ export default async function CourseDetailPage({
     finanzas: "Finanzas",
     marketing: "Marketing",
     branding: "Branding",
-    distribucion: "Distribucion",
+    distribucion: "Distribución",
     legal: "Legal",
     estrategia: "Estrategia",
   };

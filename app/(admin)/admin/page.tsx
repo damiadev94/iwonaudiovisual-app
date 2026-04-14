@@ -40,7 +40,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Vision general de Iwon Audiovisual.</p>
+        <p className="text-muted-foreground">Visión general de Iwon Audiovisual.</p>
       </div>
 
       <StatsCards
@@ -69,7 +69,7 @@ export default async function AdminDashboardPage() {
                 </div>
               ))}
               {(!recentProfiles || recentProfiles.length === 0) && (
-                <p className="text-sm text-muted-foreground">No hay registros aun.</p>
+                <p className="text-sm text-muted-foreground">No hay registros aún.</p>
               )}
             </div>
           </CardContent>
@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total usuarios</span>
+                <span className="text-sm text-muted-foreground">Total de usuarios</span>
                 <span className="font-mono font-bold">{totalProfiles || 0}</span>
               </div>
               <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ export default async function AdminDashboardPage() {
                 <span className="font-mono font-bold text-iwon-success">{activeSubscribers || 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Revenue este mes</span>
+                <span className="text-sm text-muted-foreground">Ingresos este mes</span>
                 <span className="font-mono font-bold text-gold">${monthlyRevenue.toLocaleString("es-AR")}</span>
               </div>
             </div>

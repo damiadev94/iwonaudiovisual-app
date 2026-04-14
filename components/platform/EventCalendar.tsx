@@ -3,20 +3,20 @@ import { Calendar, Users, Gift, Film, BookOpen } from "lucide-react";
 const events = [
   {
     icon: Users,
-    title: "Seleccion - Los 50",
-    description: "Convocatoria abierta para la proxima oleada",
+    title: "Selección - Los 50",
+    description: "Convocatoria abierta para la próxima oleada",
     color: "text-gold",
   },
   {
     icon: Gift,
     title: "Sorteos mensuales",
-    description: "Participa por premios exclusivos",
+    description: "Participá por premios exclusivos",
     color: "text-iwon-success",
   },
   {
     icon: Film,
-    title: "Promos de filmacion",
-    description: "Reserva tu sesion a precio reducido",
+    title: "Promos de filmación",
+    description: "Reservá tu sesión a precio reducido",
     color: "text-blue-400",
   },
   {

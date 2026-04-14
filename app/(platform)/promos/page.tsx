@@ -29,9 +29,9 @@ export default async function PromosPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Promos de filmacion</h1>
+        <h1 className="text-2xl font-bold">Promos de filmación</h1>
         <p className="text-muted-foreground">
-          Reserva tu sesion de filmacion a precios exclusivos para suscriptores.
+          Reservá tu sesión de filmación a precios exclusivos para suscriptores.
         </p>
       </div>
 
@@ -82,7 +82,7 @@ export default async function PromosPage() {
                       <p className="text-2xl font-bold font-mono text-gold">
                         ${promo.price.toLocaleString("es-AR")}
                       </p>
-                      <p className="text-xs text-muted-foreground">Pago unico</p>
+                      <p className="text-xs text-muted-foreground">Pago único</p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-center gap-1 text-sm">

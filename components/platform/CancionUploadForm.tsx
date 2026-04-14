@@ -17,11 +17,11 @@ const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   pending: {
-    label: "Pendiente de revision",
+    label: "Pendiente de revisión",
     className: "bg-iwon-warning/10 text-iwon-warning border-iwon-warning/20",
   },
   reviewing: {
-    label: "En revision",
+    label: "En revisión",
     className: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   },
   selected: {
@@ -71,7 +71,7 @@ export function CancionUploadForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file || !songTitle || !genre) {
-      toast.error("Por favor completa todos los campos requeridos");
+      toast.error("Por favor completá todos los campos requeridos");
       return;
     }
 
@@ -112,15 +112,15 @@ export function CancionUploadForm({
         // Limpiar el archivo si falla el registro en DB
         await supabase.storage.from("canciones").remove([filePath]);
         const err = await res.json();
-        toast.error(err.error || "Error al registrar la cancion");
+        toast.error(err.error || "Error al registrar la canción");
         return;
       }
 
       const { data } = await res.json();
       setSubmission(data as SongSubmission);
-      toast.success("Cancion enviada con exito");
+      toast.success("Canción enviada con éxito");
     } catch {
-      toast.error("Error inesperado. Intenta de nuevo.");
+      toast.error("Error inesperado. Intentá de nuevo.");
     } finally {
       setUploading(false);
     }
@@ -135,9 +135,9 @@ export function CancionUploadForm({
           <div className="flex items-center gap-3">
             <CheckCircle className="h-8 w-8 text-iwon-success shrink-0" />
             <div>
-              <h2 className="font-semibold">Cancion enviada</h2>
+              <h2 className="font-semibold">Canción enviada</h2>
               <p className="text-sm text-muted-foreground">
-                Nuestro equipo la revisara y te notificaremos el resultado.
+                Nuestro equipo la revisará y te notificaremos el resultado.
               </p>
             </div>
           </div>
@@ -235,16 +235,16 @@ export function CancionUploadForm({
                   {(file.size / 1024 / 1024).toFixed(1)} MB
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Click para cambiar el archivo
+                  Hacé clic para cambiar el archivo
                 </p>
               </div>
             ) : (
               <div className="space-y-3">
                 <Upload className="h-10 w-10 text-muted-foreground mx-auto" />
                 <div>
-                  <p className="font-medium">Selecciona tu cancion</p>
+                  <p className="font-medium">Seleccioná tu canción</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    MP3 o WAV · Maximo 50MB
+                    MP3 o WAV · Máximo 50MB
                   </p>
                 </div>
               </div>
@@ -258,7 +258,7 @@ export function CancionUploadForm({
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Contanos sobre tu cancion, el genero, tus referencias..."
+              placeholder="Contanos sobre tu canción, el género, tus referencias..."
               className="bg-iwon-bg border-iwon-border resize-none"
               rows={3}
             />
@@ -269,7 +269,7 @@ export function CancionUploadForm({
             disabled={!file || uploading}
             className="w-full bg-gold hover:bg-gold-light text-black font-semibold"
           >
-            {uploading ? "Subiendo..." : "Enviar cancion"}
+            {uploading ? "Subiendo..." : "Enviar canción"}
           </Button>
         </form>
       </CardContent>

@@ -79,7 +79,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-iwon-card w-full transition-colors"
         >
           <LogOut size={18} />
-          Cerrar sesion
+          Cerrar sesión
         </button>
       </div>
     </div>

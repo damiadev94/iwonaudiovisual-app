@@ -18,7 +18,7 @@ export default async function SuscriptoresPage() {
       <div>
         <h1 className="text-2xl font-bold">Suscriptores</h1>
         <p className="text-muted-foreground">
-          Gestion de usuarios registrados en la plataforma.
+          Gestión de usuarios registrados en la plataforma.
         </p>
       </div>
 

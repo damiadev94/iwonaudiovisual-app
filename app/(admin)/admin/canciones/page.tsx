@@ -19,7 +19,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     className: "bg-iwon-warning/10 text-iwon-warning border-iwon-warning/20",
   },
   reviewing: {
-    label: "En revision",
+    label: "En revisión",
     className: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   },
   selected: {
@@ -81,7 +81,7 @@ export default function CancionesAdminPage() {
       <div>
         <h1 className="text-2xl font-bold">Canciones</h1>
         <p className="text-muted-foreground">
-          Demos enviados por los suscriptores para evaluacion.
+          Demos enviados por los suscriptores para evaluación.
         </p>
       </div>
 
@@ -90,7 +90,7 @@ export default function CancionesAdminPage() {
           <CardContent className="py-12 text-center">
             <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              No hay canciones enviadas todavia.
+              No hay canciones enviadas todavía.
             </p>
           </CardContent>
         </Card>

@@ -10,7 +10,7 @@ export function CTA() {
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6">
-          Tu musica merece ser vista.{" "}
+          Tu música merece ser vista.{" "}
           <span className="text-gold">Nosotros la filmamos.</span>
         </h2>
         <Link href="/register">
@@ -21,7 +21,7 @@ export function CTA() {
         </Link>
 
         <p className="mt-4 text-sm text-muted-foreground">
-          Cancela cuando quieras.
+          Cancelá cuando quieras.
         </p>
       </div>
     </section>

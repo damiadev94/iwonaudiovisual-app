@@ -21,9 +21,9 @@ interface ApplicationWithProfile extends SelectionApplication {
 const statusLabels: Record<string, string> = {
   draft: "Borrador",
   open: "Abierta",
-  reviewing: "En revision",
+  reviewing: "En revisión",
   announced: "Anunciada",
-  in_production: "En produccion",
+  in_production: "En producción",
   completed: "Completada",
 };
 
@@ -122,7 +122,7 @@ export default function SeleccionesAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Selecciones</h1>
-          <p className="text-muted-foreground">Gestion de oleadas &quot;Los 50&quot;.</p>
+          <p className="text-muted-foreground">Gestión de oleadas &quot;Los 50&quot;.</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button className="bg-gold hover:bg-gold-light text-black font-semibold" />}>
@@ -135,15 +135,15 @@ export default function SeleccionesAdminPage() {
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-2">
-                <Label>Titulo</Label>
+                <Label>Título</Label>
                 <Input name="title" required className="bg-iwon-bg border-iwon-border" placeholder="Ej: Oleada 1 - Abril 2026" />
               </div>
               <div className="space-y-2">
-                <Label>Descripcion</Label>
+                <Label>Descripción</Label>
                 <Textarea name="description" className="bg-iwon-bg border-iwon-border" />
               </div>
               <div className="space-y-2">
-                <Label>Max seleccionados</Label>
+                <Label>Máx. seleccionados</Label>
                 <Input name="max_selected" type="number" defaultValue={50} className="bg-iwon-bg border-iwon-border" />
               </div>
               <Button type="submit" className="w-full bg-gold hover:bg-gold-light text-black font-semibold">
@@ -208,7 +208,7 @@ export default function SeleccionesAdminPage() {
           ) : (
             <Card className="bg-iwon-card border-iwon-border">
               <CardContent className="py-12 text-center text-muted-foreground">
-                Selecciona una oleada para ver sus aplicaciones.
+                Seleccioná una oleada para ver sus aplicaciones.
               </CardContent>
             </Card>
           )}

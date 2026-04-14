@@ -69,17 +69,17 @@ function ConfirmEmailContent() {
           <div className="flex justify-center mb-4">
             <Mail className="h-12 w-12 text-gold" />
           </div>
-          <CardTitle className="text-2xl">Revisa tu email</CardTitle>
+          <CardTitle className="text-2xl">Revisá tu email</CardTitle>
           <CardDescription>
             {email
               ? `Te enviamos un link de confirmación a ${email}.`
               : "Te enviamos un link de confirmación a tu email."}
-            {" "}Hace click en el link para activar tu cuenta.
+            {" "}Hacé clic en el link para activar tu cuenta.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            No lo encontras? Revisa la carpeta de spam.
+            ¿No lo encontrás? Revisá la carpeta de spam.
           </p>
 
           {/* Botón de reenvío — solo si tenemos el email */}

@@ -19,7 +19,7 @@ interface ApplicationWithProfile extends SelectionApplication {
 
 const statusLabels: Record<string, string> = {
   pending: "Pendiente",
-  reviewing: "En revision",
+  reviewing: "En revisión",
   selected: "Seleccionado",
   rejected: "Rechazado",
 };

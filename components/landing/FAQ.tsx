@@ -9,44 +9,44 @@ import {
 
 const faqs = [
   {
-    question: "Que es IWON?",
+    question: "¿Qué es IWON?",
     answer:
-      "Somos la productora audiovisual low cost que mas crece en Argentina. Filmamos ya mas de 500 videos en 3 años. Damos oportunidades TODOS LOS MESES de ser seleccionado, filmar con calidad de cine, ganarte un Video, Ep o un DISCO, acceder a promociones, ver contenido que se actualiza todo el tiempo y mostrar tu musica por el precio de una suscripción.",
+      "Somos la productora audiovisual low cost que más crece en Argentina. Filmamos ya más de 500 videos en 3 años. Damos oportunidades TODOS LOS MESES de ser seleccionado, filmar con calidad de cine, ganarte un Video, Ep o un DISCO, acceder a promociones, ver contenido que se actualiza todo el tiempo y mostrar tu música por el precio de una suscripción.",
   },
   {
-    question: "Que incluye la suscripcion?",
+    question: "¿Qué incluye la suscripción?",
     answer:
-      "La suscripcion te da acceso a: SER SELECCIONADO, SORTEOS EXCLUSIVOS, Promociones de Filmacion, y CONTENIDO y FORMACION.",
+      "La suscripción te da acceso a: SER SELECCIONADO, SORTEOS EXCLUSIVOS, Promociones de Filmación, y CONTENIDO y FORMACIÓN.",
   },
   {
-    question: 'Que es la Seleccion "Los 50"?',
+    question: '¿Qué es la Selección "Los 50"?',
     answer:
-      "Es nuestra apuesta principal. Periodicamente seleccionamos a 50 artistas de la comunidad para filmarles su mejor cancion con equipamiento de cine profesional. Solo los suscriptores activos pueden aplicar.",
+      "Es nuestra apuesta principal. Periódicamente seleccionamos a 50 artistas de la comunidad para filmarles su mejor canción con equipamiento de cine profesional. Solo los suscriptores activos pueden aplicar.",
   },
   {
-    question: "Hay permanencia minima?",
+    question: "¿Hay permanencia mínima?",
     answer:
-      "No. Podes cancelar tu suscripcion cuando quieras sin penalidades. Tu acceso se mantiene hasta el final del periodo de facturacion.",
+      "No. Podés cancelar tu suscripción cuando quieras sin penalidades. Tu acceso se mantiene hasta el final del período de facturación.",
   },
   {
-    question: "Como son las promos de filmacion?",
+    question: "¿Cómo son las promos de filmación?",
     answer:
-      "Son oportunidades de filmacion a precios muy por debajo del mercado, exclusivas para suscriptores. Cupos limitados.",
+      "Son oportunidades de filmación a precios muy por debajo del mercado, exclusivas para suscriptores. Cupos limitados.",
   },
   {
-    question: "Que generos musicales aceptan?",
+    question: "¿Qué géneros musicales aceptan?",
     answer:
-      "Filmamos todo genero, no tenemos problemas.",
+      "Filmamos todo género, no tenemos problema.",
   },
   {
-    question: "Como funcionan los sorteos?",
+    question: "¿Cómo funcionan los sorteos?",
     answer:
-      "Realizamos sorteos periodicos de premios como sesiones de VIDEOCLIPS, EP y DISCOS. Solo podes participar si tu suscripcion esta activa. Un click y ya estas participando.",
+      "Realizamos sorteos periódicos de premios como sesiones de VIDEOCLIPS, EP y DISCOS. Solo podés participar si tu suscripción está activa. Un clic y ya estás participando.",
   },
   {
-    question: "Que equipamiento usan para filmar?",
+    question: "¿Qué equipamiento usan para filmar?",
     answer:
-      "Usamos equipamiento de cine profesional. Camaras, lentes, iluminacion y todo el equipamiento necesario para una produccion de nivel cinematografico.",
+      "Usamos equipamiento de cine profesional. Cámaras, lentes, iluminación y todo el equipamiento necesario para una producción de nivel cinematográfico.",
   },
 ];
 
@@ -59,7 +59,7 @@ export function FAQ() {
             Preguntas frecuentes
           </h2>
           <p className="text-muted-foreground">
-            Todo lo que necesitas saber antes de suscribirte.
+            Todo lo que necesitás saber antes de suscribirte.
           </p>
         </div>
 

@@ -81,7 +81,7 @@ export default function PerfilPage() {
   }
 
   async function handleCancelSubscription() {
-    if (!confirm("Estas seguro de que queres cancelar tu suscripcion?")) return;
+    if (!confirm("¿Estás seguro de que querés cancelar tu suscripción?")) return;
 
     try {
       const res = await fetch("/api/subscription/cancel", {
@@ -91,13 +91,13 @@ export default function PerfilPage() {
       });
 
       if (res.ok) {
-        toast.success("Suscripcion cancelada");
+        toast.success("Suscripción cancelada");
         setSubscription(subscription ? { ...subscription, status: "cancelled" } : null);
       } else {
-        toast.error("Error al cancelar la suscripcion");
+        toast.error("Error al cancelar la suscripción");
       }
     } catch {
-      toast.error("Error al cancelar la suscripcion");
+      toast.error("Error al cancelar la suscripción");
     }
   }
 
@@ -113,7 +113,7 @@ export default function PerfilPage() {
     <div className="max-w-2xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Mi Perfil</h1>
-        <p className="text-muted-foreground">Edita tu informacion de artista.</p>
+        <p className="text-muted-foreground">Editá tu información de artista.</p>
       </div>
 
       {/* Subscription */}
@@ -121,7 +121,7 @@ export default function PerfilPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Crown className="h-5 w-5 text-gold" />
-            Suscripcion
+            Suscripción
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -136,7 +136,7 @@ export default function PerfilPage() {
               className="border-iwon-error/30 text-iwon-error hover:bg-iwon-error/10"
               onClick={handleCancelSubscription}
             >
-              Cancelar suscripcion
+              Cancelar suscripción
             </Button>
           )}
         </CardContent>
@@ -147,7 +147,7 @@ export default function PerfilPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <User className="h-5 w-5 text-gold" />
-            Informacion personal
+            Información personal
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -163,7 +163,7 @@ export default function PerfilPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="artist_name">Nombre artistico</Label>
+                <Label htmlFor="artist_name">Nombre artístico</Label>
                 <Input
                   id="artist_name"
                   name="artist_name"
@@ -181,12 +181,12 @@ export default function PerfilPage() {
                 defaultValue={profile?.bio || ""}
                 rows={3}
                 className="bg-iwon-bg border-iwon-border resize-none"
-                placeholder="Conta sobre vos y tu musica..."
+                placeholder="Contá sobre vos y tu música..."
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefono</Label>
+              <Label htmlFor="phone">Teléfono</Label>
               <Input
                 id="phone"
                 name="phone"

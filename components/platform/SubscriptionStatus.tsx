@@ -23,7 +23,7 @@ export function SubscriptionStatus({ subscription }: { subscription: Subscriptio
   if (!subscription) {
     return (
       <Badge variant="outline" className="bg-iwon-error/10 text-iwon-error border-iwon-error/20">
-        Sin suscripcion
+        Sin suscripción
       </Badge>
     );
   }

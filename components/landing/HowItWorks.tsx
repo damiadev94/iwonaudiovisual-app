@@ -3,10 +3,10 @@ import { Users, Gift, Film, BookOpen } from "lucide-react";
 const steps = [
   {
     icon: Users,
-    title: "Seleccion",
+    title: "Selección",
     subtitle: "Los 50",
     description:
-      "Seleccionamos a 50 Artistas que esten suscriptos para filmarles su mejor canción con equipos de cine.",
+      "Seleccionamos a 50 artistas que estén suscriptos para filmarles su mejor canción con equipos de cine.",
     color: "text-gold",
   },
   {
@@ -14,23 +14,23 @@ const steps = [
     title: "Sorteos",
     subtitle: "Premios exclusivos",
     description:
-      "Sorteos Increibles de Videoclips, EP, o un DISCO completo. Solo para suscriptores activos.",
+      "Sorteos increíbles de videoclips, EP o un DISCO completo. Solo para suscriptores activos.",
     color: "text-iwon-success",
   },
   {
     icon: Film,
     title: "Promos",
-    subtitle: "Filmacion accesible",
+    subtitle: "Filmación accesible",
     description:
-      "Accede a promociones de filmación a precios exclusivos para suscriptores. Cupos limitados.",
+      "Accedé a promociones de filmación a precios exclusivos para suscriptores. Cupos limitados.",
     color: "text-blue-400",
   },
   {
     icon: BookOpen,
     title: "Cursos",
-    subtitle: "Formacion continua",
+    subtitle: "Formación continua",
     description:
-      "Cursos de Negocio Musical, Marca, Publicidad, Lanzamientos, Campañas, Estetica, Industria, y mucho mas.",
+      "Cursos de Negocio Musical, Marca, Publicidad, Lanzamientos, Campañas, Estética, Industria, y mucho más.",
     color: "text-purple-400",
   },
 ];
@@ -41,10 +41,10 @@ export function HowItWorks() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Como funciona
+            Cómo funciona
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Todo los meses hay diferentes eventos en los que vas a tener oportunidades de crecimiento para tu carrera.
+            Todos los meses hay diferentes eventos en los que vas a tener oportunidades de crecimiento para tu carrera.
           </p>
         </div>
 

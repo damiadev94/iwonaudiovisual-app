@@ -42,9 +42,9 @@ export default async function SeleccionPage() {
           <Music2 className="h-7 w-7 text-gold shrink-0" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold">Mándanos tu canción</h1>
+          <h1 className="text-3xl font-bold">Mandanos tu canción</h1>
           <p className="text-muted-foreground mt-1 max-w-xl">
-            Sube tu mejor track para ser evaluado por nuestro equipo. Los artistas 
+            Subí tu mejor track para que lo escuchemos. Los artistas
             seleccionados tendrán la oportunidad de filmar su videoclip oficial con equipamiento de nivel cine.
           </p>
         </div>
@@ -68,7 +68,7 @@ export default async function SeleccionPage() {
           </li>
           <li className="flex gap-2">
             <span className="text-gold font-bold">3.</span>
-            <span className="text-muted-foreground">Si eres seleccionado, nos pondremos en contacto contigo para coordinar la producción de tu material.</span>
+            <span className="text-muted-foreground">Si quedás seleccionado/a, nos ponemos en contacto con vos para coordinar la producción de tu material.</span>
           </li>
         </ul>
       </div>

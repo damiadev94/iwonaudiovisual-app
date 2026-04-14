@@ -20,7 +20,7 @@ const categories = [
   { value: "finanzas", label: "Finanzas" },
   { value: "marketing", label: "Marketing" },
   { value: "branding", label: "Branding" },
-  { value: "distribucion", label: "Distribucion" },
+  { value: "distribucion", label: "Distribución" },
   { value: "legal", label: "Legal" },
   { value: "estrategia", label: "Estrategia" },
 ];
@@ -85,7 +85,7 @@ export default function CursosAdminPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Estas seguro de eliminar este curso?")) return;
+    if (!confirm("¿Estás seguro de eliminar este curso?")) return;
     const supabase = createClient();
     const { error } = await supabase.from("courses").delete().eq("id", id);
     if (error) {
@@ -103,7 +103,7 @@ export default function CursosAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Cursos</h1>
-          <p className="text-muted-foreground">Gestion de cursos y lecciones.</p>
+          <p className="text-muted-foreground">Gestión de cursos y lecciones.</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button className="bg-gold hover:bg-gold-light text-black font-semibold" />}>
@@ -116,15 +116,15 @@ export default function CursosAdminPage() {
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-2">
-                <Label>Titulo</Label>
+                <Label>Título</Label>
                 <Input name="title" required className="bg-iwon-bg border-iwon-border" />
               </div>
               <div className="space-y-2">
-                <Label>Descripcion</Label>
+                <Label>Descripción</Label>
                 <Textarea name="description" className="bg-iwon-bg border-iwon-border" />
               </div>
               <div className="space-y-2">
-                <Label>Categoria</Label>
+                <Label>Categoría</Label>
                 <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v ?? "finanzas")}>
                   <SelectTrigger className="bg-iwon-bg border-iwon-border">
                     <SelectValue />
