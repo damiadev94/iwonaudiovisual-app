@@ -50,7 +50,7 @@ export function SubscribeButton() {
       onClick={handleSubscribe}
       disabled={loading}
     >
-      {loading ? "Procesando..." : "Enviar mi cancion por $1.000/mes"}
+      {loading ? "Procesando..." : "Enviar mi canción por $14.999/mes"}
       {!loading && <ArrowRight className="ml-2" />}
     </Button>
   );
