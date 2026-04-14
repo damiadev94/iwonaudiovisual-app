@@ -88,7 +88,8 @@ export function CancionUploadForm({
         .upload(filePath, file, { contentType: file.type });
 
       if (uploadError) {
-        toast.error("Error al subir el archivo. Intenta de nuevo.");
+        console.error("Supabase Storage Error:", uploadError);
+        toast.error("Error al subir el archivo. " + uploadError.message);
         return;
       }
 
