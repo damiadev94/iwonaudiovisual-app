@@ -44,7 +44,7 @@ export async function getSubscribeUrl(userId: string, email: string): Promise<st
   // Esto evita errores de 'card_token_id is required' y es el flujo oficial de Checkout Pro.
   // El usuario será vinculado al finalizar en el back_url mediante el preapproval_id.
   const domain = "www.mercadopago.com.ar"; // Ajustado para ARS (Argentina)
-  return `https://${domain}/subscriptions/checkout?preapproval_plan_id=${planId}`;
+  return `https://${domain}/subscriptions/checkout?preapproval_plan_id=${planId}&external_reference=${userId}`;
 }
 
 
