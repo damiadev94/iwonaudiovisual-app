@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { PlatformLayoutShell } from "@/components/platform/PlatformLayoutShell";
 import { SubscribeButton } from "@/components/platform/SubscribeButton";
 import { Crown } from "lucide-react";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,21 @@ export default async function PlatformLayout({
     redirect("/login");
   }
 
-  // Verificar suscripción usando Admin Client para evitar problemas de RLS
+  // Leer la ruta actual y el rol del header (inyectados por el middleware)
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+
+  // Verificar suscripción usando Admin Client
   const adminClient = createAdminClient();
+  
+  // 1. Obtener el perfil para ver el rol
+  const { data: profile } = await adminClient
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  // 2. Obtener la suscripción
   const { data: subscription } = await adminClient
     .from("subscriptions")
     .select("status")
@@ -30,13 +44,15 @@ export default async function PlatformLayout({
     .single();
 
   const isActive = subscription?.status === "active";
+  const isAdmin = profile?.role === "admin";
+  const isSuccessPage = pathname.startsWith("/suscripcion/exito");
 
+  // Si no está activo ni es admin, bloquear contenido EXCEPTO en la página de éxito
+  const shouldBlock = !isActive && !isAdmin && !isSuccessPage;
 
-  // Si no está activo, bloquear contenido excepto en la página de éxito de suscripción
-  // (Otras sub-rutas de plataforma como /dashboard, /cursos, etc. quedan bloqueadas)
   return (
     <PlatformLayoutShell>
-      {!isActive ? (
+      {shouldBlock ? (
         <div className="max-w-2xl mx-auto text-center py-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <Crown className="h-16 w-16 text-gold mx-auto mb-6 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]" />
           <h1 className="text-3xl font-bold mb-4">Activa tu suscripción</h1>
@@ -47,7 +63,7 @@ export default async function PlatformLayout({
             <SubscribeButton />
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            Suscripción mensual de $9.999 ARS. Cancela cuando quieras.
+            Suscripción mensual de $1.000 ARS. Cancela cuando quieras.
           </p>
         </div>
       ) : (
@@ -56,4 +72,5 @@ export default async function PlatformLayout({
     </PlatformLayoutShell>
   );
 }
+
 

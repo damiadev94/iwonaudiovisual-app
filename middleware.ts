@@ -89,11 +89,11 @@ export async function middleware(request: NextRequest) {
 
     // Pasar el rol verificado como request header para que el layout
     // no necesite hacer otra query a la DB
-    const adminHeaders = new Headers(request.headers);
-    adminHeaders.set("x-user-role", profile.role);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-pathname", pathname);
 
     const response = NextResponse.next({
-      request: { headers: adminHeaders },
+      request: { headers: requestHeaders },
     });
 
     // Preservar las cookies de sesión que Supabase pudo haber refrescado
@@ -104,8 +104,21 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  return supabaseResponse;
+  // Para el resto de rutas, también inyectar el pathname
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+  
+  const finalResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  for (const { name, value, ...options } of supabaseResponse.cookies.getAll()) {
+    finalResponse.cookies.set(name, value, options);
+  }
+
+  return finalResponse;
 }
+
 
 export const config = {
   matcher: [
