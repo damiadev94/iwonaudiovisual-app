@@ -47,34 +47,17 @@ export default function PortfolioAdminPage() {
     }
     setUploading(true);
 
-    const supabase = createClient();
-    const ext = imageFile.name.split(".").pop();
-    const fileName = `${Date.now()}.${ext}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("portfolio")
-      .upload(fileName, imageFile, { upsert: false });
-
-    if (uploadError) {
-      toast.error("Error al subir la imagen: " + uploadError.message);
-      setUploading(false);
-      return;
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("portfolio").getPublicUrl(fileName);
-
     const formData = new FormData(e.currentTarget);
-    const { error } = await supabase.from("portfolio").insert({
-      url_portada: publicUrl,
-      youtube_link: formData.get("youtube_link") as string,
-      nombre_tema: formData.get("nombre_tema") as string,
-      nombre_artista: formData.get("nombre_artista") as string,
-    });
+    formData.set("file", imageFile);
 
-    if (error) {
-      toast.error("Error al guardar: " + error.message);
+    const res = await fetch("/api/admin/portfolio", {
+      method: "POST",
+      body: formData,
+    });
+    const json = await res.json();
+
+    if (!res.ok) {
+      toast.error(json.error || "Error al subir");
     } else {
       toast.success("Item agregado al portfolio");
       formRef.current?.reset();
@@ -87,21 +70,13 @@ export default function PortfolioAdminPage() {
   }
 
   async function handleDelete(item: PortfolioItem) {
-    const supabase = createClient();
+    const res = await fetch(`/api/admin/portfolio?id=${item.id}`, {
+      method: "DELETE",
+    });
+    const json = await res.json();
 
-    // Extract just the filename from the public URL
-    const fileName = item.url_portada.split("/").pop();
-    if (fileName) {
-      await supabase.storage.from("portfolio").remove([fileName]);
-    }
-
-    const { error } = await supabase
-      .from("portfolio")
-      .delete()
-      .eq("id", item.id);
-
-    if (error) {
-      toast.error("Error al eliminar");
+    if (!res.ok) {
+      toast.error(json.error || "Error al eliminar");
     } else {
       toast.success("Item eliminado");
       fetchItems();
