@@ -38,7 +38,7 @@ export function Hero() {
         </p>
         <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
           Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
-          Suscribite y accede a produccion real, cursos, sorteos y promos de filmacion.
+          Suscribite y accede a ser elegido, cursos, sorteos y promos de filmacion.
         </p>
 
         {/* CTAs */}
@@ -52,7 +52,7 @@ export function Hero() {
           <a href="#portfolio">
             <Button size="lg" variant="outline" className="border-iwon-border hover:bg-iwon-card text-lg px-8 py-6 h-auto">
               <Play className="mr-2 h-5 w-5" />
-              Ver portfolio
+              Ver videoclips
             </Button>
           </a>
         </div>
@@ -61,14 +61,14 @@ export function Hero() {
         <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
           <div>
             <p className="text-3xl font-bold text-gold font-mono">+450</p>
-            <p className="text-sm text-muted-foreground">Videoclips</p>
+            <p className="text-sm text-muted-foreground">Videoclips filmados</p>
           </div>
           <div>
             <p className="text-3xl font-bold text-gold font-mono">+200</p>
             <p className="text-sm text-muted-foreground">Artistas</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-gold font-mono">5</p>
+            <p className="text-3xl font-bold text-gold font-mono">3</p>
             <p className="text-sm text-muted-foreground">Anos de trayectoria</p>
           </div>
         </div>

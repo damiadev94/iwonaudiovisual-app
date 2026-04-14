@@ -8,7 +8,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <Logo />
             <p className="mt-4 text-sm text-muted-foreground max-w-md">
-              Plataforma de impulso para artistas urbanos independientes en Argentina.
+              Plataforma de impulso para artistas independientes en Argentina.
               Produccion real con equipamiento de cine.
             </p>
           </div>

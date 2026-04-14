@@ -51,7 +51,7 @@ export function Portfolio() {
 
         <div className="text-center mt-8">
           <p className="text-sm text-muted-foreground">
-            Y mas de 440 videoclips adicionales en nuestro canal de YouTube
+            Mas de 500 videoclips filmados.
           </p>
         </div>
       </div>

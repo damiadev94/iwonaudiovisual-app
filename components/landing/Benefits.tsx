@@ -4,26 +4,26 @@ const benefits = [
   {
     icon: BookOpen,
     title: "Cursos de formacion",
-    description: "Accede a cursos de finanzas, marketing, branding y distribucion musical desde el dia 1.",
-    features: ["Finanzas para artistas", "Marketing digital", "Branding personal", "Distribucion musical"],
+    description: "Accede a ser elegido, sorteos, promociones, contenido y formación desde el dia 1.",
+    features: ["Negocio Musical", "Marca y Publicidad", "Lanzamientos y Campañas", "Estetica e Industria"],
   },
   {
     icon: Film,
     title: "Promos de filmacion",
-    description: "Reserva sesiones de filmacion a precios exclusivos. Cupos limitados.",
-    features: ["Equipamiento de cine", "Equipo profesional", "Cupos limitados", "Precios accesibles"],
+    description: "Reserva tu videoclip por un precio que solo esta disponible para SUSCRIPTORES.",
+    features: ["Cupos limitados mes a mes", "One shots", "Videoclips", "Descuentos"],
   },
   {
     icon: Trophy,
     title: "Sorteos exclusivos",
-    description: "Participa en sorteos mensuales de videoclips, sesiones y mas premios.",
-    features: ["Sorteos mensuales", "Videoclips gratis", "Sesiones de grabacion", "Solo suscriptores"],
+    description: "Participa en sorteos mensuales de videoclips, EP O DISCO completo.",
+    features: ["Sorteos mensuales", "Videoclips gratis", "EP o Disco completo"],
   },
   {
     icon: Star,
-    title: 'Seleccion "Los 50"',
-    description: "Aplica para ser uno de los 50 artistas seleccionados y filmar tu disco completo.",
-    features: ["Produccion completa", "Disco filmado", "Calidad cinematografica", "Seleccion periodica"],
+    title: "Selección de Artistas",
+    description: "Mandanos tu canción para ser uno de los 50 artistas seleccionados y filmar tu canción.",
+    features: ["Videoclip", "Equipos cinematográficos", "Filmación en 6k"],
   },
 ];
 
@@ -36,7 +36,7 @@ export function Benefits() {
             Beneficios desde el <span className="text-gold">dia 1</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            No es solo una suscripcion. Es un programa completo de impulso artistico con produccion real.
+            No es solo una suscripción. Es una plataforma de impulso artístico con producciones reales.
           </p>
         </div>
 

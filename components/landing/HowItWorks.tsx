@@ -6,7 +6,7 @@ const steps = [
     title: "Seleccion",
     subtitle: "Los 50",
     description:
-      "Seleccionamos a los 50 mejores artistas de la comunidad para filmarles su disco completo con equipamiento de cine.",
+      "Seleccionamos a 50 Artistas que esten suscriptos para filmarles su mejor canción con equipos de cine.",
     color: "text-gold",
   },
   {
@@ -14,7 +14,7 @@ const steps = [
     title: "Sorteos",
     subtitle: "Premios exclusivos",
     description:
-      "Sorteos mensuales de sesiones de grabacion, videoclips y mas. Solo para suscriptores activos.",
+      "Sorteos Increibles de Videoclips, EP, o un DISCO completo. Solo para suscriptores activos.",
     color: "text-iwon-success",
   },
   {
@@ -22,7 +22,7 @@ const steps = [
     title: "Promos",
     subtitle: "Filmacion accesible",
     description:
-      "Accede a promos exclusivas de filmacion a precios reducidos. Cupos limitados a 200 artistas.",
+      "Accede a promociones de filmación a precios exclusivos para suscriptores. Cupos limitados.",
     color: "text-blue-400",
   },
   {
@@ -30,7 +30,7 @@ const steps = [
     title: "Cursos",
     subtitle: "Formacion continua",
     description:
-      "Cursos de finanzas, marketing, branding y distribucion para que tu carrera musical despegue.",
+      "Cursos de Negocio Musical, Marca, Publicidad, Lanzamientos, Campañas, Estetica, Industria, y mucho mas.",
     color: "text-purple-400",
   },
 ];
@@ -44,7 +44,7 @@ export function HowItWorks() {
             Como funciona
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Un ciclo de eventos rotativo que te da oportunidades reales de crecimiento como artista.
+            Todo los meses hay diferentes eventos en los que vas a tener oportunidades de crecimiento para tu carrera.
           </p>
         </div>
 

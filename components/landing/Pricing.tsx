@@ -3,13 +3,11 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRight } from "lucide-react";
 
 const features = [
-  "Acceso a todos los cursos de formacion",
-  "Participacion en sorteos exclusivos",
-  "Acceso a promos de filmacion a precio reducido",
-  'Aplicar a la Seleccion "Los 50"',
-  "Comunidad de artistas independientes",
-  "Soporte del equipo Iwon",
-  "Sin permanencia minima",
+  "Acceso a SER SELECCIONADO",
+  "Acceso a SORTEOS EXCLUSIVOS",
+  "Acceso a Promociones de Filmacion",
+  "Acceso a CONTENIDO y FORMACION",
+  "Soporte de el equipo iwon",
   "Cancela cuando quieras",
 ];
 
