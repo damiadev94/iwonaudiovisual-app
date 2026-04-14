@@ -34,7 +34,7 @@ export async function POST() {
       {
         user_id: user.id,
         status: "pending",
-        plan_amount: 9999,
+        plan_amount: 14999,
         currency: "ARS",
       },
       { onConflict: "user_id" }

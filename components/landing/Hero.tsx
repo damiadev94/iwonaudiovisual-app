@@ -45,7 +45,7 @@ export function Hero() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
           <Link href="/register">
             <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto">
-              Suscribite por $9.999/mes
+              Suscribite por $14.999/mes
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
@@ -64,7 +64,7 @@ export function Hero() {
             <p className="text-sm text-muted-foreground">Videoclips filmados</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-gold font-mono">+200</p>
+            <p className="text-3xl font-bold text-gold font-mono">+500</p>
             <p className="text-sm text-muted-foreground">Artistas</p>
           </div>
           <div>

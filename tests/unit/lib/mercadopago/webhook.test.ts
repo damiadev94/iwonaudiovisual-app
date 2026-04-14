@@ -244,7 +244,7 @@ describe("lib/mercadopago/webhook", () => {
         id: 999,
         status: "approved",
         external_reference: "user-uuid-123",
-        transaction_amount: 9999,
+        transaction_amount: 14999,
         currency_id: "ARS",
         payment_method_id: "credit_card",
       });
@@ -273,7 +273,7 @@ describe("lib/mercadopago/webhook", () => {
         user_id: "user-uuid-123",
         subscription_id: "SUB_DB_ID",
         mp_payment_id: "999",
-        amount: 9999,
+        amount: 14999,
         currency: "ARS",
         status: "approved",
         payment_method: "credit_card",
@@ -285,7 +285,7 @@ describe("lib/mercadopago/webhook", () => {
         id: 888,
         status: "rejected",
         external_reference: "user-uuid-123",
-        transaction_amount: 9999,
+        transaction_amount: 14999,
         currency_id: "ARS",
         payment_method_id: "debit_card",
       });
@@ -318,7 +318,7 @@ describe("lib/mercadopago/webhook", () => {
         id: 777,
         status: "approved",
         external_reference: null,
-        transaction_amount: 9999,
+        transaction_amount: 14999,
         currency_id: "ARS",
         payment_method_id: "credit_card",
       });

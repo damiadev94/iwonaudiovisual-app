@@ -15,7 +15,7 @@ export function CTA() {
         </h2>
         <Link href="/register">
           <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-10 py-6 h-auto">
-            Suscribite por $9.999/mes
+            Suscribite por $14.999/mes
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </Link>

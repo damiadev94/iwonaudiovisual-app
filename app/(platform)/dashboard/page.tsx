@@ -47,7 +47,7 @@ export default async function DashboardPage() {
             <Crown className="h-5 w-5 text-gold" />
             <div>
               <p className="font-medium">Suscripcion activa</p>
-              <p className="text-sm text-muted-foreground">Plan Iwon - $9.999/mes</p>
+              <p className="text-sm text-muted-foreground">Plan Iwon - $14.999/mes</p>
             </div>
           </div>
           <Badge className="bg-iwon-success/10 text-iwon-success border-iwon-success/20">Activa</Badge>

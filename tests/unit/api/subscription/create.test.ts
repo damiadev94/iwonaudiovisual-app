@@ -106,7 +106,7 @@ describe("POST /api/subscription/create", () => {
       user_id: "user-123",
       mp_subscription_id: "PREAPPROVAL_123",
       status: "pending",
-      plan_amount: 9999,
+      plan_amount: 14999,
       currency: "ARS",
     });
     expect(response.status).toBe(200);

@@ -246,7 +246,7 @@ describe("Flujo de suscripción completo (integración)", () => {
       id: MP_PAYMENT_ID,
       status: "approved",
       external_reference: USER.id,
-      transaction_amount: 9999,
+      transaction_amount: 14999,
       currency_id: "ARS",
       payment_method_id: "credit_card",
     });

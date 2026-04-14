@@ -51,7 +51,7 @@ describe("lib/mercadopago/subscription", () => {
           auto_recurring: {
             frequency: 1,
             frequency_type: "months",
-            transaction_amount: 9999,
+            transaction_amount: 14999,
             currency_id: "ARS",
           },
           payer_email: "test@example.com",

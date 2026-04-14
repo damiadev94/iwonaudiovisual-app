@@ -39,7 +39,7 @@ export function Pricing() {
               {/* Price */}
               <div className="mb-6">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold font-mono text-gold">$9.999</span>
+                  <span className="text-5xl font-bold font-mono text-gold">$14.999</span>
                   <span className="text-muted-foreground">/mes</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">Pesos argentinos - Sin compromiso</p>

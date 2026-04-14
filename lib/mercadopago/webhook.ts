@@ -54,7 +54,7 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
             mp_subscription_id: preapprovalData.id,
             mp_preapproval_id: preapprovalData.id,
             status,
-            plan_amount: (preapprovalData as any).auto_recurring?.transaction_amount ?? 9999,
+            plan_amount: (preapprovalData as any).auto_recurring?.transaction_amount ?? 14999,
             currency: "ARS",
             current_period_start:
               preapprovalData.last_modified ?? preapprovalData.date_created,
