@@ -158,3 +158,12 @@ export type SongSubmission = {
   reviewed_at: string | null;
   created_at: string;
 };
+
+export type PortfolioItem = {
+  id: string;
+  url_portada: string;
+  youtube_link: string;
+  nombre_tema: string;
+  nombre_artista: string;
+  created_at: string;
+};

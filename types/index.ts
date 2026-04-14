@@ -12,4 +12,5 @@ export type {
   Promo,
   PromoBooking,
   SongSubmission,
+  PortfolioItem,
 } from "./database";

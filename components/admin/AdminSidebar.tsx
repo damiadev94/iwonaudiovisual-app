@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   X,
   Music,
+  Images,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { createClient } from "@/lib/supabase/client";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
   { href: "/admin/promos", label: "Promos", icon: Film },
   { href: "/admin/pagos", label: "Pagos", icon: CreditCard },
+  { href: "/admin/portfolio", label: "Portfolio", icon: Images },
 ];
 
 export function AdminSidebar({ onClose }: { onClose?: () => void }) {
