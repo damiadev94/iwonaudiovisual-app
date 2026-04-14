@@ -19,6 +19,26 @@ async function assertAdmin() {
   return profile?.role === "admin" ? user : null;
 }
 
+// GET /api/admin/portfolio — list all portfolio items
+export async function GET(request: NextRequest) {
+  const user = await assertAdmin();
+  if (!user) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("portfolio")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ items: data });
+}
+
 // POST /api/admin/portfolio — upload image and insert row
 export async function POST(request: NextRequest) {
   const user = await assertAdmin();

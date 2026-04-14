@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,12 +32,11 @@ export default function PortfolioAdminPage() {
   }, []);
 
   async function fetchItems() {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("portfolio")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setItems((data || []) as PortfolioItem[]);
+    const res = await fetch("/api/admin/portfolio");
+    if (res.ok) {
+      const json = await res.json();
+      setItems(json.items as PortfolioItem[]);
+    }
     setLoading(false);
   }
 
