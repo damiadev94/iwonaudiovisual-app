@@ -148,6 +148,8 @@ export type SongSubmission = {
   user_id: string;
   file_path: string;
   file_name: string;
+  song_title: string | null;
+  genre: string | null;
   file_size: number | null;
   file_type: string | null;
   notes: string | null;

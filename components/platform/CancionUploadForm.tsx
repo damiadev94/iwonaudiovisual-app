@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -41,6 +42,8 @@ export function CancionUploadForm({
   existingSubmission: SongSubmission | null;
 }) {
   const [file, setFile] = useState<File | null>(null);
+  const [songTitle, setSongTitle] = useState("");
+  const [genre, setGenre] = useState("");
   const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
   const [submission, setSubmission] = useState<SongSubmission | null>(
@@ -67,7 +70,10 @@ export function CancionUploadForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !songTitle || !genre) {
+      toast.error("Por favor completa todos los campos requeridos");
+      return;
+    }
 
     setUploading(true);
 
@@ -95,6 +101,8 @@ export function CancionUploadForm({
           file_name: file.name,
           file_size: file.size,
           file_type: file.type,
+          song_title: songTitle,
+          genre: genre,
           notes: notes || null,
         }),
       });
@@ -136,9 +144,11 @@ export function CancionUploadForm({
           <div className="flex items-center gap-3 p-4 bg-iwon-bg rounded-lg border border-iwon-border">
             <FileAudio className="h-5 w-5 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{submission.file_name}</p>
+              <p className="font-bold text-base">{submission.song_title}</p>
+              <p className="text-sm text-gold-light font-medium">{submission.genre}</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">{submission.file_name}</p>
               {submission.file_size && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   {(submission.file_size / 1024 / 1024).toFixed(1)} MB
                 </p>
               )}
@@ -178,6 +188,32 @@ export function CancionUploadForm({
     <Card className="bg-iwon-card border-iwon-border">
       <CardContent className="py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Datos de la cancion */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="song_title">Nombre de la canción *</Label>
+              <Input
+                id="song_title"
+                value={songTitle}
+                onChange={(e) => setSongTitle(e.target.value)}
+                placeholder="Ej: Mi Gran Hit"
+                required
+                className="bg-iwon-bg border-iwon-border"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="genre">Género *</Label>
+              <Input
+                id="genre"
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                placeholder="Ej: Trap / Reggaeton"
+                required
+                className="bg-iwon-bg border-iwon-border"
+              />
+            </div>
+          </div>
+
           {/* Zona de seleccion de archivo */}
           <div
             className="border-2 border-dashed border-iwon-border rounded-lg p-10 text-center cursor-pointer hover:border-gold/40 transition-colors"

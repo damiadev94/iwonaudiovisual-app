@@ -112,14 +112,20 @@ export default function CancionesAdminPage() {
                     <FileAudio className="h-8 w-8 text-muted-foreground shrink-0 mt-0.5" />
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium">{artistName}</span>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="font-bold text-lg">{sub.song_title || "Sin título"}</span>
                         <Badge
                           variant="outline"
                           className={statusInfo.className}
                         >
                           {statusInfo.label}
                         </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary" className="bg-gold/10 text-gold border-gold/20">
+                          {sub.genre || "Sin género"}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">por {artistName}</span>
                       </div>
                       <p className="text-sm text-muted-foreground truncate mt-0.5">
                         {sub.file_name}

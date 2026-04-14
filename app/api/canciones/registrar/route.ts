@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { file_path, file_name, file_size, file_type, notes } = body;
+    const { file_path, file_name, file_size, file_type, notes, song_title, genre } = body;
 
     if (!file_path || !file_name) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
@@ -54,6 +54,8 @@ export async function POST(request: Request) {
         file_size: file_size ?? null,
         file_type: file_type ?? null,
         notes: notes ?? null,
+        song_title: song_title ?? null,
+        genre: genre ?? null,
       })
       .select()
       .single();
