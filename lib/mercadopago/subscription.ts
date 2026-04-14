@@ -20,19 +20,13 @@ async function getPlanId(): Promise<string> {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        transaction_amount: 1000, // Monto ajustado para pruebas
+        transaction_amount: 1000, 
         currency_id: "ARS",
       },
       back_url: `${backUrl}/suscripcion/exito`,
-      payment_methods_allowed: {
-        payment_types: [
-          { id: "account_money" }, // Saldo Mercado Pago
-          { id: "credit_card" }, 
-          { id: "debit_card" }
-        ]
-      },
     },
   });
+
 
 
   console.warn(
