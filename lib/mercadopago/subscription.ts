@@ -20,7 +20,7 @@ async function getPlanId(): Promise<string> {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        transaction_amount: 1000, 
+        transaction_amount: 14999, 
         currency_id: "ARS",
       },
       back_url: `${backUrl}/suscripcion/exito`,
