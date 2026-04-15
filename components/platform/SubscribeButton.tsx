@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
-export function SubscribeButton() {
+export function SubscribeButton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -46,12 +46,17 @@ export function SubscribeButton() {
 
   return (
     <Button
-      className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto"
+      className={
+        compact
+          ? "bg-gold hover:bg-gold-light text-black font-semibold"
+          : "bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto"
+      }
+      size={compact ? "sm" : "default"}
       onClick={handleSubscribe}
       disabled={loading}
     >
-      {loading ? "Procesando..." : "Suscribite por $14.999/mes"}
-      {!loading && <ArrowRight className="ml-2" />}
+      {loading ? "Procesando..." : compact ? "Suscribite" : "Suscribite por $14.999/mes"}
+      {!loading && <ArrowRight className={compact ? "ml-1 h-3.5 w-3.5" : "ml-2"} />}
     </Button>
   );
 }

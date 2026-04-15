@@ -8,6 +8,8 @@ import { EventCalendar } from "@/components/platform/EventCalendar";
 import { BookOpen, Film, Gift, Users, Crown } from "lucide-react";
 import Link from "next/link";
 import { SubscribeButton } from "@/components/platform/SubscribeButton";
+import { SubscriptionStatus } from "@/components/platform/SubscriptionStatus";
+import type { Subscription } from "@/types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -25,8 +27,9 @@ export default async function DashboardPage() {
     .from("subscriptions")
     .select("*")
     .eq("user_id", user.id)
-    .eq("status", "active")
-    .single();
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   const isActive = subscription?.status === "active";
 
@@ -41,16 +44,21 @@ export default async function DashboardPage() {
       </div>
 
       {/* Subscription status */}
-      <Card className="bg-gold/5 border-gold/20">
+      <Card className={isActive ? "bg-gold/5 border-gold/20" : "bg-iwon-card border-iwon-border"}>
         <CardContent className="flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <Crown className="h-5 w-5 text-gold" />
+            <Crown className={`h-5 w-5 ${isActive ? "text-gold" : "text-muted-foreground"}`} />
             <div>
-              <p className="font-medium">Suscripción activa</p>
-              <p className="text-sm text-muted-foreground">Plan Iwon - $14.999/mes</p>
+              <p className="font-medium">Suscripción</p>
+              <p className="text-sm text-muted-foreground">
+                {isActive ? "Plan Iwon - $14.999/mes" : "Sin acceso completo a la plataforma"}
+              </p>
             </div>
           </div>
-          <Badge className="bg-iwon-success/10 text-iwon-success border-iwon-success/20">Activa</Badge>
+          <div className="flex items-center gap-3">
+            <SubscriptionStatus subscription={subscription as Subscription | null} />
+            {!isActive && <SubscribeButton compact />}
+          </div>
         </CardContent>
       </Card>
 
