@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Hoist mock fns so they're available inside vi.mock factory (which is hoisted above imports)
-const { mockCreate, mockUpdate, mockGet } = vi.hoisted(() => ({
-  mockCreate: vi.fn(),
+const { mockPlanCreate, mockUpdate, mockGet } = vi.hoisted(() => ({
+  mockPlanCreate: vi.fn(),
   mockUpdate: vi.fn(),
   mockGet: vi.fn(),
 }));
@@ -10,7 +10,10 @@ const { mockCreate, mockUpdate, mockGet } = vi.hoisted(() => ({
 vi.mock("mercadopago", () => ({
   MercadoPagoConfig: vi.fn(function () {}),
   PreApproval: vi.fn(function () {
-    return { create: mockCreate, update: mockUpdate, get: mockGet };
+    return { update: mockUpdate, get: mockGet };
+  }),
+  PreApprovalPlan: vi.fn(function () {
+    return { create: mockPlanCreate };
   }),
   Payment: vi.fn(function () {
     return { get: vi.fn() };
@@ -22,56 +25,67 @@ vi.mock("@/lib/mercadopago/client", () => ({
 }));
 
 import {
-  createSubscription,
+  getSubscribeUrl,
   cancelSubscription,
   getSubscriptionStatus,
 } from "@/lib/mercadopago/subscription";
 
 describe("lib/mercadopago/subscription", () => {
+  const originalEnv = { ...process.env };
+
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.MERCADOPAGO_BACK_URL = "http://localhost:3000";
+    // Ensure MERCADOPAGO_PLAN_ID is unset by default so getPlanId creates one
+    delete process.env.MERCADOPAGO_PLAN_ID;
   });
 
-  describe("createSubscription", () => {
-    it("crea un pre-approval con los parámetros correctos", async () => {
-      const mockResult = {
-        id: "PREAPPROVAL_123",
-        init_point:
-          "https://www.mercadopago.com.ar/subscriptions/checkout?id=PREAPPROVAL_123",
-        status: "pending",
-      };
-      mockCreate.mockResolvedValue(mockResult);
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
 
-      const result = await createSubscription("test@example.com", "user-uuid-123");
+  describe("getSubscribeUrl", () => {
+    it("usa MERCADOPAGO_PLAN_ID si está definido y devuelve la URL correcta", async () => {
+      process.env.MERCADOPAGO_PLAN_ID = "EXISTING_PLAN_ID";
 
-      expect(mockCreate).toHaveBeenCalledWith({
-        body: {
-          reason: "Iwon Audiovisual - Suscripcion Mensual",
-          auto_recurring: {
-            frequency: 1,
-            frequency_type: "months",
-            transaction_amount: 14999,
-            currency_id: "ARS",
-          },
-          payer_email: "test@example.com",
-          back_url: "http://localhost:3000/subir-cancion",
-          external_reference: "user-uuid-123",
-        },
-      });
-      expect(result).toEqual(mockResult);
+      const url = await getSubscribeUrl("user-uuid-123", "test@example.com");
+
+      expect(mockPlanCreate).not.toHaveBeenCalled();
+      expect(url).toContain("preapproval_plan_id=EXISTING_PLAN_ID");
+      expect(url).toContain("external_reference=user-uuid-123");
     });
 
-    it("usa MERCADOPAGO_BACK_URL cuando está definido", async () => {
-      process.env.MERCADOPAGO_BACK_URL = "https://app.example.com";
-      mockCreate.mockResolvedValue({ id: "PREAPPROVAL_123", init_point: "https://mp.com/checkout" });
+    it("crea un plan cuando MERCADOPAGO_PLAN_ID no está definido", async () => {
+      mockPlanCreate.mockResolvedValue({ id: "NEW_PLAN_ID" });
 
-      await createSubscription("test@example.com", "user-uuid-123");
+      const url = await getSubscribeUrl("user-uuid-123", "test@example.com");
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockPlanCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           body: expect.objectContaining({
-            back_url: "https://app.example.com/subir-cancion",
+            reason: expect.any(String),
+            auto_recurring: expect.objectContaining({
+              frequency: 1,
+              frequency_type: "months",
+              transaction_amount: 14999,
+              currency_id: "ARS",
+            }),
+          }),
+        })
+      );
+      expect(url).toContain("preapproval_plan_id=NEW_PLAN_ID");
+    });
+
+    it("usa MERCADOPAGO_BACK_URL en el back_url del plan", async () => {
+      process.env.MERCADOPAGO_BACK_URL = "https://app.example.com";
+      mockPlanCreate.mockResolvedValue({ id: "PLAN_123" });
+
+      await getSubscribeUrl("user-uuid-123", "test@example.com");
+
+      expect(mockPlanCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            back_url: expect.stringContaining("https://app.example.com"),
           }),
         })
       );
@@ -80,27 +94,24 @@ describe("lib/mercadopago/subscription", () => {
     it("usa NEXT_PUBLIC_APP_URL como fallback si MERCADOPAGO_BACK_URL no está definido", async () => {
       delete process.env.MERCADOPAGO_BACK_URL;
       process.env.NEXT_PUBLIC_APP_URL = "https://iwon.example.com";
-      mockCreate.mockResolvedValue({ id: "PREAPPROVAL_123", init_point: "https://mp.com/checkout" });
+      mockPlanCreate.mockResolvedValue({ id: "PLAN_123" });
 
-      await createSubscription("test@example.com", "user-uuid-123");
+      await getSubscribeUrl("user-uuid-123", "test@example.com");
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockPlanCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           body: expect.objectContaining({
-            back_url: "https://iwon.example.com/subir-cancion",
+            back_url: expect.stringContaining("https://iwon.example.com"),
           }),
         })
       );
-
-      process.env.MERCADOPAGO_BACK_URL = "http://localhost:3000";
-      process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
     });
 
     it("propaga errores del SDK de MercadoPago", async () => {
-      mockCreate.mockRejectedValue(new Error("MP API error"));
+      mockPlanCreate.mockRejectedValue(new Error("MP API error"));
 
       await expect(
-        createSubscription("test@example.com", "user-uuid-123")
+        getSubscribeUrl("user-uuid-123", "test@example.com")
       ).rejects.toThrow("MP API error");
     });
   });

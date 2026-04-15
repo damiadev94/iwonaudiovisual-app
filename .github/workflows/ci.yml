@@ -134,7 +134,7 @@ jobs:
       # --max-warnings 0: cualquier warning también bloquea
       # Esto fuerza al equipo a resolver TODO, no acumular deuda técnica
       - name: Run ESLint
-        run: npx next lint --max-warnings 0
+        run: npx eslint . --max-warnings 0
 
   # ═══════════════════════════════════════════════════════════════════════════
   # Job 4: Build de producción
