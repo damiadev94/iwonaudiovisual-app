@@ -56,7 +56,7 @@ export function Hero() {
         {/* Instagram pill */}
         <div className="flex justify-center mb-12">
           <a
-            href="https://www.instagram.com/iwonaudiovisual"
+            href="https://www.instagram.com/iwon.audiovisual"
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-gold/40 bg-white/5 backdrop-blur-md hover:bg-gold/10 hover:border-gold/70 transition-all duration-300"
