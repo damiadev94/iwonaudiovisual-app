@@ -28,7 +28,7 @@ export function Hero() {
         {/* Main title */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
           Vamos a seleccionar a {" "}
-          <span className="text-gold">50 artistas y filmarles su mejor canción </span>{" "}
+          <span className="text-gold">50 artistas</span> y filmarles su mejor canción{" "}
         </h1>
 
         {/* Subtitle */}
@@ -50,6 +50,35 @@ export function Hero() {
               <Play className="mr-2 h-5 w-5" />
               Ver videoclips
             </Button>
+          </a>
+        </div>
+
+        {/* Instagram pill */}
+        <div className="flex justify-center mb-12">
+          <a
+            href="https://www.instagram.com/iwonaudiovisual"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-gold/40 bg-white/5 backdrop-blur-md hover:bg-gold/10 hover:border-gold/70 transition-all duration-300"
+          >
+            {/* Instagram icon */}
+            <svg
+              className="w-4 h-4 text-gold flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+            </svg>
+            <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+              Entra a mi Instagram y enterate de todo
+            </span>
+            <ArrowRight className="w-3.5 h-3.5 text-gold opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
           </a>
         </div>
 
