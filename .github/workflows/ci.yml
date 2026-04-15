@@ -1,0 +1,256 @@
+# =============================================================================
+# CI/CD Pipeline — Quality Gate
+# =============================================================================
+# Objetivo: Garantizar que ningún código con errores de compilación, tipado,
+# lint o tests llegue a la rama principal.
+#
+# Stack: Next.js + TypeScript + Supabase + PostgreSQL
+#
+# Estrategia:
+#   1. Typecheck estricto (tsc --noEmit)
+#   2. Lint con ESLint (errores = bloqueo)
+#   3. Build de producción (detecta errores que tsc solo no atrapa)
+#   4. Tests unitarios/integración
+#   5. Cache agresivo para velocidad
+#
+# Triggers:
+#   - Push a main/develop → pipeline completo
+#   - Pull Request a main/develop → pipeline completo (gate obligatorio)
+# =============================================================================
+
+name: CI — Quality Gate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Cancela runs anteriores del mismo PR/branch para no desperdiciar minutos
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permisos mínimos necesarios (principio de menor privilegio)
+permissions:
+  contents: read
+  pull-requests: read
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Variables de entorno compartidas por todos los jobs
+# ─────────────────────────────────────────────────────────────────────────────
+env:
+  NODE_VERSION: "20"
+  # Variables que Next.js necesita en build-time (no secrets, solo públicas)
+  # Ajustá estos valores según tu proyecto:
+  NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://vsxqbbetgtthqddznkcd.supabase.co' }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzeHFiYmV0Z3R0aHFkZHpua2NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NDMxODcsImV4cCI6MjA5MTQxOTE4N30._3UaaYxiceGHFKuJoagLx37mwwl5rxk36ZdLF_FmQDI' }}
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 1: Instalar dependencias (compartido via cache)
+  # ═══════════════════════════════════════════════════════════════════════════
+  install:
+    name: 📦 Install Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Cache de node_modules basado en lockfile
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: modules-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'pnpm-lock.yaml') }}
+          restore-keys: |
+            modules-${{ runner.os }}-
+
+      # Solo instala si el cache no hizo hit
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts=false
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 2: TypeScript — Verificación de tipos
+  # ═══════════════════════════════════════════════════════════════════════════
+  # POR QUÉ separado del build:
+  #   - tsc --noEmit es más rápido que next build
+  #   - Errores de tipo se detectan antes y con mensajes más claros
+  #   - El build puede enmascarar errores de tipo con su propia lógica
+  # ═══════════════════════════════════════════════════════════════════════════
+  typecheck:
+    name: 🔍 TypeScript Typecheck
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: modules-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'pnpm-lock.yaml') }}
+
+      # --noEmit: solo verifica tipos, no genera output
+      # --pretty: mejor formato de errores en CI logs
+      - name: Run TypeScript compiler
+        run: npx tsc --noEmit --pretty
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 3: ESLint — Calidad y consistencia de código
+  # ═══════════════════════════════════════════════════════════════════════════
+  lint:
+    name: 🧹 ESLint
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: modules-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'pnpm-lock.yaml') }}
+
+      # --max-warnings 0: cualquier warning también bloquea
+      # Esto fuerza al equipo a resolver TODO, no acumular deuda técnica
+      - name: Run ESLint
+        run: npx next lint --max-warnings 0
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 4: Build de producción
+  # ═══════════════════════════════════════════════════════════════════════════
+  # POR QUÉ además del typecheck:
+  #   - next build ejecuta su propio compilador (SWC/Turbopack)
+  #   - Detecta errores en: dynamic imports, CSS modules, image optimization,
+  #     middleware, route handlers, metadata, generateStaticParams, etc.
+  #   - Es la prueba definitiva: si builda, se puede deployar
+  # ═══════════════════════════════════════════════════════════════════════════
+  build:
+    name: 🏗️ Production Build
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: modules-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'pnpm-lock.yaml') }}
+
+      # Cache del build de Next.js (.next/cache)
+      # Acelera rebuilds incrementales significativamente
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'pnpm-lock.yaml') }}-${{ hashFiles('**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'pnpm-lock.yaml') }}-
+            nextjs-${{ runner.os }}-
+
+      - name: Build
+        run: npm run build
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 5: Tests
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Corre en paralelo con build (ambos dependen de typecheck + lint)
+  # Si no tenés tests aún, este job pasa igual (ver condicional abajo)
+  # ═══════════════════════════════════════════════════════════════════════════
+  test:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: modules-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'pnpm-lock.yaml') }}
+
+      # Detecta si existe script "test" en package.json
+      # Si no existe, skipea gracefully en vez de fallar
+      - name: Run tests
+        run: |
+          if npm run --silent env 2>/dev/null | grep -q '"test"' || node -e "
+            const pkg = require('./package.json');
+            if (pkg.scripts && pkg.scripts.test && pkg.scripts.test !== 'echo \"Error: no test specified\" && exit 1') {
+              process.exit(0);
+            } else {
+              process.exit(1);
+            }
+          " 2>/dev/null; then
+            echo "✅ Test script found — running tests..."
+            npm test -- --passWithNoTests --ci
+          else
+            echo "⚠️  No test script configured — skipping."
+            echo "💡 Tip: configurá Vitest o Jest para cubrir tu código."
+          fi
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 6: Quality Gate — Status check final
+  # ═══════════════════════════════════════════════════════════════════════════
+  # POR QUÉ este job:
+  #   - GitHub requiere UN solo status check para branch protection
+  #   - Si agregás/quitás jobs, no tenés que tocar la config del repo
+  #   - Centraliza la decisión de "¿se puede mergear?"
+  # ═══════════════════════════════════════════════════════════════════════════
+  quality-gate:
+    name: ✅ Quality Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [typecheck, lint, build, test]
+    steps:
+      - name: Evaluate results
+        run: |
+          echo "=== Quality Gate Results ==="
+          echo "Typecheck: ${{ needs.typecheck.result }}"
+          echo "Lint:      ${{ needs.lint.result }}"
+          echo "Build:     ${{ needs.build.result }}"
+          echo "Test:      ${{ needs.test.result }}"
+          echo "============================"
+
+          if [[ "${{ needs.typecheck.result }}" != "success" ]] || \
+             [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.build.result }}" != "success" ]] || \
+             [[ "${{ needs.test.result }}" != "success" ]]; then
+            echo "❌ Quality gate FAILED — merge blocked."
+            exit 1
+          fi
+
+          echo "✅ All checks passed — safe to merge."
