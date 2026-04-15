@@ -98,6 +98,7 @@ export async function GET(request: Request) {
       {
         algorithm: "RS256",
         header: {
+          alg: "RS256",
           kid: keyId,
         },
       }
