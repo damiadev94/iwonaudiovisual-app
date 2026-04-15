@@ -84,13 +84,30 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
     setSelectedCourse(course);
     setSelectedLesson(lesson);
     setVideoUrl(null);
-    
-    if (course.isUpcoming) return;
-    if (!isActive) return;
-
     setVideoLoading(true);
+    
+    if (course.isUpcoming) {
+      setVideoLoading(false);
+      return;
+    }
+    
+    if (!isActive) {
+      setVideoLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`/api/cursos/video-token?publicId=${encodeURIComponent(lesson.public_id)}`);
+      if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.releaseDate) {
+          // Si el servidor detecta que el video es futuro aunque el curso no lo supiera
+          setSelectedCourse({ ...course, isUpcoming: true, releaseDate: errorData.releaseDate });
+          return;
+        }
+        throw new Error(errorData.error || "Acceso denegado.");
+      }
+      
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || "Error al obtener acceso al video");
@@ -115,7 +132,7 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
         <div className="p-4 border-b border-iwon-border bg-white/5">
           <h2 className="font-bold flex items-center gap-2 text-gold">
             <Video className="h-4 w-4" />
-            Contenido Exclusivo
+            Catálogo de Cursos
           </h2>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
@@ -124,7 +141,7 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
               <AccordionItem key={course.slug} value={course.slug} className="border-none">
                 <AccordionTrigger 
                   className={`px-3 py-2.5 hover:bg-white/5 rounded-xl transition-all hover:no-underline group data-[state=open]:bg-white/5 relative overflow-hidden ${
-                    course.isUpcoming ? "opacity-90 grayscale-[0.5] hover:grayscale-0" : ""
+                    course.isUpcoming ? "opacity-75" : ""
                   }`}
                   onClick={() => {
                     setSelectedCourse(course);
@@ -142,15 +159,12 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="text-sm font-semibold truncate text-white/90">{course.name}</span>
                       {course.isUpcoming && (
-                        <span className="text-[10px] text-gold font-bold uppercase tracking-widest mt-0.5">
-                          Próximamente
+                        <span className="text-[10px] text-gold font-bold uppercase tracking-widest mt-0.5 animate-pulse">
+                          Estreno
                         </span>
                       )}
                     </div>
                   </div>
-                  {course.isUpcoming && (
-                    <div className="absolute inset-0 bg-gold/5 pointer-events-none border-l-2 border-gold/30"></div>
-                  )}
                 </AccordionTrigger>
                 <AccordionContent className="pt-1 pb-2">
                   <div className="space-y-1 pl-4 pr-1">
@@ -163,21 +177,20 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
                           disabled={isLocked}
                           className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center gap-3 group relative overflow-hidden ${
                             selectedLesson?.id === lesson.id 
-                              ? "bg-gold text-black font-bold shadow-[0_4px_15px_rgba(212,175,55,0.3)]" 
+                              ? "bg-gold text-black font-bold" 
                               : isLocked 
                                 ? "text-muted-foreground/30 border border-white/5 cursor-not-allowed"
                                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                           }`}
                         >
                           {isLocked ? (
-                            <Info className="h-4 w-4 shrink-0 opacity-50" />
+                            <Lock className="h-3.5 w-3.5 shrink-0 opacity-40" />
                           ) : isActive ? (
                             <PlayCircle className={`h-4 w-4 shrink-0 ${selectedLesson?.id === lesson.id ? "text-black" : "text-gold group-hover:scale-110 transition-transform"}`} />
                           ) : (
                             <Lock className="h-4 w-4 shrink-0 text-muted-foreground/30" />
                           )}
                           <span className="truncate flex-1">{lesson.title}</span>
-                          {isLocked && <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>}
                         </button>
                       );
                     })}
@@ -194,35 +207,44 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
         <div className={`aspect-video relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-iwon-border ring-1 ring-white/10 ${
           selectedCourse?.isUpcoming ? "ring-gold/30" : ""
         }`}>
-          {selectedCourse?.isUpcoming ? (
+          {videoLoading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-20">
+              <Skeleton className="w-full h-full bg-white/5" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold" />
+              </div>
+            </div>
+          ) : selectedCourse?.isUpcoming ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-iwon-bg/95 via-black to-iwon-bg z-30 overflow-hidden">
                {/* Animated Background effects */}
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[120px] animate-pulse"></div>
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-gold/5 blur-3xl opacity-50"></div>
                
-               <Badge className="mb-6 bg-gold/10 text-gold border-gold/30 px-4 py-1.5 text-sm uppercase font-black tracking-widest animate-bounce">
-                 Estreno Exclusivo
+               <Badge className="mb-6 bg-gold text-black border-gold px-4 py-1 text-xs uppercase font-black tracking-widest">
+                 PRÓXIMAMENTE
                </Badge>
                
-               <h3 className="text-4xl md:text-5xl font-black mb-8 tracking-tighter text-white">
+               <h3 className="text-3xl md:text-5xl font-black mb-8 tracking-tighter text-white uppercase italic">
                  {selectedCourse.name}
                </h3>
                
                <Countdown targetDate={selectedCourse.releaseDate} currentTime={currentTime} />
                
-               <p className="text-muted-foreground max-w-sm mx-auto mt-10 text-lg leading-relaxed font-light italic">
-                 "La excelencia requiere preparación. Estamos puliendo los últimos detalles de esta clase magistral."
-               </p>
+               <div className="mt-10 space-y-2">
+                 <p className="text-gold font-bold text-lg tracking-tight">
+                   Este contenido estará disponible el {selectedCourse.releaseDate && new Date(selectedCourse.releaseDate).toLocaleDateString("es-AR", {
+                     day: "numeric",
+                     month: "long",
+                     year: "numeric"
+                   })}
+                 </p>
+                 <p className="text-muted-foreground/60 max-w-sm mx-auto text-sm leading-relaxed font-light italic">
+                   "Estamos preparando cada detalle para garantizarte la mejor formación audiovisual."
+                 </p>
+               </div>
             </div>
           ) : isActive ? (
             <>
-              {videoLoading ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-iwon-bg/50 backdrop-blur-md z-20">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold shadow-[0_0_15px_rgba(212,175,55,0.5)]"></div>
-                    <span className="text-xs font-medium text-gold/80 animate-pulse uppercase tracking-widest">Cargando video...</span>
-                  </div>
-                </div>
-              ) : videoUrl ? (
+              {videoUrl ? (
                 <video
                   key={videoUrl}
                   src={videoUrl}
@@ -235,24 +257,23 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground text-center p-6 gap-4">
                   <div className="bg-white/5 p-8 rounded-full">
-                    <Video className="h-16 w-16 opacity-10 animate-pulse" />
+                    <Video className="h-16 w-16 opacity-10" />
                   </div>
-                  <p className="max-w-[200px] text-sm font-medium">Selecciona una lección para comenzar tu formación</p>
+                  <p className="max-w-[200px] text-sm font-medium">Selecciona una lección para comenzar</p>
                 </div>
               )}
             </>
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-iwon-bg/95 via-iwon-bg/98 to-black z-30 backdrop-blur-xl">
-              <div className="bg-gold/10 p-6 rounded-full mb-8 relative">
-                <div className="absolute inset-0 rounded-full bg-gold/5 animate-ping"></div>
-                <Lock className="h-14 w-14 text-gold relative z-10" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-iwon-bg/95 z-30 backdrop-blur-xl">
+              <div className="bg-gold/10 p-6 rounded-full mb-8">
+                <Lock className="h-14 w-14 text-gold" />
               </div>
-              <h3 className="text-3xl font-bold mb-4 tracking-tight text-white">Contenido Bloqueado</h3>
+              <h3 className="text-3xl font-bold mb-4 tracking-tight text-white uppercase italic">Acceso Restringido</h3>
               <p className="text-muted-foreground max-w-md mx-auto mb-10 text-lg leading-relaxed font-light">
-                Para acceder a este curso necesitas una <span className="text-gold font-semibold italic">suscripción activa</span>. Únete a nuestra comunidad y desbloquea todo el contenido.
+                Este contenido requiere una <span className="text-gold font-semibold">suscripción activa</span>. ¡Únete a la élite y desbloquea todo el catálogo!
               </p>
               <Button className="bg-gold hover:bg-gold-light text-black font-black px-12 py-7 h-auto text-xl rounded-2xl shadow-[0_10px_30px_rgba(212,175,55,0.4)] transition-all hover:scale-105 active:scale-95 group">
-                ACTIVAR AHORA
+                ACTIVAR SUSCRIPCIÓN
                 <ChevronRight className="h-6 w-6 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>

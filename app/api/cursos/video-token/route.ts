@@ -49,9 +49,13 @@ export async function GET(request: Request) {
       if (releaseTime > now) {
         return NextResponse.json(
           { 
-            error: "Este contenido aún no está disponible.", 
+            error: "Contenido pendiente de estreno.", 
             releaseDate,
-            message: "Regresa pronto para ver este estreno." 
+            message: `Este video estará disponible el ${releaseTime.toLocaleDateString("es-AR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric"
+            })}.` 
           },
           { status: 403 }
         );
