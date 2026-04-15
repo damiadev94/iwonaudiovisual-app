@@ -59,7 +59,11 @@ export default async function CourseDetailPage({
         </div>
       </div>
 
-      <LessonManager courseId={id} initialLessons={lessons ?? []} />
+      <LessonManager 
+        courseId={id} 
+        courseSlug={course.slug}
+        initialLessons={lessons ?? []} 
+      />
     </div>
   );
 }

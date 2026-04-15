@@ -9,7 +9,6 @@ const videoFields = z
     video_url: z.string().url().nullable().optional(),
     video_public_id: z
       .string()
-      .regex(/^iwon\/lecciones\//, "El video debe pertenecer a la carpeta correcta")
       .nullable()
       .optional(),
   })

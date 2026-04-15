@@ -33,8 +33,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-iwon-border text-center text-sm text-muted-foreground">
+        <div className="mt-8 pt-8 border-t border-iwon-border flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Iwon Audiovisual. Todos los derechos reservados.</p>
+          <div className="flex items-center gap-4">
+            <a href="/politica-de-privacidad" className="hover:text-foreground transition-colors">
+              Política de Privacidad
+            </a>
+            <span>·</span>
+            <a href="/terminos-y-condiciones" className="hover:text-foreground transition-colors">
+              Términos y Condiciones
+            </a>
+          </div>
         </div>
       </div>
     </footer>

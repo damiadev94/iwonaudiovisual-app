@@ -1,39 +1,47 @@
 import { NextResponse } from "next/server";
-import { cloudinary } from "@/lib/cloudinary/config";
-
-// We'll search for videos in the 'cursos' folder
-const SEARCH_EXPRESSION = "folder:cursos AND resource_type:video";
 
 export async function GET() {
-  try {
-    // Use the Search API to get all videos in the folders
-    // we include 'context' field for descriptions and 'metadata' if used.
-    const result = await cloudinary.search
-      .expression(SEARCH_EXPRESSION)
-      .with_field("context")
-      .with_field("tags")
-      .sort_by("public_id", "asc") // Optional: sorting by public_id
-      .max_results(500)
-      .execute();
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
-    const resources = result.resources || [];
+  if (!accountId || !apiToken) {
+    return NextResponse.json({ error: "Cloudflare credentials missing." }, { status: 500 });
+  }
+
+  try {
+    // Fetch all videos from Cloudflare Stream
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream?limit=1000`,
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Cloudflare API error: ${response.statusText}`);
+    }
+
+    const { result: resources } = await response.json();
     
-    // Group resources by folder (which represents the Course)
-    // Structure: folder/course-name/lesson-name
+    // Group resources by course using 'meta.name' as the path (e.g. cursos/course-slug/lesson-name)
     const coursesMap: Record<string, any> = {};
 
     resources.forEach((resource: any) => {
-      // Extract the path parts. e.g. "cursos/nombre-del-curso/leccion-01"
-      const pathParts = resource.public_id.split("/");
+      const name = resource.meta?.name || "";
+      const pathParts = name.split("/");
       
-      // If it doesn't have at least 'cursos/course/lesson', we skip it
-      if (pathParts.length < 3) return;
+      // Expected format: cursos/course-slug/lesson-name
+      // If it doesn't follow the pattern, we skip or treat as generic
+      if (pathParts.length < 3 || pathParts[0] !== "cursos") return;
 
       const courseSlug = pathParts[1];
       const lessonTitle = pathParts.slice(2).join(" / ").replace(/\//g, " - ");
       
-      // Look for release_date in contextual metadata
-      const releaseDate = resource.context?.custom?.release_date || null;
+      // Look for release_date in custom metadata
+      const releaseDate = resource.meta?.release_date || null;
 
       if (!coursesMap[courseSlug]) {
         coursesMap[courseSlug] = {
@@ -45,13 +53,10 @@ export async function GET() {
         };
       }
 
-      // If this resource has a release_date, track it for the course
+      // Track release date for the course
       if (releaseDate) {
-        // We keep the release date if it's the first one found or it's later? 
-        // Actually, usually it should be consistent per folder.
         coursesMap[courseSlug].releaseDate = releaseDate;
         
-        // Check if it's in the future
         const now = new Date();
         const releaseTime = new Date(releaseDate);
         if (releaseTime > now) {
@@ -60,22 +65,22 @@ export async function GET() {
       }
 
       coursesMap[courseSlug].lessons.push({
-        id: resource.public_id,
-        title: resource.context?.custom?.caption || resource.context?.custom?.alt || lessonTitle,
-        description: resource.context?.custom?.description || null,
-        public_id: resource.public_id,
+        id: resource.uid,
+        title: resource.meta?.caption || resource.meta?.title || lessonTitle,
+        description: resource.meta?.description || null,
+        public_id: resource.uid, // CF UID replaces Cloudinary public_id
         duration: resource.duration || 0,
-        thumbnail: resource.secure_url.replace(/\.[^/.]+$/, ".jpg"), // auto-thumb
+        thumbnail: resource.thumbnail || `https://customer-${accountId}.cloudflarestream.com/${resource.uid}/thumbnails/thumbnail.jpg`,
         releaseDate: releaseDate,
       });
     });
 
-    // Convert map to array and return
+    // Convert map to array
     const catalog = Object.values(coursesMap);
     
-    // Sort lessons within courses by ID
+    // Sort lessons within courses by name/path
     catalog.forEach((course: any) => {
-      course.lessons.sort((a: any, b: any) => a.id.localeCompare(b.id));
+      course.lessons.sort((a: any, b: any) => a.title.localeCompare(b.title));
     });
 
     return NextResponse.json(catalog);

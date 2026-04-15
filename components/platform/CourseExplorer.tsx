@@ -12,6 +12,7 @@ import { PlayCircle, Lock, Video, FileText, Info, ChevronRight } from "lucide-re
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "../ui/skeleton";
+import { VideoPlayer } from "./VideoPlayer";
 
 interface Lesson {
   id: string;
@@ -244,18 +245,13 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
             </div>
           ) : isActive ? (
             <>
-              {videoUrl ? (
-                <video
-                  key={videoUrl}
-                  src={videoUrl}
-                  controls
-                  className="w-full h-full"
-                  controlsList="nodownload"
-                  onContextMenu={(e) => e.preventDefault()}
-                  autoPlay
-                />
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground text-center p-6 gap-4">
+              <VideoPlayer 
+                videoUrl={videoUrl} 
+                title={selectedLesson?.title || "Video"} 
+                publicId={selectedLesson?.public_id || null}
+              />
+              {!videoUrl && !videoLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground text-center p-6 gap-4 pointer-events-none">
                   <div className="bg-white/5 p-8 rounded-full">
                     <Video className="h-16 w-16 opacity-10" />
                   </div>

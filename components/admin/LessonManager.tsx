@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { CldUploadWidget } from "next-cloudinary";
-import type { CloudinaryUploadWidgetResults } from "@cloudinary-util/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,7 @@ import {
   Pencil,
   Upload,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import type { Lesson } from "@/types";
 
@@ -52,9 +52,11 @@ const emptyForm = (nextOrder: number): LessonFormState => ({
 });
 
 export function LessonManager({
+  courseSlug,
   courseId,
   initialLessons,
 }: {
+  courseSlug: string;
   courseId: string;
   initialLessons: Lesson[];
 }) {
@@ -63,6 +65,8 @@ export function LessonManager({
   const [editLesson, setEditLesson] = useState<Lesson | null>(null);
   const [form, setForm] = useState<LessonFormState>(emptyForm(0));
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -85,14 +89,65 @@ export function LessonManager({
     setEditLesson(lesson);
   }
 
-  function handleVideoUpload(results: CloudinaryUploadWidgetResults) {
-    if (results.event !== "success" || typeof results.info !== "object") return;
-    const info = results.info as { secure_url: string; public_id: string };
-    setForm((prev) => ({
-      ...prev,
-      video: { secure_url: info.secure_url, public_id: info.public_id },
-    }));
-    toast.success("Video subido correctamente");
+  async function handleFileSelected(file: File) {
+    if (!file) return;
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // 1. Get Direct Upload URL from our backend
+      const res = await fetch("/api/admin/video/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: form.title || "Lección", courseSlug }),
+      });
+      
+      if (!res.ok) throw new Error("No se pudo obtener el URL de subida");
+      
+      const { uploadUrl, uid } = await res.json();
+
+      // 2. Upload directly to Cloudflare
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", uploadUrl);
+      
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      };
+
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(xhr.response);
+          } else {
+            reject(new Error("Error en la subida a Cloudflare"));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Error de red durante la subida"));
+        xhr.send(formData);
+      });
+
+      await uploadPromise;
+
+      setForm((prev) => ({
+        ...prev,
+        video: { 
+          secure_url: `https://stream.cloudflare.com/${uid}`, 
+          public_id: uid 
+        },
+      }));
+      toast.success("Video subido correctamente a Cloudflare");
+    } catch (error: any) {
+      toast.error(error.message || "Error al subir el video");
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
   }
 
   async function handleSubmitAdd(e: React.FormEvent) {
@@ -244,7 +299,9 @@ export function LessonManager({
               form={form}
               setForm={setForm}
               onSubmit={handleSubmitAdd}
-              onVideoUpload={handleVideoUpload}
+              onVideoUpload={handleFileSelected}
+              uploading={uploading}
+              uploadProgress={uploadProgress}
               submitting={submitting}
               submitLabel="Crear lección"
             />
@@ -272,13 +329,13 @@ export function LessonManager({
                     <span className="text-sm font-medium truncate">
                       {index + 1}. {lesson.title}
                     </span>
-                    {lesson.video_url ? (
+                    {lesson.video_public_id ? (
                       <Badge
                         variant="outline"
                         className="text-xs bg-iwon-success/10 text-iwon-success border-iwon-success/20 shrink-0"
                       >
                         <Video className="h-3 w-3 mr-1" />
-                        Video
+                        CF Stream
                       </Badge>
                     ) : (
                       <Badge
@@ -326,7 +383,9 @@ export function LessonManager({
                         form={form}
                         setForm={setForm}
                         onSubmit={handleSubmitEdit}
-                        onVideoUpload={handleVideoUpload}
+                        onVideoUpload={handleFileSelected}
+                        uploading={uploading}
+                        uploadProgress={uploadProgress}
                         submitting={submitting}
                         submitLabel="Guardar cambios"
                         showSortOrder
@@ -362,6 +421,8 @@ function LessonForm({
   setForm,
   onSubmit,
   onVideoUpload,
+  uploading,
+  uploadProgress,
   submitting,
   submitLabel,
   showSortOrder = false,
@@ -369,10 +430,11 @@ function LessonForm({
   form: LessonFormState;
   setForm: React.Dispatch<React.SetStateAction<LessonFormState>>;
   onSubmit: (e: React.FormEvent) => void;
-  onVideoUpload: (results: CloudinaryUploadWidgetResults) => void;
+  onVideoUpload: (file: File) => void;
+  uploading: boolean;
+  uploadProgress: number;
   submitting: boolean;
   submitLabel: string;
-  /** Show sort_order field. True only in edit mode — on create the server assigns MAX+1. */
   showSortOrder?: boolean;
 }) {
   return (
@@ -433,12 +495,12 @@ function LessonForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Video</Label>
+        <Label>Video (Cloudflare Stream)</Label>
         {form.video ? (
           <div className="flex items-center gap-3 p-3 rounded-lg bg-iwon-bg border border-iwon-success/30">
             <CheckCircle className="h-4 w-4 text-iwon-success shrink-0" />
             <span className="text-sm text-iwon-success truncate flex-1">
-              Video cargado
+              Video listo: {form.video.public_id}
             </span>
             <Button
               type="button"
@@ -450,36 +512,43 @@ function LessonForm({
               Cambiar
             </Button>
           </div>
+        ) : uploading ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Subiendo a Cloudflare...
+              </span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <Progress value={uploadProgress} className="h-1" />
+          </div>
         ) : (
-          <CldUploadWidget
-            signatureEndpoint="/api/admin/cloudinary/sign"
-            options={{
-              resourceType: "video",
-              folder: "iwon/lecciones",
-              maxFiles: 1,
-              clientAllowedFormats: ["mp4", "mov", "avi", "webm", "mkv"],
-              maxFileSize: 524288000, // 500 MB
-            }}
-            onSuccess={onVideoUpload}
-          >
-            {({ open }) => (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
-                onClick={() => open()}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Subir video a Cloudinary
-              </Button>
-            )}
-          </CldUploadWidget>
+          <div className="relative">
+            <input
+              type="file"
+              accept="video/*"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onVideoUpload(file);
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Seleccionar video para Cloudflare
+            </Button>
+          </div>
         )}
       </div>
 
       <Button
         type="submit"
-        disabled={submitting || !form.title.trim()}
+        disabled={submitting || uploading || !form.title.trim()}
         className="w-full bg-gold hover:bg-gold-light text-black font-semibold disabled:opacity-50"
       >
         {submitting ? "Guardando..." : submitLabel}

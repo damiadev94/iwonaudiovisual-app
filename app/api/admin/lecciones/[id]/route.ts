@@ -10,7 +10,6 @@ const videoFields = z
     video_url: z.string().url().nullable().optional(),
     video_public_id: z
       .string()
-      .regex(/^iwon\/lecciones\//, "El video debe pertenecer a la carpeta correcta")
       .nullable()
       .optional(),
   })
@@ -113,12 +112,23 @@ export async function DELETE(
 
   if (lesson.video_public_id) {
     try {
-      await cloudinary.uploader.destroy(lesson.video_public_id, {
-        resource_type: "video",
-      });
+      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+      const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+      
+      if (accountId && apiToken) {
+        await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${lesson.video_public_id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${apiToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
     } catch (err) {
-      // Log but don't block — DB record is the source of truth
-      console.error("[DELETE lesson] Cloudinary cleanup failed:", err);
+      console.error("[DELETE lesson] Cloudflare cleanup failed:", err);
     }
   }
 

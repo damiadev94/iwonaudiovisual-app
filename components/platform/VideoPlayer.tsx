@@ -21,16 +21,14 @@ export function VideoPlayer({ videoUrl, title }: VideoPlayerProps) {
   }
 
   return (
-    <div className="aspect-video rounded-xl overflow-hidden bg-black">
-      <video
+    <div className="aspect-video rounded-xl overflow-hidden bg-black relative border border-iwon-border shadow-2xl">
+      <iframe
         src={videoUrl}
-        controls
-        className="w-full h-full"
+        className="absolute top-0 left-0 w-full h-full border-none"
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowFullScreen
         title={title}
-        preload="metadata"
-      >
-        Tu navegador no soporta el reproductor de video.
-      </video>
+      />
     </div>
   );
 }
