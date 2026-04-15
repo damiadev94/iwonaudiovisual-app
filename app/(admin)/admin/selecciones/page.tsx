@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -34,11 +34,7 @@ export default function SeleccionesAdminPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchSelections();
-  }, []);
-
-  async function fetchSelections() {
+  const fetchSelections = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
       .from("selections")
@@ -46,7 +42,11 @@ export default function SeleccionesAdminPage() {
       .order("created_at", { ascending: false });
     setSelections((data || []) as Selection[]);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchSelections();
+  }, [fetchSelections]);
 
   async function fetchApplications(selectionId: string) {
     setSelectedSelection(selectionId);

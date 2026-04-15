@@ -29,7 +29,6 @@ import { toast } from "sonner";
 import {
   Plus,
   BookOpen,
-  GripVertical,
   Eye,
   EyeOff,
   ListVideo,
@@ -107,8 +106,8 @@ export default function CursosAdminPage() {
       setDialogOpen(false);
       setThumbnail(null);
       fetchCourses();
-    } catch (err: any) {
-      toast.error(err.message || "Error al crear el curso");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error al crear el curso");
     } finally {
       setSubmitting(false);
     }
@@ -283,9 +282,10 @@ export default function CursosAdminPage() {
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="h-10 w-10 rounded bg-iwon-bg border border-iwon-border flex items-center justify-center shrink-0 overflow-hidden">
                       {course.thumbnail_url ? (
-                        <img 
-                          src={course.thumbnail_url} 
-                          alt={course.title} 
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={course.thumbnail_url}
+                          alt={course.title}
                           className="h-full w-full object-cover"
                         />
                       ) : (

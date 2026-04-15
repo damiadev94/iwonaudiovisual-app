@@ -20,7 +20,7 @@ async function assertAdmin() {
 }
 
 // GET /api/admin/portfolio — list all portfolio items
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const user = await assertAdmin();
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

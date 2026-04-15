@@ -19,6 +19,7 @@ export function CourseCard({ course }: { course: Course }) {
         {/* Thumbnail */}
         <div className="aspect-video bg-gradient-to-br from-gold/10 to-iwon-bg-secondary flex items-center justify-center">
           {course.thumbnail_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={course.thumbnail_url}
               alt={course.title}

@@ -94,7 +94,7 @@ export async function DELETE(
     .eq("course_id", id);
 
   // 3. Clean up Cloudinary assets
-  const cleanupTasks: Promise<any>[] = [];
+  const cleanupTasks: Promise<void>[] = [];
 
   if (course.thumbnail_public_id) {
     cleanupTasks.push(

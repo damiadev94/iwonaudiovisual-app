@@ -62,7 +62,7 @@ describe("middleware — redirecciones según estado de autenticación", () => {
 
     it("permite el acceso a /dashboard/canciones sin redirigir", async () => {
       const response = await middleware(
-        buildRequest("/dashboard/canciones") as any
+        buildRequest("/dashboard/canciones")
       );
 
       expect(response.status).not.toBe(307);

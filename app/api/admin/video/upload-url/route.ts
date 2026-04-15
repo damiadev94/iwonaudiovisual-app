@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       uploadUrl: data.result.uploadURL,
       uid: data.result.uid,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[POST /api/admin/video/upload-url]", error);
     return NextResponse.json({ error: "No se pudo generar el URL de subida." }, { status: 500 });
   }

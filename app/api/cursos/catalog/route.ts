@@ -1,5 +1,36 @@
 import { NextResponse } from "next/server";
 
+interface CloudflareResource {
+  uid: string;
+  meta?: {
+    name?: string;
+    caption?: string;
+    title?: string;
+    description?: string;
+    release_date?: string;
+  };
+  duration?: number;
+  thumbnail?: string;
+}
+
+interface CourseLesson {
+  id: string;
+  title: string;
+  description: string | null;
+  public_id: string;
+  duration: number;
+  thumbnail: string;
+  releaseDate: string | null;
+}
+
+interface CourseMapEntry {
+  name: string;
+  slug: string;
+  releaseDate: string | null;
+  isUpcoming: boolean;
+  lessons: CourseLesson[];
+}
+
 export async function GET() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
@@ -27,9 +58,9 @@ export async function GET() {
     const { result: resources } = await response.json();
     
     // Group resources by course using 'meta.name' as the path (e.g. cursos/course-slug/lesson-name)
-    const coursesMap: Record<string, any> = {};
+    const coursesMap: Record<string, CourseMapEntry> = {};
 
-    resources.forEach((resource: any) => {
+    resources.forEach((resource: CloudflareResource) => {
       const name = resource.meta?.name || "";
       const pathParts = name.split("/");
       
@@ -79,13 +110,13 @@ export async function GET() {
     const catalog = Object.values(coursesMap);
     
     // Sort lessons within courses by name/path
-    catalog.forEach((course: any) => {
-      course.lessons.sort((a: any, b: any) => a.title.localeCompare(b.title));
+    catalog.forEach((course: CourseMapEntry) => {
+      course.lessons.sort((a: CourseLesson, b: CourseLesson) => a.title.localeCompare(b.title));
     });
 
     return NextResponse.json(catalog);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[GET /api/cursos/catalog]", error);
-    return NextResponse.json({ error: "No se pudo cargar el catálogo.", details: error.message }, { status: 500 });
+    return NextResponse.json({ error: "No se pudo cargar el catálogo.", details: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }

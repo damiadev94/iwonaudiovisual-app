@@ -89,7 +89,7 @@ describe("POST /api/subscription/cancel", () => {
     });
 
     const response = await POST(makeRequest({}));
-    const data = await response.json();
+    await response.json();
 
     expect(response.status).toBe(400);
   });

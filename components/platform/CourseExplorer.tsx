@@ -52,13 +52,14 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
 
   useEffect(() => {
     fetchCatalog();
-    
+
     // Timer for countdowns
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    
+
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchCatalog() {
@@ -74,7 +75,7 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
           handleSelectLesson(data[0].lessons[0], data[0]);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("No se pudo cargar el catálogo de cursos.");
     } finally {
       setLoading(false);
@@ -115,8 +116,8 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
       }
       const { url } = await res.json();
       setVideoUrl(url);
-    } catch (error: any) {
-      toast.error(error.message || "No se pudo cargar el video.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "No se pudo cargar el video.");
     } finally {
       setVideoLoading(false);
     }
@@ -239,7 +240,7 @@ export function CourseExplorer({ user }: CourseExplorerProps) {
                    })}
                  </p>
                  <p className="text-muted-foreground/60 max-w-sm mx-auto text-sm leading-relaxed font-light italic">
-                   "Estamos preparando cada detalle para garantizarte la mejor formación audiovisual."
+                   &ldquo;Estamos preparando cada detalle para garantizarte la mejor formación audiovisual.&rdquo;
                  </p>
                </div>
             </div>

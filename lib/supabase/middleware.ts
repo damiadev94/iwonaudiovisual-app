@@ -29,7 +29,7 @@ export async function checkUserAccess(userId: string | null) {
 /**
  * 🌐 Middleware HTTP
  */
-export async function middleware(request: Request) {
+export async function middleware(_request: Request) {
   const supabase = await createClient();
 
   const {

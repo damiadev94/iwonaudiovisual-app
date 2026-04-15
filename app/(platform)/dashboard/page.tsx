@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EventCalendar } from "@/components/platform/EventCalendar";
 import { BookOpen, Film, Gift, Users, Crown } from "lucide-react";
 import Link from "next/link";

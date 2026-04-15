@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,18 +27,18 @@ export default function PortfolioAdminPage() {
   const [saving, setSaving] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  async function fetchItems() {
+  const fetchItems = useCallback(async () => {
     const res = await fetch("/api/admin/portfolio");
     if (res.ok) {
       const json = await res.json();
       setItems(json.items as PortfolioItem[]);
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

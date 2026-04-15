@@ -37,7 +37,7 @@ async function getPlanId(): Promise<string> {
   return plan.id!;
 }
 
-export async function getSubscribeUrl(userId: string, email: string): Promise<string> {
+export async function getSubscribeUrl(userId: string, _email: string): Promise<string> {
   const planId = await getPlanId();
 
   // Usamos la URL directa del checkout de planes de Mercado Pago.

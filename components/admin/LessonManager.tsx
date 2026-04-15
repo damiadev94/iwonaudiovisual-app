@@ -142,8 +142,8 @@ export function LessonManager({
         },
       }));
       toast.success("Video subido correctamente a Cloudflare");
-    } catch (error: any) {
-      toast.error(error.message || "Error al subir el video");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Error al subir el video");
     } finally {
       setUploading(false);
       setUploadProgress(0);

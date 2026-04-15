@@ -5,11 +5,11 @@ import { PreApproval, Payment } from "mercadopago";
 import { mercadopago } from "./client";
 
 export function verifyWebhookSignature(
-  body: any,
+  body: { data: { id: string } } | null,
   signature: string | null,
   requestId: string | null,
 ): boolean {
-  if (!signature || !requestId) return false;
+  if (!signature || !requestId || !body) return false;
 
   const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
   if (!secret) return false;
@@ -43,8 +43,13 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
       };
 
       const status = statusMap[preapprovalData.status || ""] || "pending";
-      const payerEmail = (preapprovalData as any).payer_email as string | undefined;
-      const externalRef = (preapprovalData as any).external_reference as string | undefined;
+
+      type MPPreApprovalData = {
+        external_reference?: string;
+        auto_recurring?: { transaction_amount?: number };
+      };
+      const mpTyped = preapprovalData as MPPreApprovalData;
+      const externalRef = mpTyped.external_reference;
 
       // Intentar crear/actualizar la suscripción buscando por external_reference (User ID)
       if (externalRef) {
@@ -54,7 +59,7 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
             mp_subscription_id: preapprovalData.id,
             mp_preapproval_id: preapprovalData.id,
             status,
-            plan_amount: (preapprovalData as any).auto_recurring?.transaction_amount ?? 14999,
+            plan_amount: mpTyped.auto_recurring?.transaction_amount ?? 14999,
             currency: "ARS",
             current_period_start:
               preapprovalData.last_modified ?? preapprovalData.date_created,

@@ -107,7 +107,7 @@ export async function GET(request: Request) {
     const signedUrl = `https://customer-${accountId}.cloudflarestream.com/${token}/iframe`;
 
     return NextResponse.json({ url: signedUrl, expiresAt });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[GET /api/cursos/video-token]", error);
     return NextResponse.json({ error: "No se pudo generar el acceso al video." }, { status: 500 });
   }

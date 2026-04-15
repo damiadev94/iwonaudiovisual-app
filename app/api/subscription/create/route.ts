@@ -41,10 +41,11 @@ export async function POST() {
     );
 
     return NextResponse.json({ init_point });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[subscription/create] MP Error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "payment_error", message: error?.message ?? "Unknown error" },
+      { error: "payment_error", message },
       { status: 500 }
     );
   }

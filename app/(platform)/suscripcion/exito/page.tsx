@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,40 +15,40 @@ function SuscripcionExitoContent() {
   const [linking, setLinking] = useState(!!preapprovalId);
   const [error, setError] = useState<string | null>(null);
 
-  async function linkSubscription() {
+  const linkSubscription = useCallback(async () => {
     if (!preapprovalId) return;
     setLinking(true);
     setError(null);
     console.log("[Exito] Iniciando vinculación para ID:", preapprovalId);
-    
+
     try {
       const res = await fetch("/api/subscription/link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preapproval_id: preapprovalId }),
       });
-      
+
       const data = await res.json();
       console.log("[Exito] Respuesta del servidor:", data);
-      
+
       if (!res.ok) {
         throw new Error(data.message || data.error || "Error desconocido");
       }
-      
+
       console.log("[Exito] Vinculación completada con éxito");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Exito] Error fatal vinculando:", err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLinking(false);
     }
-  }
+  }, [preapprovalId]);
 
   useEffect(() => {
     if (preapprovalId && !activated) {
       linkSubscription();
     }
-  }, [preapprovalId]);
+  }, [preapprovalId, activated, linkSubscription]);
 
   useEffect(() => {
     if (activated || polls >= 15 || linking || error) return;

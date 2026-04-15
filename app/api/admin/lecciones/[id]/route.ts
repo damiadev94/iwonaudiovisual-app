@@ -2,7 +2,6 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-guard";
-import { cloudinary } from "@/lib/cloudinary/config";
 
 // Both fields must be present together or both absent
 const videoFields = z

@@ -105,7 +105,7 @@ export default async function SeleccionPage() {
             <div className="p-6 bg-gradient-to-br from-gold/5 to-transparent border border-gold/10 rounded-2xl">
               <p className="text-xs text-gold font-bold uppercase tracking-wider mb-2">Tip de éxito</p>
               <p className="text-sm text-balance leading-relaxed italic text-muted-foreground">
-                "Asegurate de que tu demo tenga buena calidad de audio. No tiene que estar masterizado, pero sí que se aprecie tu visión artística."
+                &ldquo;Asegurate de que tu demo tenga buena calidad de audio. No tiene que estar masterizado, pero sí que se aprecie tu visión artística.&rdquo;
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,11 +44,7 @@ export default function CancionesAdminPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
-
-  async function fetchSubmissions() {
+  const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     const res = await fetch("/api/admin/canciones");
     if (res.ok) {
@@ -58,7 +54,11 @@ export default function CancionesAdminPage() {
       toast.error("Error al cargar las canciones");
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
 
   function handleDownload(id: string) {
     window.open(`/api/admin/canciones/${id}/download`, "_blank");

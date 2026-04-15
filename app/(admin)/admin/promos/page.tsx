@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,7 @@ export default function PromosAdminPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchPromos();
-  }, []);
-
-  async function fetchPromos() {
+  const fetchPromos = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
       .from("promos")
@@ -30,7 +26,11 @@ export default function PromosAdminPage() {
       .order("created_at", { ascending: false });
     setPromos((data || []) as Promo[]);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchPromos();
+  }, [fetchPromos]);
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

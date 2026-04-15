@@ -33,18 +33,20 @@ describe("MercadoPago Webhook", () => {
   // =============================
 
   describe("verifyWebhookSignature", () => {
-    it("should return false if signature is missing", () => {
-      const result = verifyWebhookSignature(null, "body", "secret");
+    const validBody = { data: { id: "event-1" } };
+
+    it("should return false if body is missing", () => {
+      const result = verifyWebhookSignature(null, "v1=abc,ts=123", "req-id");
       expect(result).toBe(false);
     });
 
-    it("should return false if secret is missing", () => {
-      const result = verifyWebhookSignature("sig", "body", null);
+    it("should return false if requestId is missing", () => {
+      const result = verifyWebhookSignature(validBody, "v1=abc,ts=123", null);
       expect(result).toBe(false);
     });
 
     it("should return false if signature is invalid", () => {
-      const result = verifyWebhookSignature("invalid", "body", "secret");
+      const result = verifyWebhookSignature(validBody, "invalid", "req-id");
       expect(result).toBe(false);
     });
 
@@ -52,9 +54,9 @@ describe("MercadoPago Webhook", () => {
       // 👇 si tu función usa crypto real, podés mockearla
       const spy = vi
         .spyOn(global, "Buffer")
-        .mockImplementationOnce(() => "valid" as any);
+        .mockImplementationOnce(() => "valid" as unknown as typeof Buffer);
 
-      const result = verifyWebhookSignature("valid", "body", "secret");
+      const result = verifyWebhookSignature(validBody, "v1=valid,ts=123", "req-id");
 
       expect(result).toBeDefined();
 
@@ -67,7 +69,7 @@ describe("MercadoPago Webhook", () => {
   // =============================
 
   describe("processWebhookEvent", () => {
-    const mockDb: any = {
+    const mockDb = {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
@@ -78,10 +80,10 @@ describe("MercadoPago Webhook", () => {
       single: vi.fn().mockResolvedValue({ data: { id: "sub-1" }, error: null }),
       // Makes the object thenable so `await supabase.from(...).update(...).eq(...)` resolves
       then: (resolve: (v: unknown) => void) => resolve({ data: null, error: null }),
-    };
+    } as unknown as ReturnType<typeof createAdminClient>;
 
     beforeEach(() => {
-      (createAdminClient as any).mockReturnValue(mockDb);
+      vi.mocked(createAdminClient).mockReturnValue(mockDb);
     });
 
     it("should handle approved payment", async () => {

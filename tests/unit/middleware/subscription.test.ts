@@ -24,13 +24,13 @@ describe("checkUserAccess", () => {
 
   // 🔴 2. Sin suscripción
   it("should deny access if no active subscription", async () => {
-    (createAdminClient as any).mockReturnValue({
+    vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null }),
-    });
+    } as unknown as ReturnType<typeof createAdminClient>);
 
     const result = await checkUserAccess("user-1");
 
@@ -42,7 +42,7 @@ describe("checkUserAccess", () => {
 
   // 🟢 3. Con suscripción activa
   it("should allow access if subscription is active", async () => {
-    (createAdminClient as any).mockReturnValue({
+    vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -50,7 +50,7 @@ describe("checkUserAccess", () => {
       maybeSingle: vi.fn().mockResolvedValue({
         data: { status: "active" },
       }),
-    });
+    } as unknown as ReturnType<typeof createAdminClient>);
 
     const result = await checkUserAccess("user-1");
 
@@ -61,7 +61,7 @@ describe("checkUserAccess", () => {
 
   // 🟡 4. Suscripción pending (permitida)
   it("should allow access if subscription is pending", async () => {
-    (createAdminClient as any).mockReturnValue({
+    vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -69,7 +69,7 @@ describe("checkUserAccess", () => {
       maybeSingle: vi.fn().mockResolvedValue({
         data: { status: "pending" },
       }),
-    });
+    } as unknown as ReturnType<typeof createAdminClient>);
 
     const result = await checkUserAccess("user-1");
 

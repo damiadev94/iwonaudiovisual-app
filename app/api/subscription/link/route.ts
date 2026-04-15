@@ -45,14 +45,21 @@ export async function POST(request: Request) {
       .eq("user_id", user.id)
       .maybeSingle();
 
+    type MPPreApprovalData = {
+      status?: string;
+      date_created?: string;
+      auto_recurring?: { transaction_amount?: number };
+    };
+    const mpTyped = mpData as MPPreApprovalData;
+
     const subData = {
       user_id: user.id,
       mp_subscription_id: preapproval_id,
       mp_preapproval_id: preapproval_id,
       status,
-      plan_amount: (mpData as any).auto_recurring?.transaction_amount ?? 1000,
+      plan_amount: mpTyped.auto_recurring?.transaction_amount ?? 1000,
       currency: "ARS",
-      current_period_start: mpData.date_created,
+      current_period_start: mpTyped.date_created,
     };
 
     let result;
@@ -78,9 +85,9 @@ export async function POST(request: Request) {
 
     console.log("[subscription/link] Operación exitosa en DB");
     return NextResponse.json({ success: true, status });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[subscription/link] Error FATAL:", error);
-    return NextResponse.json({ error: "link_error", message: error.message }, { status: 500 });
+    return NextResponse.json({ error: "link_error", message: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }
 

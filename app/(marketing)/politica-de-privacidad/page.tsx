@@ -16,7 +16,7 @@ export default function PoliticaDePrivacidadPage() {
         <section>
           <h2 className="text-xl font-semibold mb-3">1. Responsable del tratamiento</h2>
           <p className="text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">Iwon Audiovisual</strong> (en adelante, "nosotros", "la plataforma" o "el sitio") es responsable del tratamiento de los datos personales recopilados a través de{" "}
+            <strong className="text-foreground">Iwon Audiovisual</strong> (en adelante, &ldquo;nosotros&rdquo;, &ldquo;la plataforma&rdquo; o &ldquo;el sitio&rdquo;) es responsable del tratamiento de los datos personales recopilados a través de{" "}
             <strong className="text-foreground">iwonaudiovisual.com</strong>. Ante cualquier consulta, podés contactarnos en{" "}
             <a href="mailto:contacto@iwonaudiovisual.com" className="text-primary underline underline-offset-4">
               contacto@iwonaudiovisual.com
@@ -83,7 +83,7 @@ export default function PoliticaDePrivacidadPage() {
           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
             <li>Acceder a tus datos personales.</li>
             <li>Rectificar datos inexactos o incompletos.</li>
-            <li>Solicitar la eliminación de tus datos ("derecho al olvido").</li>
+            <li>Solicitar la eliminación de tus datos (&ldquo;derecho al olvido&rdquo;).</li>
             <li>Oponerte al tratamiento de tus datos.</li>
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-3">

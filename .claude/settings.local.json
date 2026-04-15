@@ -26,7 +26,8 @@
       "Bash(echo \"exit: $?\")",
       "Bash(ls supabase/migrations/)",
       "Bash(cat vitest.config.*)",
-      "Bash(cat vite.config.*)"
+      "Bash(cat vite.config.*)",
+      "Bash(npx eslint *)"
     ]
   }
 }

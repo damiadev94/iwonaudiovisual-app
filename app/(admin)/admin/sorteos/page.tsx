@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,7 @@ export default function SorteosAdminPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editRaffle, setEditRaffle] = useState<Raffle | null>(null);
 
-  useEffect(() => {
-    fetchRaffles();
-  }, []);
-
-  async function fetchRaffles() {
+  const fetchRaffles = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
       .from("raffles")
@@ -31,7 +27,11 @@ export default function SorteosAdminPage() {
       .order("created_at", { ascending: false });
     setRaffles((data || []) as Raffle[]);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchRaffles();
+  }, [fetchRaffles]);
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

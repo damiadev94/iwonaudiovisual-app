@@ -21,7 +21,7 @@ describe("POST /api/canciones/registrar", () => {
   // 🧩 Helpers
   const mockUser = { id: "user-1" };
 
-  const createRequest = (body: any) =>
+  const createRequest = (body: Record<string, unknown>) =>
     new Request("http://localhost", {
       method: "POST",
       body: JSON.stringify(body),
@@ -29,11 +29,11 @@ describe("POST /api/canciones/registrar", () => {
 
   // 🔴 1. No autenticado
   it("should return 401 if user is not authenticated", async () => {
-    (createClient as any).mockResolvedValue({
+    vi.mocked(createClient).mockResolvedValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
       },
-    });
+    } as unknown as Awaited<ReturnType<typeof createClient>>);
 
     const res = await POST(createRequest({}));
 
@@ -42,19 +42,19 @@ describe("POST /api/canciones/registrar", () => {
 
   // 🔴 2. Sin suscripción
   it("should return 403 if user has no subscription", async () => {
-    (createClient as any).mockResolvedValue({
+    vi.mocked(createClient).mockResolvedValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({ data: { user: mockUser } }),
       },
-    });
+    } as unknown as Awaited<ReturnType<typeof createClient>>);
 
-    (createAdminClient as any).mockReturnValue({
+    vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null }),
-    });
+    } as unknown as ReturnType<typeof createAdminClient>);
 
     const res = await POST(createRequest({}));
 
@@ -88,7 +88,7 @@ describe("POST /api/canciones/registrar", () => {
   it("should return 500 if DB insert fails", async () => {
     setupAuthAndSubscription();
 
-    (createAdminClient as any).mockReturnValue({
+    vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -99,7 +99,7 @@ describe("POST /api/canciones/registrar", () => {
         data: null,
         error: { message: "DB error" },
       }),
-    });
+    } as unknown as ReturnType<typeof createAdminClient>);
 
     const res = await POST(
       createRequest({
@@ -120,7 +120,7 @@ describe("POST /api/canciones/registrar", () => {
       file_name: "file.mp3",
     };
 
-    (createAdminClient as any).mockReturnValue({
+    vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -131,7 +131,7 @@ describe("POST /api/canciones/registrar", () => {
         data: mockInsert,
         error: null,
       }),
-    });
+    } as unknown as ReturnType<typeof createAdminClient>);
 
     const res = await POST(
       createRequest({
@@ -149,13 +149,13 @@ describe("POST /api/canciones/registrar", () => {
 
   // 🧩 Helper compartido
   function setupAuthAndSubscription() {
-    (createClient as any).mockResolvedValue({
+    vi.mocked(createClient).mockResolvedValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({ data: { user: mockUser } }),
       },
-    });
+    } as unknown as Awaited<ReturnType<typeof createClient>>);
 
-    (createAdminClient as any).mockReturnValue({
+    vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -163,6 +163,6 @@ describe("POST /api/canciones/registrar", () => {
       maybeSingle: vi.fn().mockResolvedValue({
         data: { status: "active" },
       }),
-    });
+    } as unknown as ReturnType<typeof createAdminClient>);
   }
 });
