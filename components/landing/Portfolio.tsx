@@ -7,8 +7,7 @@ export async function Portfolio() {
   const { data } = await supabase
     .from("portfolio")
     .select("*")
-    .order("created_at", { ascending: false })
-    .limit(12);
+    .order("created_at", { ascending: false });
 
   const items: PortfolioItem[] = data || [];
 
