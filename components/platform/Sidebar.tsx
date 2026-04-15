@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/cursos", label: "Cursos", icon: BookOpen },
-  { href: "/seleccion", label: "Mándanos tu canción", icon: Music },
+  { href: "/seleccion", label: "Selección", icon: Music },
   { href: "/promos", label: "Promos", icon: Film },
   { href: "/sorteos", label: "Sorteos", icon: Gift },
   { href: "/perfil", label: "Mi Perfil", icon: User },
