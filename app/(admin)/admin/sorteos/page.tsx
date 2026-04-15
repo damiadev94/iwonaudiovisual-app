@@ -163,8 +163,14 @@ export default function SorteosAdminPage() {
                 <Input name="title" required className="bg-iwon-bg border-iwon-border" placeholder="Ej: Sorteo de Fin de Año" />
               </div>
               <div className="space-y-2">
-                <Label>Fecha del sorteo</Label>
-                <Input name="draw_date" type="date" required className="bg-iwon-bg border-iwon-border" />
+                <Label htmlFor="draw_date">Fecha del sorteo</Label>
+                <input 
+                  id="draw_date"
+                  name="draw_date" 
+                  type="date" 
+                  required 
+                  className="flex h-10 w-full rounded-lg border border-iwon-border bg-iwon-bg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold [color-scheme:dark]" 
+                />
               </div>
               <div className="space-y-2">
                 <Label>Premio</Label>
@@ -300,13 +306,14 @@ export default function SorteosAdminPage() {
                 <Input name="title" defaultValue={editRaffle.title} required className="bg-iwon-bg border-iwon-border" />
               </div>
               <div className="space-y-2">
-                <Label>Fecha del sorteo</Label>
-                <Input 
+                <Label htmlFor="edit_draw_date">Fecha del sorteo</Label>
+                <input 
+                  id="edit_draw_date"
                   name="draw_date" 
                   type="date" 
                   defaultValue={editRaffle.draw_date ? new Date(editRaffle.draw_date).toISOString().split('T')[0] : ''} 
                   required 
-                  className="bg-iwon-bg border-iwon-border" 
+                  className="flex h-10 w-full rounded-lg border border-iwon-border bg-iwon-bg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold [color-scheme:dark]" 
                 />
               </div>
               <div className="space-y-2">
