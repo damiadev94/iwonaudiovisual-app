@@ -44,12 +44,12 @@ describe("middleware — redirecciones según estado de autenticación", () => {
       );
     });
 
-    it("redirige de /register a /dashboard", async () => {
+    it("redirige de /register a /login (el registro via form fue removido)", async () => {
       const response = await middleware(buildRequest("/register"));
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
-        "https://iwonaudiovisual.com/dashboard"
+        "https://iwonaudiovisual.com/login"
       );
     });
 
@@ -101,10 +101,13 @@ describe("middleware — redirecciones según estado de autenticación", () => {
       expect(response.headers.get("location")).toBeNull();
     });
 
-    it("permite el acceso a /register sin redirigir", async () => {
+    it("redirige /register a /login siempre (el registro via form fue removido)", async () => {
       const response = await middleware(buildRequest("/register"));
 
-      expect(response.headers.get("location")).toBeNull();
+      expect(response.status).toBe(307);
+      expect(response.headers.get("location")).toBe(
+        "https://iwonaudiovisual.com/login"
+      );
     });
   });
 });

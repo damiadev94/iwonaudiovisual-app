@@ -2,8 +2,8 @@
  * Test de integración: flujo completo de suscripción
  *
  * Simula el recorrido real del usuario:
- *   1. Usuario autenticado solicita suscripción → GET /api/subscription/create
- *      → suscripción "pending" guardada en DB, redirect al checkout de MP
+ *   1. Usuario autenticado solicita suscripción → POST /api/subscription/create
+ *      → suscripción "pending" guardada en DB, devuelve URL de checkout de MP
  *   2. MercadoPago confirma el pago → POST /api/webhooks/mercadopago
  *      → suscripción actualizada a "active", pago registrado
  *   3. Usuario decide cancelar → POST /api/subscription/cancel
@@ -86,6 +86,16 @@ function createMockSupabaseClient() {
             db.subscriptions.push(record);
             return { data: record, error: null };
           },
+          upsert: async (data: Omit<Subscription, "id">, _opts: unknown) => {
+            const existing = db.subscriptions.find((s) => s.user_id === data.user_id);
+            if (existing) {
+              Object.assign(existing, data);
+              return { data: existing, error: null };
+            }
+            const record = { id: randomUUID(), ...data };
+            db.subscriptions.push(record);
+            return { data: record, error: null };
+          },
           update(changes: Partial<Subscription>) {
             return {
               eq: async (col: keyof Subscription, val: string) => {
@@ -113,16 +123,16 @@ function createMockSupabaseClient() {
 // ─── Fns hoisted para los mocks ──────────────────────────────────────────────
 const {
   mockGetUser,
-  mockMPCreate,
+  mockGetSubscribeUrl,
+  mockCancelSubscription,
   mockMPPreApprovalGet,
   mockMPPaymentGet,
-  mockMPUpdate,
 } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
-  mockMPCreate: vi.fn(),
+  mockGetSubscribeUrl: vi.fn(),
+  mockCancelSubscription: vi.fn(),
   mockMPPreApprovalGet: vi.fn(),
   mockMPPaymentGet: vi.fn(),
-  mockMPUpdate: vi.fn(),
 }));
 
 // ─── Mocks de módulos ─────────────────────────────────────────────────────────
@@ -136,10 +146,19 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(() => createMockSupabaseClient()),
 }));
 
+// El create route usa getSubscribeUrl; el cancel route usa cancelSubscription.
+// Mockeamos el módulo completo para aislar los handlers de la API de MP.
+vi.mock("@/lib/mercadopago/subscription", () => ({
+  getSubscribeUrl: mockGetSubscribeUrl,
+  cancelSubscription: mockCancelSubscription,
+  getSubscriptionStatus: vi.fn(),
+}));
+
+// El webhook handler sigue usando el SDK directamente via PreApproval y Payment.
 vi.mock("mercadopago", () => ({
   MercadoPagoConfig: vi.fn(function () {}),
   PreApproval: vi.fn(function () {
-    return { create: mockMPCreate, update: mockMPUpdate, get: mockMPPreApprovalGet };
+    return { get: mockMPPreApprovalGet };
   }),
   Payment: vi.fn(function () {
     return { get: mockMPPaymentGet };
@@ -156,7 +175,7 @@ import { POST as cancelRoute } from "@/app/api/subscription/cancel/route";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const USER = { id: "user-flow-abc", email: "flow@example.com" };
 const MP_PREAPPROVAL_ID = "PREAPPROVAL_FLOW_001";
-const MP_INIT_POINT = "https://www.mercadopago.com.ar/checkout?id=FLOW_001";
+const MP_CHECKOUT_URL = "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=PLAN_123&external_reference=user-flow-abc";
 const MP_PAYMENT_ID = "PAY_FLOW_999";
 const SECRET = "TEST_WEBHOOK_SECRET";
 
@@ -175,36 +194,36 @@ describe("Flujo de suscripción completo (integración)", () => {
     process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
     process.env.MERCADOPAGO_BACK_URL = "http://localhost:3000";
     process.env.MERCADOPAGO_WEBHOOK_SECRET = SECRET;
+    mockGetSubscribeUrl.mockResolvedValue(MP_CHECKOUT_URL);
+    mockCancelSubscription.mockResolvedValue({});
   });
 
   it("flujo completo: crear → webhook authorized → cancelar", async () => {
     // ── Fase 1: usuario solicita suscripción ─────────────────────────────────
     mockGetUser.mockResolvedValue({ data: { user: USER }, error: null });
-    mockMPCreate.mockResolvedValue({
-      id: MP_PREAPPROVAL_ID,
-      init_point: MP_INIT_POINT,
-    });
 
     const createResponse = await createRoute();
     const createData = await createResponse.json();
 
-    // Devuelve init_point para que el cliente redirija
+    // Devuelve init_point para que el cliente redirija al checkout
     expect(createResponse.status).toBe(200);
-    expect(createData.init_point).toBe(MP_INIT_POINT);
+    expect(createData.init_point).toBe(MP_CHECKOUT_URL);
 
-    // DB tiene una suscripción en estado pending
+    // DB tiene una suscripción en estado pending (sin mp_preapproval_id aún)
     expect(db.subscriptions).toHaveLength(1);
     expect(db.subscriptions[0].status).toBe("pending");
-    expect(db.subscriptions[0].mp_subscription_id).toBe(MP_PREAPPROVAL_ID);
     expect(db.subscriptions[0].user_id).toBe(USER.id);
 
     const subscriptionId = db.subscriptions[0].id;
 
     // ── Fase 2: MP envía webhook (suscripción autorizada) ────────────────────
+    // El webhook incluye external_reference = user_id, que se usó al crear la URL
     mockMPPreApprovalGet.mockResolvedValue({
       id: MP_PREAPPROVAL_ID,
       status: "authorized",
+      external_reference: USER.id,
       date_created: "2024-06-01T00:00:00Z",
+      auto_recurring: { transaction_amount: 14999 },
     });
 
     const webhookBody = {
@@ -237,7 +256,7 @@ describe("Flujo de suscripción completo (integración)", () => {
     expect(webhookResponse.status).toBe(200);
     expect(await webhookResponse.json()).toEqual({ received: true });
 
-    // DB: suscripción ahora está activa
+    // DB: suscripción ahora está activa y tiene mp_preapproval_id
     expect(db.subscriptions[0].status).toBe("active");
     expect(db.subscriptions[0].mp_preapproval_id).toBe(MP_PREAPPROVAL_ID);
 
@@ -262,11 +281,17 @@ describe("Flujo de suscripción completo (integración)", () => {
       data: { id: MP_PAYMENT_ID },
     };
 
+    const paymentTs = "1700000001";
+    const paymentSignature = buildWebhookSignature(paymentWebhookBody, "req-002", paymentTs);
     const paymentWebhookRequest = new Request(
       "http://localhost:3000/api/webhooks/mercadopago",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-signature": paymentSignature,
+          "x-request-id": "req-002",
+        },
         body: JSON.stringify(paymentWebhookBody),
       }
     );
@@ -280,9 +305,7 @@ describe("Flujo de suscripción completo (integración)", () => {
     expect(db.payments[0].mp_payment_id).toBe(String(MP_PAYMENT_ID));
 
     // ── Fase 3: usuario cancela la suscripción ───────────────────────────────
-    // Autenticamos al mismo usuario
     mockGetUser.mockResolvedValue({ data: { user: USER }, error: null });
-    mockMPUpdate.mockResolvedValue({ id: MP_PREAPPROVAL_ID, status: "cancelled" });
 
     const cancelRequest = new Request(
       "http://localhost:3000/api/subscription/cancel",
@@ -299,11 +322,8 @@ describe("Flujo de suscripción completo (integración)", () => {
     expect(cancelResponse.status).toBe(200);
     expect(cancelData.success).toBe(true);
 
-    // MP fue notificado de la cancelación
-    expect(mockMPUpdate).toHaveBeenCalledWith({
-      id: MP_PREAPPROVAL_ID,
-      body: { status: "cancelled" },
-    });
+    // MP fue notificado de la cancelación con el preapproval_id correcto
+    expect(mockCancelSubscription).toHaveBeenCalledWith(MP_PREAPPROVAL_ID);
 
     // DB: suscripción cancelada
     expect(db.subscriptions[0].status).toBe("cancelled");
@@ -326,7 +346,7 @@ describe("Flujo de suscripción completo (integración)", () => {
     expect(response.status).toBe(200);
     expect(data.redirect).toBe("/dashboard");
     // MP no fue contactado
-    expect(mockMPCreate).not.toHaveBeenCalled();
+    expect(mockGetSubscribeUrl).not.toHaveBeenCalled();
     // No se creó una segunda suscripción
     expect(db.subscriptions).toHaveLength(1);
   });

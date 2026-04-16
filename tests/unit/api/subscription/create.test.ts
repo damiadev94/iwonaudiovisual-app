@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Hoist mock fns
-const { mockGetUser, mockAdminFrom, mockCreateSub } = vi.hoisted(() => ({
+const { mockGetUser, mockAdminFrom, mockGetSubscribeUrl } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
   mockAdminFrom: vi.fn(),
-  mockCreateSub: vi.fn(),
+  mockGetSubscribeUrl: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -18,7 +18,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 vi.mock("@/lib/mercadopago/subscription", () => ({
-  createSubscription: mockCreateSub,
+  getSubscribeUrl: mockGetSubscribeUrl,
 }));
 
 import { POST } from "@/app/api/subscription/create/route";
@@ -38,19 +38,17 @@ function mockExistingActiveSub() {
 }
 
 function mockNoExistingSub() {
-  const mockSingle = vi
-    .fn()
-    .mockResolvedValue({ data: null, error: null });
-  const mockInsert = vi.fn().mockResolvedValue({ data: null, error: null });
+  const mockSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+  const mockUpsert = vi.fn().mockResolvedValue({ data: null, error: null });
   mockAdminFrom.mockReturnValue({
     select: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({ single: mockSingle }),
       }),
     }),
-    insert: mockInsert,
+    upsert: mockUpsert,
   });
-  return { mockInsert };
+  return { mockUpsert };
 }
 
 // ─── tests ──────────────────────────────────────────────────
@@ -84,59 +82,41 @@ describe("POST /api/subscription/create", () => {
     expect(data.redirect).toBe("/dashboard");
   });
 
-  it("crea suscripción en MP y retorna init_point", async () => {
+  it("genera URL de checkout y retorna init_point", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
     });
-    const { mockInsert } = mockNoExistingSub();
+    const { mockUpsert } = mockNoExistingSub();
 
-    const mpInitPoint =
-      "https://www.mercadopago.com.ar/subscriptions/checkout?id=PREAPPROVAL_123";
-    mockCreateSub.mockResolvedValue({
-      id: "PREAPPROVAL_123",
-      init_point: mpInitPoint,
-    });
+    const checkoutUrl =
+      "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=PLAN_123&external_reference=user-123";
+    mockGetSubscribeUrl.mockResolvedValue(checkoutUrl);
 
     const response = await POST();
     const data = await response.json();
 
-    expect(mockCreateSub).toHaveBeenCalledWith("test@example.com", "user-123");
-    expect(mockInsert).toHaveBeenCalledWith({
-      user_id: "user-123",
-      mp_subscription_id: "PREAPPROVAL_123",
-      status: "pending",
-      plan_amount: 14999,
-      currency: "ARS",
-    });
+    expect(mockGetSubscribeUrl).toHaveBeenCalledWith("user-123", "test@example.com");
+    expect(mockUpsert).toHaveBeenCalledWith(
+      {
+        user_id: "user-123",
+        status: "pending",
+        plan_amount: 14999,
+        currency: "ARS",
+      },
+      { onConflict: "user_id" }
+    );
     expect(response.status).toBe(200);
-    expect(data.init_point).toBe(mpInitPoint);
+    expect(data.init_point).toBe(checkoutUrl);
   });
 
-  it("retorna 500 si init_point está ausente", async () => {
+  it("retorna 500 con mensaje si getSubscribeUrl lanza un error", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
     });
     mockNoExistingSub();
-    mockCreateSub.mockResolvedValue({ id: "PREAPPROVAL_123", init_point: null });
-
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const response = await POST();
-    const data = await response.json();
-    consoleSpy.mockRestore();
-
-    expect(response.status).toBe(500);
-    expect(data.error).toBe("payment_error");
-  });
-
-  it("retorna 500 con mensaje si MP lanza error inesperado", async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-123", email: "test@example.com" } },
-      error: null,
-    });
-    mockNoExistingSub();
-    mockCreateSub.mockRejectedValue(new Error("MP API error"));
+    mockGetSubscribeUrl.mockRejectedValue(new Error("MP API error"));
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const response = await POST();
