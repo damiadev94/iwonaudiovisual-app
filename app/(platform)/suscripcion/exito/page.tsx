@@ -81,11 +81,13 @@ function SuscripcionExitoContent() {
     );
   }
 
+  const pollsExhausted = polls >= 15 && !linking && !error;
+
   return (
     <div className="max-w-md mx-auto text-center py-20 space-y-6">
       <CheckCircle className="h-16 w-16 text-iwon-success mx-auto opacity-50" />
       <h1 className="text-2xl font-bold">Procesando tu acceso</h1>
-      
+
       {error ? (
         <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
           <p className="font-bold mb-2">Hubo un problema al vincular tu pago:</p>
@@ -93,6 +95,22 @@ function SuscripcionExitoContent() {
           <Button onClick={linkSubscription} variant="destructive">
             Reintentar Vinculación
           </Button>
+        </div>
+      ) : pollsExhausted ? (
+        <div className="space-y-4 p-4 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg">
+          <p className="font-semibold">Tu pago fue recibido</p>
+          <p className="text-sm">
+            La confirmación está tardando más de lo esperado. Podés intentar entrar al dashboard —
+            si tu pago fue aprobado, ya tendrás acceso.
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button onClick={() => router.replace("/dashboard")}>
+              Ir al Dashboard
+            </Button>
+            <Button variant="outline" onClick={() => { setPolls(0); linkSubscription(); }}>
+              Reintentar verificación
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -102,7 +120,7 @@ function SuscripcionExitoContent() {
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-gold" />
         </div>
       )}
-      
+
       <p className="text-xs text-muted-foreground pt-10">
         ID de Operación: {preapprovalId || "No detectado"}
       </p>

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSubscriptionStatus } from "@/lib/mercadopago/subscription";
 import { redirect } from "next/navigation";
 import { PlatformLayoutShell } from "@/components/platform/PlatformLayoutShell";
 import { SubscribeButton } from "@/components/platform/SubscribeButton";
@@ -37,13 +38,40 @@ export default async function PlatformLayout({
   // 2. Obtener la suscripción
   const { data: subscription } = await adminClient
     .from("subscriptions")
-    .select("status")
+    .select("status, mp_preapproval_id")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
 
-  const isActive = subscription?.status === "active";
+  let effectiveStatus = subscription?.status ?? "none";
+
+  // Si la DB dice "pending" pero ya tenemos el ID de MP, consultamos directamente
+  // a Mercado Pago antes de bloquear al usuario. Esto resuelve el caso donde el webhook
+  // todavía no llegó pero el usuario ya pagó y volvió a la app.
+  if (effectiveStatus === "pending" && subscription?.mp_preapproval_id) {
+    try {
+      const mpData = await getSubscriptionStatus(subscription.mp_preapproval_id);
+      if (mpData.status === "authorized") {
+        await adminClient
+          .from("subscriptions")
+          .update({ status: "active" })
+          .eq("user_id", user.id);
+        effectiveStatus = "active";
+      }
+    } catch (err) {
+      // Si MP falla (timeout, 500, red), preferimos falso positivo (acceso) sobre
+      // falso negativo (bloqueo injusto). El cron job corregirá el estado en la DB.
+      console.error("[layout] Error consultando MP — cediendo acceso por precaución", {
+        user_id: user.id,
+        mp_preapproval_id: subscription.mp_preapproval_id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      effectiveStatus = "active";
+    }
+  }
+
+  const isActive = effectiveStatus === "active";
   const isAdmin = profile?.role === "admin";
   const isSuccessPage = pathname.startsWith("/suscripcion/exito");
 
