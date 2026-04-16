@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
-const AUTH_ROUTES = ["/login", "/"];
+const AUTH_ROUTES = ["/login", "/", "/register", "/confirm-email", "/reset-password"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -42,11 +42,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  // /register is no longer a form — always redirect to /login
-  if (pathname === "/register") {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
 
   if (user && AUTH_ROUTES.includes(pathname)) {
     // Usuario autenticado en ruta de auth → redirigir al dashboard
@@ -126,6 +121,9 @@ export const config = {
     "/",
     "/login",
     "/register",
+    "/confirm-email",
+    "/reset-password",
+    "/update-password",
     "/dashboard/:path*",
     "/subir-cancion/:path*",
     "/perfil/:path*",
