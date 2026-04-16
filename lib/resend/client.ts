@@ -1,11 +1,13 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function sendConfirmationEmail(email: string, name: string, token: string) {
   const confirmUrl = `${process.env.NEXT_PUBLIC_APP_URL}/confirm?token=${token}`;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: "Iwon Audiovisual <noreply@iwonaudiovisual.com>",
     to: email,
     subject: "Confirma tu email - Iwon Audiovisual",
@@ -31,7 +33,7 @@ export async function sendConfirmationEmail(email: string, name: string, token: 
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: "Iwon Audiovisual <noreply@iwonaudiovisual.com>",
     to: email,
     subject: "Bienvenido a Iwon Audiovisual",
@@ -49,7 +51,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
 }
 
 export async function sendSubscriptionConfirmation(email: string, name: string) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: "Iwon Audiovisual <noreply@iwonaudiovisual.com>",
     to: email,
     subject: "Suscripcion confirmada - Iwon Audiovisual",
