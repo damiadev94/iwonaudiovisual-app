@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validations/auth";
 
 export async function POST(request: Request) {
@@ -17,8 +18,6 @@ export async function POST(request: Request) {
     const { email, password, full_name } = result.data;
     const admin = createAdminClient();
 
-    // email_confirm: false → Supabase envía el email de confirmación via SMTP (Resend).
-    // El usuario debe confirmar antes de poder iniciar sesión.
     const { error } = await admin.auth.admin.createUser({
       email,
       password,
@@ -35,6 +34,19 @@ export async function POST(request: Request) {
       }
       console.error("[auth/register] Error creando usuario:", error.message);
       return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
+    }
+
+    // admin.createUser no envía el email de confirmación automáticamente.
+    // Hay que pedírselo explícitamente con resend.
+    const supabase = await createClient();
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email,
+    });
+
+    if (resendError) {
+      console.error("[auth/register] Error enviando email de confirmación:", resendError.message);
+      // El usuario fue creado igual; no bloqueamos el registro por esto.
     }
 
     console.log(`[auth/register] Usuario registrado: ${email}`);
