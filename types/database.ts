@@ -50,6 +50,8 @@ export type Course = {
   description: string | null;
   thumbnail_url: string | null;
   thumbnail_public_id: string | null;
+  video_url: string | null;
+  video_uid: string | null;
   category: "negocio" | "audiovisual" | "marketing" | "publicidad" | "estrategias";
   is_published: boolean;
   sort_order: number;

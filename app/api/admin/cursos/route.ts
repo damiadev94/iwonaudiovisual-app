@@ -22,6 +22,8 @@ const createSchema = z.object({
   ]),
   thumbnail_url: z.string().url().nullable().optional(),
   thumbnail_public_id: z.string().nullable().optional(),
+  video_url: z.string().nullable().optional(),
+  video_uid: z.string().nullable().optional(),
   release_at: z.string().datetime().nullable().optional(),
   is_published: z.boolean().default(false),
 });

@@ -23,6 +23,8 @@ const updateSchema = z.object({
   ]).optional(),
   thumbnail_url: z.string().url().nullable().optional(),
   thumbnail_public_id: z.string().nullable().optional(),
+  video_url: z.string().nullable().optional(),
+  video_uid: z.string().nullable().optional(),
   release_at: z.string().datetime().nullable().optional(),
   is_published: z.boolean().optional(),
   sort_order: z.number().int().min(0).optional(),
@@ -78,7 +80,7 @@ export async function DELETE(
 
   const { data: course } = await supabase
     .from("courses")
-    .select("thumbnail_public_id")
+    .select("thumbnail_public_id, video_uid")
     .eq("id", id)
     .single();
 
@@ -86,15 +88,29 @@ export async function DELETE(
     return NextResponse.json({ error: "Curso no encontrado" }, { status: 404 });
   }
 
-  // Delete thumbnail from Supabase Storage if present
+  const cleanupTasks: Promise<unknown>[] = [];
+
   if (course.thumbnail_public_id) {
-    await supabase.storage
-      .from("thumbnails")
-      .remove([course.thumbnail_public_id])
-      .catch((err) => {
-        console.error("[DELETE course] Storage thumbnail cleanup failed:", err);
-      });
+    cleanupTasks.push(
+      supabase.storage.from("thumbnails").remove([course.thumbnail_public_id])
+        .catch((err) => console.error("[DELETE course] Storage thumbnail cleanup failed:", err))
+    );
   }
+
+  if (course.video_uid) {
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+    if (accountId && apiToken) {
+      cleanupTasks.push(
+        fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${course.video_uid}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${apiToken}` },
+        }).catch((err) => console.error("[DELETE course] Cloudflare video cleanup failed:", err))
+      );
+    }
+  }
+
+  await Promise.all(cleanupTasks);
 
   // Delete course (cascades to lessons and progress)
   const { error } = await supabase.from("courses").delete().eq("id", id);
