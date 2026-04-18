@@ -27,8 +27,15 @@ import {
   Upload,
   CheckCircle,
   Loader2,
+  Link2,
 } from "lucide-react";
 import type { Lesson } from "@/types";
+
+const CF_UID_REGEX = /^[a-f0-9]{32}$/i;
+
+function buildIframePlaceholderUrl(uid: string): string {
+  return `https://customer-[account].cloudflarestream.com/${uid}/iframe`;
+}
 
 interface VideoUploadResult {
   secure_url: string;
@@ -69,9 +76,19 @@ export function LessonManager({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<"upload" | "uid">("upload");
+  const [uidInput, setUidInput] = useState("");
+  const [uidError, setUidError] = useState<string | null>(null);
+
+  function resetVideoModeState() {
+    setInputMode("upload");
+    setUidInput("");
+    setUidError(null);
+  }
 
   function openAdd() {
     setForm(emptyForm(lessons.length));
+    resetVideoModeState();
     setAddOpen(true);
   }
 
@@ -86,7 +103,23 @@ export function LessonManager({
           ? { secure_url: lesson.video_url, public_id: lesson.video_public_id }
           : null,
     });
+    resetVideoModeState();
     setEditLesson(lesson);
+  }
+
+  function handleApplyUid() {
+    const uid = uidInput.trim();
+    if (!CF_UID_REGEX.test(uid)) {
+      setUidError("UID inválido. Debe ser una cadena hexadecimal de 32 caracteres.");
+      return;
+    }
+    setUidError(null);
+    setForm((prev) => ({
+      ...prev,
+      video: { public_id: uid, secure_url: buildIframePlaceholderUrl(uid) },
+    }));
+    setUidInput("");
+    toast.success("UID aplicado a la lección.");
   }
 
   async function handleFileSelected(file: File) {
@@ -304,6 +337,12 @@ export function LessonManager({
               uploadProgress={uploadProgress}
               submitting={submitting}
               submitLabel="Crear lección"
+              inputMode={inputMode}
+              setInputMode={setInputMode}
+              uidInput={uidInput}
+              setUidInput={setUidInput}
+              uidError={uidError}
+              onApplyUid={handleApplyUid}
             />
           </DialogContent>
         </Dialog>
@@ -389,6 +428,12 @@ export function LessonManager({
                         submitting={submitting}
                         submitLabel="Guardar cambios"
                         showSortOrder
+                        inputMode={inputMode}
+                        setInputMode={setInputMode}
+                        uidInput={uidInput}
+                        setUidInput={setUidInput}
+                        uidError={uidError}
+                        onApplyUid={handleApplyUid}
                       />
                     </DialogContent>
                   </Dialog>
@@ -426,6 +471,12 @@ function LessonForm({
   submitting,
   submitLabel,
   showSortOrder = false,
+  inputMode,
+  setInputMode,
+  uidInput,
+  setUidInput,
+  uidError,
+  onApplyUid,
 }: {
   form: LessonFormState;
   setForm: React.Dispatch<React.SetStateAction<LessonFormState>>;
@@ -436,6 +487,12 @@ function LessonForm({
   submitting: boolean;
   submitLabel: string;
   showSortOrder?: boolean;
+  inputMode: "upload" | "uid";
+  setInputMode: React.Dispatch<React.SetStateAction<"upload" | "uid">>;
+  uidInput: string;
+  setUidInput: React.Dispatch<React.SetStateAction<string>>;
+  uidError: string | null;
+  onApplyUid: () => void;
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -512,37 +569,96 @@ function LessonForm({
               Cambiar
             </Button>
           </div>
-        ) : uploading ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Subiendo a Cloudflare...
-              </span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <Progress value={uploadProgress} className="h-1" />
-          </div>
         ) : (
-          <div className="relative">
-            <input
-              type="file"
-              accept="video/*"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onVideoUpload(file);
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Seleccionar video para Cloudflare
-            </Button>
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-iwon-bg border border-iwon-border">
+              <button
+                type="button"
+                onClick={() => setInputMode("upload")}
+                className={`text-xs font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 ${
+                  inputMode === "upload"
+                    ? "bg-gold text-black"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Upload className="h-3 w-3" />
+                Subir archivo
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputMode("uid")}
+                className={`text-xs font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 ${
+                  inputMode === "uid"
+                    ? "bg-gold text-black"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Link2 className="h-3 w-3" />
+                Pegar UID existente
+              </button>
+            </div>
+
+            {inputMode === "upload" ? (
+              uploading ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Subiendo a Cloudflare...
+                    </span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="h-1" />
+                </div>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) onVideoUpload(file);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Seleccionar video para Cloudflare
+                  </Button>
+                </div>
+              )
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={uidInput}
+                    onChange={(e) => setUidInput(e.target.value)}
+                    placeholder="UID hex de 32 caracteres"
+                    className="bg-iwon-bg border-iwon-border font-mono text-xs"
+                  />
+                  <Button
+                    type="button"
+                    onClick={onApplyUid}
+                    disabled={!uidInput.trim()}
+                    className="bg-gold hover:bg-gold-light text-black font-semibold shrink-0"
+                  >
+                    Aplicar
+                  </Button>
+                </div>
+                {uidError ? (
+                  <p className="text-xs text-iwon-error">{uidError}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Pega el UID de un video ya cargado en Cloudflare Stream.
+                  </p>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -51,12 +51,23 @@ interface ThumbnailResult {
   public_id: string;
 }
 
+// Buenos Aires no aplica horario de verano: offset fijo -03:00.
+// Convierte el valor `yyyy-MM-ddTHH:mm` del input datetime-local
+// (interpretado como hora local de Argentina) a ISO 8601 UTC.
+function buenosAiresLocalToUtcISO(localValue: string): string | null {
+  if (!localValue) return null;
+  const parsed = new Date(`${localValue}:00-03:00`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toISOString();
+}
+
 export default function CursosAdminPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("negocio");
   const [thumbnail, setThumbnail] = useState<ThumbnailResult | null>(null);
+  const [releaseAtLocal, setReleaseAtLocal] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -93,6 +104,7 @@ export default function CursosAdminPage() {
           category: selectedCategory,
           thumbnail_url: thumbnail?.secure_url ?? null,
           thumbnail_public_id: thumbnail?.public_id ?? null,
+          release_at: buenosAiresLocalToUtcISO(releaseAtLocal),
           is_published: false,
         }),
       });
@@ -105,6 +117,7 @@ export default function CursosAdminPage() {
       toast.success("Curso creado");
       setDialogOpen(false);
       setThumbnail(null);
+      setReleaseAtLocal("");
       fetchCourses();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Error al crear el curso");
@@ -165,7 +178,10 @@ export default function CursosAdminPage() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => {
           setDialogOpen(open);
-          if (!open) setThumbnail(null);
+          if (!open) {
+            setThumbnail(null);
+            setReleaseAtLocal("");
+          }
         }}>
           <DialogTrigger
             render={
@@ -258,6 +274,19 @@ export default function CursosAdminPage() {
                     )}
                   </CldUploadWidget>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Fecha y hora de estreno (opcional)</Label>
+                <Input
+                  type="datetime-local"
+                  value={releaseAtLocal}
+                  onChange={(e) => setReleaseAtLocal(e.target.value)}
+                  className="bg-iwon-bg border-iwon-border"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Hora de Argentina (UTC-3). Vacío = disponible inmediatamente.
+                </p>
               </div>
 
               <Button

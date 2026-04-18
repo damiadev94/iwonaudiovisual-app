@@ -47,38 +47,26 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 1. Fetch video metadata from Cloudflare to check release_date
-    const videoResponse = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${publicId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // 1. Resolver lección -> curso y validar release_at en Supabase.
+    const { data: lesson, error: lessonError } = await adminClient
+      .from("lessons")
+      .select("course_id, courses(release_at)")
+      .eq("video_public_id", publicId)
+      .maybeSingle();
 
-    if (!videoResponse.ok) {
-      throw new Error("No se pudo obtener la información del video.");
+    if (lessonError || !lesson) {
+      return NextResponse.json({ error: "Lección no encontrada." }, { status: 404 });
     }
 
-    const { result: videoData } = await videoResponse.json();
-    const releaseDate = videoData.meta?.release_date;
+    const courseRel = lesson.courses as { release_at: string | null } | { release_at: string | null }[] | null;
+    const courseRow = Array.isArray(courseRel) ? courseRel[0] : courseRel;
+    const releaseAt = courseRow?.release_at ?? null;
 
-    if (releaseDate) {
-      const now = new Date();
-      const releaseTime = new Date(releaseDate);
-      if (releaseTime > now) {
+    if (releaseAt) {
+      const releaseTime = new Date(releaseAt);
+      if (releaseTime.getTime() > Date.now()) {
         return NextResponse.json(
-          { 
-            error: "Contenido pendiente de estreno.", 
-            releaseDate,
-            message: `Este video estará disponible el ${releaseTime.toLocaleDateString("es-AR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric"
-            })}.` 
-          },
+          { error: "Contenido pendiente de estreno.", releaseAt: releaseTime.toISOString() },
           { status: 403 }
         );
       }

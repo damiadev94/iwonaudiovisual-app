@@ -1,32 +1,18 @@
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { redirect } from "next/navigation";
-import { CourseExplorer } from "@/components/platform/CourseExplorer";
+import { CourseCard } from "@/components/platform/CourseCard";
+import type { Course } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function CursosPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // Use Admin Client to fetch subscription status for the explorer
   const adminClient = createAdminClient();
-  const { data: subscription } = await adminClient
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  const { data: courses } = await adminClient
+    .from("courses")
+    .select("*")
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true });
 
-  const userProps = {
-    id: user.id,
-    subscriptionStatus: subscription?.status || "inactive",
-  };
+  const list = (courses ?? []) as Course[];
 
   return (
     <div className="h-full space-y-6">
@@ -39,7 +25,17 @@ export default async function CursosPage() {
         </p>
       </div>
 
-      <CourseExplorer user={userProps} />
+      {list.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-iwon-border bg-iwon-card/30 py-20 text-center text-muted-foreground">
+          Próximamente: nuevos cursos disponibles.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {list.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

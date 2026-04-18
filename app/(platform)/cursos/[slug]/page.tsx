@@ -2,10 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
-import { VideoPlayer } from "@/components/platform/VideoPlayer";
+import { LessonVideoPlayer } from "@/components/platform/LessonVideoPlayer";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Circle, Clock } from "lucide-react";
+import { CheckCircle, Circle, Clock, Lock } from "lucide-react";
 import type { Lesson } from "@/types";
 
 export default async function CourseDetailPage({
@@ -26,6 +26,11 @@ export default async function CourseDetailPage({
     .single();
 
   if (!course) notFound();
+
+  const releaseAt = course.release_at ? new Date(course.release_at) : null;
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const isUpcoming = releaseAt !== null && releaseAt.getTime() > nowMs;
 
   const { data: lessons } = await supabase
     .from("lessons")
@@ -61,12 +66,30 @@ export default async function CourseDetailPage({
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <Badge variant="outline" className="mb-3 border-gold/20 text-gold">
-          {categoryLabels[course.category] || course.category}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <Badge variant="outline" className="border-gold/20 text-gold">
+            {categoryLabels[course.category] || course.category}
+          </Badge>
+          {isUpcoming && (
+            <Badge className="bg-gold text-black border-gold uppercase tracking-widest text-[10px] font-black">
+              <Lock className="h-3 w-3 mr-1" />
+              Próximamente
+            </Badge>
+          )}
+        </div>
         <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
         {course.description && (
           <p className="text-muted-foreground">{course.description}</p>
+        )}
+        {isUpcoming && releaseAt && (
+          <p className="mt-3 text-sm text-gold">
+            Estreno:{" "}
+            {releaseAt.toLocaleString("es-AR", {
+              dateStyle: "long",
+              timeStyle: "short",
+              timeZone: "America/Argentina/Buenos_Aires",
+            })}
+          </p>
         )}
       </div>
 
@@ -121,10 +144,8 @@ export default async function CourseDetailPage({
                   </div>
                 </div>
 
-                {/* Show video player for first uncompleted lesson or last lesson */}
-                {lesson.video_url && !isCompleted && (
-                  <VideoPlayer
-                    videoUrl={lesson.video_url}
+                {lesson.video_public_id && !isCompleted && !isUpcoming && (
+                  <LessonVideoPlayer
                     publicId={lesson.video_public_id}
                     title={lesson.title}
                   />

@@ -35,7 +35,8 @@
       "Bash(python3 -c \"from reportlab.lib.pagesizes import A4; print\\('reportlab ok'\\)\")",
       "Bash(npx --yes pdfkit --version)",
       "Bash(node -e \"require\\('pdfkit'\\)\")",
-      "Bash(find /d/projects/iwonaudiovisual-app/app -name \"*.tsx\" -path \"*auth*\" -exec grep -l \"signInWith\\\\|OAuth\" {} \\\\;)"
+      "Bash(find /d/projects/iwonaudiovisual-app/app -name \"*.tsx\" -path \"*auth*\" -exec grep -l \"signInWith\\\\|OAuth\" {} \\\\;)",
+      "Bash(npx tsc *)"
     ]
   }
 }

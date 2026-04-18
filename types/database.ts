@@ -53,6 +53,7 @@ export type Course = {
   category: "negocio" | "audiovisual" | "marketing" | "publicidad" | "estrategias";
   is_published: boolean;
   sort_order: number;
+  release_at: string | null;
   created_at: string;
   updated_at: string;
 };
