@@ -27,7 +27,15 @@
       "Bash(ls supabase/migrations/)",
       "Bash(cat vitest.config.*)",
       "Bash(cat vite.config.*)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(pandoc --version)",
+      "Bash(wkhtmltopdf --version)",
+      "Bash(python3 -c \"import weasyprint; print\\('weasyprint ok'\\)\")",
+      "Bash(python3 -m pip show reportlab)",
+      "Bash(python3 -c \"from reportlab.lib.pagesizes import A4; print\\('reportlab ok'\\)\")",
+      "Bash(npx --yes pdfkit --version)",
+      "Bash(node -e \"require\\('pdfkit'\\)\")",
+      "Bash(find /d/projects/iwonaudiovisual-app/app -name \"*.tsx\" -path \"*auth*\" -exec grep -l \"signInWith\\\\|OAuth\" {} \\\\;)"
     ]
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscribeUrl } from "@/lib/mercadopago/subscription";
+import { logger } from "@/lib/logger";
 
 export async function POST() {
   const supabase = await createClient();
@@ -42,11 +43,7 @@ export async function POST() {
 
     return NextResponse.json({ init_point });
   } catch (error: unknown) {
-    console.error("[subscription/create] MP Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json(
-      { error: "payment_error", message },
-      { status: 500 }
-    );
+    logger.error("[subscription/create] MP Error", { error: String(error) });
+    return NextResponse.json({ error: "payment_setup_failed" }, { status: 500 });
   }
 }

@@ -53,6 +53,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Email no confirmado → forzar confirmación antes de acceder a rutas protegidas
+  if (user && !AUTH_ROUTES.includes(pathname) && !user.email_confirmed_at) {
+    return NextResponse.redirect(new URL("/confirm-email", request.url));
+  }
+
   // Verificar role=admin para rutas /admin/* y /api/admin/*
   const isAdminRoute =
     pathname.startsWith("/admin") || pathname.startsWith("/api/admin");

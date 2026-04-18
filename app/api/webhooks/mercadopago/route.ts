@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyWebhookSignature, processWebhookEvent } from "@/lib/mercadopago/webhook";
 import type { MPWebhookEvent } from "@/types/mercadopago";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -12,18 +13,18 @@ export async function POST(request: Request) {
 
     const isValid = verifyWebhookSignature(body, signature, requestId);
     if (!isValid) {
-      console.error("Webhook: firma inválida", { signature, requestId });
-      return NextResponse.json({ received: true });
+      logger.warn("Webhook: firma inválida", { signature, requestId });
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    console.log("Webhook recibido:", body);
+    logger.info("Webhook recibido", { type: body?.type, dataId: body?.data?.id });
 
     await processWebhookEvent(body as MPWebhookEvent);
 
     return NextResponse.json({ received: true });
 
   } catch (error) {
-    console.error("Webhook error:", error);
+    logger.error("Webhook error inesperado", { error: String(error) });
 
     // 🔥 CLAVE: nunca devolver 500
     return NextResponse.json({ received: true });

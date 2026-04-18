@@ -2,9 +2,21 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validations/auth";
+import { ratelimit } from "@/lib/redis/client";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
+    try {
+      const { success } = await ratelimit.limit(ip);
+      if (!success) {
+        return NextResponse.json({ error: "TOO_MANY_REQUESTS" }, { status: 429 });
+      }
+    } catch {
+      // Si Redis no está disponible, permitimos la request (fail-open)
+    }
+
     const body = await request.json();
 
     const result = registerSchema.safeParse(body);
@@ -18,7 +30,7 @@ export async function POST(request: Request) {
     const { email, password, full_name } = result.data;
     const admin = createAdminClient();
 
-    const { error } = await admin.auth.admin.createUser({
+    const { data: created, error } = await admin.auth.admin.createUser({
       email,
       password,
       email_confirm: false,
@@ -32,7 +44,22 @@ export async function POST(request: Request) {
       ) {
         return NextResponse.json({ error: "EMAIL_EXISTS" }, { status: 409 });
       }
-      console.error("[auth/register] Error creando usuario:", error.message);
+      logger.error("[auth/register] Error creando usuario", { msg: error.message });
+      return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
+    }
+
+    // Garantizar que el perfil existe. El trigger handle_new_user debería haberlo
+    // creado, pero si falló silenciosamente lo creamos aquí con ignoreDuplicates.
+    const { error: profileError } = await admin
+      .from("profiles")
+      .upsert(
+        { id: created.user.id, email, full_name: full_name ?? "" },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+
+    if (profileError) {
+      logger.error("[auth/register] Error creando perfil, rollback", { userId: created.user.id, msg: profileError.message });
+      await admin.auth.admin.deleteUser(created.user.id);
       return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
     }
 
@@ -45,15 +72,14 @@ export async function POST(request: Request) {
     });
 
     if (resendError) {
-      console.error("[auth/register] Error enviando email de confirmación:", resendError.message);
-      // El usuario fue creado igual; no bloqueamos el registro por esto.
+      logger.warn("[auth/register] Error enviando email de confirmacion", { msg: resendError.message });
     }
 
-    console.log(`[auth/register] Usuario registrado: ${email}`);
+    logger.info("[auth/register] Usuario registrado", { email });
     return NextResponse.json({ ok: true });
 
   } catch (err) {
-    console.error("[auth/register] Error inesperado:", err);
+    logger.error("[auth/register] Error inesperado", { error: String(err) });
     return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
   }
 }

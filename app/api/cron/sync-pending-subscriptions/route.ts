@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscriptionStatus } from "@/lib/mercadopago/subscription";
 
@@ -17,7 +18,23 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    console.error("[cron/sync-pending] CRON_SECRET no configurado");
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
+  const expected = `Bearer ${cronSecret}`;
+  const provided = authHeader ?? "";
+  let authorized = false;
+  try {
+    authorized =
+      provided.length === expected.length &&
+      timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  } catch {
+    authorized = false;
+  }
+
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -48,7 +65,8 @@ export async function GET(request: Request) {
         await adminClient
           .from("subscriptions")
           .update({ status: "active" })
-          .eq("id", sub.id);
+          .eq("id", sub.id)
+          .eq("status", "pending");
         console.log(`[cron/sync-pending] ${timestamp} subscription=${sub.id} user=${sub.user_id} → active`);
         results.push({ id: sub.id, action: "activated" });
       } else if (mpStatus === "cancelled" || mpStatus === "rejected") {

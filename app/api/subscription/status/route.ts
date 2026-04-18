@@ -29,10 +29,13 @@ export async function GET() {
     try {
       const mpData = await getSubscriptionStatus(subscription.mp_preapproval_id);
       if (mpData.status === "authorized") {
+        // Condición doble: solo actualiza si sigue en pending para evitar
+        // conflicto con el webhook que puede llegar simultáneamente.
         await adminClient
           .from("subscriptions")
           .update({ status: "active" })
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+          .eq("status", "pending");
         return NextResponse.json({ status: "active" });
       }
     } catch {

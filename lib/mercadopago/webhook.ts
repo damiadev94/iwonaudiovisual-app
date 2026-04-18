@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { MPWebhookEvent } from "@/types/mercadopago";
 import { PreApproval, Payment } from "mercadopago";
 import { mercadopago } from "./client";
+import { logger } from "@/lib/logger";
 
 export function verifyWebhookSignature(
   body: { data: { id: string } } | null,
@@ -29,6 +30,20 @@ export function verifyWebhookSignature(
 
 export async function processWebhookEvent(event: MPWebhookEvent) {
   const supabase = createAdminClient();
+
+  // Idempotencia: descartar eventos ya procesados
+  const mpEventId = String(event.id);
+  const { error: insertError } = await supabase
+    .from("webhook_events")
+    .insert({ mp_event_id: mpEventId, event_type: event.type });
+
+  if (insertError) {
+    if (insertError.code === "23505") {
+      logger.info("Webhook evento duplicado ignorado", { mpEventId });
+      return;
+    }
+    logger.error("Webhook error registrando evento", { mpEventId, error: insertError.message });
+  }
 
   if (event.type === "subscription_preapproval") {
     try {
@@ -80,7 +95,7 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
         })
         .eq("mp_subscription_id", preapprovalData.id);
     } catch (error) {
-      console.error("Error fetching preapproval data:", error);
+      logger.error("Webhook error procesando preapproval", { id: event.data.id, error: String(error) });
     }
   } else if (event.type === "payment") {
 
@@ -124,7 +139,7 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
         }
       }
     } catch (error) {
-      console.error("Error fetching payment data:", error);
+      logger.error("Webhook error procesando payment", { id: event.data.id, error: String(error) });
     }
   }
 }
