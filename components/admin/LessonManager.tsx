@@ -38,8 +38,8 @@ function buildIframePlaceholderUrl(uid: string): string {
 }
 
 interface VideoUploadResult {
-  secure_url: string;
-  public_id: string;
+  url: string;
+  uid: string;
 }
 
 interface LessonFormState {
@@ -100,7 +100,7 @@ export function LessonManager({
       sort_order: String(lesson.sort_order),
       video:
         lesson.video_url && lesson.video_public_id
-          ? { secure_url: lesson.video_url, public_id: lesson.video_public_id }
+          ? { url: lesson.video_url, uid: lesson.video_public_id }
           : null,
     });
     resetVideoModeState();
@@ -116,7 +116,7 @@ export function LessonManager({
     setUidError(null);
     setForm((prev) => ({
       ...prev,
-      video: { public_id: uid, secure_url: buildIframePlaceholderUrl(uid) },
+      video: { uid, url: buildIframePlaceholderUrl(uid) },
     }));
     setUidInput("");
     toast.success("UID aplicado a la lección.");
@@ -169,10 +169,7 @@ export function LessonManager({
 
       setForm((prev) => ({
         ...prev,
-        video: { 
-          secure_url: `https://stream.cloudflare.com/${uid}`, 
-          public_id: uid 
-        },
+        video: { url: `https://stream.cloudflare.com/${uid}`, uid },
       }));
       toast.success("Video subido correctamente a Cloudflare");
     } catch (error: unknown) {
@@ -195,8 +192,8 @@ export function LessonManager({
         body: JSON.stringify({
           title: form.title.trim(),
           description: form.description.trim() || null,
-          video_url: form.video?.secure_url ?? null,
-          video_public_id: form.video?.public_id ?? null,
+          video_url: form.video?.url ?? null,
+          video_public_id: form.video?.uid ?? null,
           duration_minutes: form.duration_minutes
             ? parseInt(form.duration_minutes)
             : null,
@@ -233,8 +230,8 @@ export function LessonManager({
         body: JSON.stringify({
           title: form.title.trim(),
           description: form.description.trim() || null,
-          video_url: form.video?.secure_url ?? null,
-          video_public_id: form.video?.public_id ?? null,
+          video_url: form.video?.url ?? null,
+          video_public_id: form.video?.uid ?? null,
           duration_minutes: form.duration_minutes
             ? parseInt(form.duration_minutes)
             : null,
@@ -557,7 +554,7 @@ function LessonForm({
           <div className="flex items-center gap-3 p-3 rounded-lg bg-iwon-bg border border-iwon-success/30">
             <CheckCircle className="h-4 w-4 text-iwon-success shrink-0" />
             <span className="text-sm text-iwon-success truncate flex-1">
-              Video listo: {form.video.public_id}
+              Video listo: {form.video.uid}
             </span>
             <Button
               type="button"

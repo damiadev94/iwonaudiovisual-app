@@ -292,11 +292,11 @@ export default function CursosAdminPage() {
 
               <div className="space-y-2">
                 <Label>Fecha y hora de estreno (opcional)</Label>
-                <Input
+                <input
                   type="datetime-local"
                   value={releaseAtLocal}
                   onChange={(e) => setReleaseAtLocal(e.target.value)}
-                  className="bg-iwon-bg border-iwon-border"
+                  className="h-8 w-full rounded-lg border border-iwon-border bg-iwon-bg px-2.5 py-1 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 [color-scheme:dark]"
                 />
                 <p className="text-xs text-muted-foreground">
                   Hora de Argentina (UTC-3). Vacío = disponible inmediatamente.
