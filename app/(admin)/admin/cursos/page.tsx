@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CldUploadWidget } from "next-cloudinary";
-import type { CloudinaryUploadWidgetResults } from "@cloudinary-util/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,8 +45,8 @@ const categories = [
 ] as const;
 
 interface ThumbnailResult {
-  secure_url: string;
-  public_id: string;
+  url: string;
+  path: string;
 }
 
 // Buenos Aires no aplica horario de verano: offset fijo -03:00.
@@ -102,8 +100,8 @@ export default function CursosAdminPage() {
           title,
           description: description || null,
           category: selectedCategory,
-          thumbnail_url: thumbnail?.secure_url ?? null,
-          thumbnail_public_id: thumbnail?.public_id ?? null,
+          thumbnail_url: thumbnail?.url ?? null,
+          thumbnail_public_id: thumbnail?.path ?? null,
           release_at: buenosAiresLocalToUtcISO(releaseAtLocal),
           is_published: false,
         }),
@@ -159,11 +157,30 @@ export default function CursosAdminPage() {
     }
   }
 
-  function handleThumbnailUpload(results: CloudinaryUploadWidgetResults) {
-    if (results.event !== "success" || typeof results.info !== "object") return;
-    const info = results.info as { secure_url: string; public_id: string };
-    setThumbnail({ secure_url: info.secure_url, public_id: info.public_id });
-    toast.success("Miniatura cargada");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleThumbnailUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload/thumbnail", { method: "POST", body: fd });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Error al subir");
+      }
+      const data = await res.json();
+      setThumbnail({ url: data.url, path: data.path });
+      toast.success("Miniatura cargada");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error al subir miniatura");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   if (loading)
@@ -251,28 +268,25 @@ export default function CursosAdminPage() {
                     </Button>
                   </div>
                 ) : (
-                  <CldUploadWidget
-                    signatureEndpoint="/api/admin/cloudinary/sign"
-                    options={{
-                      resourceType: "image",
-                      folder: "iwon/cursos",
-                      maxFiles: 1,
-                      clientAllowedFormats: ["jpg", "png", "webp"],
-                    }}
-                    onSuccess={handleThumbnailUpload}
-                  >
-                    {({ open }) => (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
-                        onClick={() => open()}
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Subir miniatura
-                      </Button>
-                    )}
-                  </CldUploadWidget>
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleThumbnailUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={uploading}
+                      className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {uploading ? "Subiendo..." : "Subir miniatura"}
+                    </Button>
+                  </>
                 )}
               </div>
 

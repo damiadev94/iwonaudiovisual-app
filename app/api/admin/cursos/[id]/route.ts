@@ -2,7 +2,6 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-guard";
-import { cloudinary } from "@/lib/cloudinary/config";
 
 const updateSchema = z.object({
   title: z
@@ -77,7 +76,6 @@ export async function DELETE(
   const { id } = await params;
   const supabase = createAdminClient();
 
-  // 1. Get course to clean up thumbnail
   const { data: course } = await supabase
     .from("courses")
     .select("thumbnail_public_id")
@@ -88,38 +86,17 @@ export async function DELETE(
     return NextResponse.json({ error: "Curso no encontrado" }, { status: 404 });
   }
 
-  // 2. Get all lessons to clean up videos
-  const { data: lessons } = await supabase
-    .from("lessons")
-    .select("video_public_id")
-    .eq("course_id", id);
-
-  // 3. Clean up Cloudinary assets
-  const cleanupTasks: Promise<void>[] = [];
-
+  // Delete thumbnail from Supabase Storage if present
   if (course.thumbnail_public_id) {
-    cleanupTasks.push(
-      cloudinary.uploader.destroy(course.thumbnail_public_id).catch(err => {
-        console.error("[DELETE course] Cloudinary thumbnail cleanup failed:", err);
-      })
-    );
+    await supabase.storage
+      .from("thumbnails")
+      .remove([course.thumbnail_public_id])
+      .catch((err) => {
+        console.error("[DELETE course] Storage thumbnail cleanup failed:", err);
+      });
   }
 
-  if (lessons && lessons.length > 0) {
-    lessons.forEach(lesson => {
-      if (lesson.video_public_id) {
-        cleanupTasks.push(
-          cloudinary.uploader.destroy(lesson.video_public_id, { resource_type: "video" }).catch(err => {
-            console.error(`[DELETE course] Cloudinary video cleanup failed for lesson:`, err);
-          })
-        );
-      }
-    });
-  }
-
-  await Promise.all(cleanupTasks);
-
-  // 4. Delete course (cascades to lessons and progress)
+  // Delete course (cascades to lessons and progress)
   const { error } = await supabase.from("courses").delete().eq("id", id);
 
   if (error) {
