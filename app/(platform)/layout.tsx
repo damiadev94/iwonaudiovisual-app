@@ -74,9 +74,10 @@ export default async function PlatformLayout({
   const isActive = effectiveStatus === "active";
   const isAdmin = profile?.role === "admin";
   const isSuccessPage = pathname.startsWith("/suscripcion/exito");
+  const isPerfilPage = pathname.startsWith("/perfil");
 
-  // Si no está activo ni es admin, bloquear contenido EXCEPTO en la página de éxito
-  const shouldBlock = !isActive && !isAdmin && !isSuccessPage;
+  // Si no está activo ni es admin, bloquear contenido EXCEPTO en la página de éxito y perfil
+  const shouldBlock = !isActive && !isAdmin && !isSuccessPage && !isPerfilPage;
 
   return (
     <PlatformLayoutShell>
