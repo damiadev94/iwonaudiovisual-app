@@ -388,7 +388,7 @@ export default function CursosAdminPage() {
     });
     if (!res.ok) {
       const d = await res.json();
-      toast.error(d.error ?? "Error al crear el curso");
+      toast.error(d.details ?? d.error ?? "Error al crear el curso");
       return;
     }
     toast.success("Curso creado");
