@@ -36,7 +36,10 @@ import {
   Video,
   VideoOff,
   Loader2,
+  Link2,
 } from "lucide-react";
+
+const CF_UID_REGEX = /^[a-f0-9]{32}$/i;
 import type { Course } from "@/types";
 
 const categories = [
@@ -96,8 +99,23 @@ function CourseForm({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [videoMode, setVideoMode] = useState<"upload" | "uid">("uid");
+  const [uidInput, setUidInput] = useState("");
+  const [uidError, setUidError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbInputRef = useRef<HTMLInputElement>(null);
+
+  function handleApplyUid() {
+    const uid = uidInput.trim();
+    if (!CF_UID_REGEX.test(uid)) {
+      setUidError("UID inválido — debe ser 32 caracteres hexadecimales.");
+      return;
+    }
+    setUidError(null);
+    setVideo({ uid, url: `https://stream.cloudflare.com/${uid}` });
+    setUidInput("");
+    toast.success("UID aplicado");
+  }
 
   async function handleThumbChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -246,35 +264,70 @@ function CourseForm({
         {video ? (
           <div className="flex items-center gap-3 p-3 rounded-lg bg-iwon-bg border border-iwon-success/30">
             <CheckCircle className="h-4 w-4 text-iwon-success shrink-0" />
-            <span className="text-xs text-iwon-success truncate flex-1 font-mono">
-              {video.uid}
-            </span>
+            <span className="text-xs text-iwon-success truncate flex-1 font-mono">{video.uid}</span>
             <Button type="button" size="sm" variant="ghost" className="text-xs h-6 shrink-0"
               onClick={() => setVideo(null)}>
               Cambiar
             </Button>
           </div>
-        ) : uploading ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Subiendo a Cloudflare...
-              </span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <Progress value={uploadProgress} className="h-1" />
-          </div>
         ) : (
           <>
-            <input ref={fileInputRef} type="file" accept="video/*"
-              className="hidden" onChange={handleVideoChange} />
-            <Button type="button" variant="outline"
-              className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
-              onClick={() => fileInputRef.current?.click()}>
-              <Upload className="h-4 w-4 mr-2" />
-              Seleccionar video
-            </Button>
+            {/* Mode toggle */}
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-iwon-bg border border-iwon-border">
+              <button type="button" onClick={() => setVideoMode("uid")}
+                className={`text-xs font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 ${videoMode === "uid" ? "bg-gold text-black" : "text-muted-foreground hover:text-foreground"}`}>
+                <Link2 className="h-3 w-3" />
+                Pegar UID
+              </button>
+              <button type="button" onClick={() => setVideoMode("upload")}
+                className={`text-xs font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 ${videoMode === "upload" ? "bg-gold text-black" : "text-muted-foreground hover:text-foreground"}`}>
+                <Upload className="h-3 w-3" />
+                Subir archivo
+              </button>
+            </div>
+
+            {videoMode === "uid" ? (
+              <div className="space-y-1">
+                <div className="flex gap-2">
+                  <Input
+                    value={uidInput}
+                    onChange={(e) => { setUidInput(e.target.value); setUidError(null); }}
+                    placeholder="UID hex de 32 caracteres"
+                    className="bg-iwon-bg border-iwon-border font-mono text-xs"
+                  />
+                  <Button type="button" onClick={handleApplyUid} disabled={!uidInput.trim()}
+                    className="bg-gold hover:bg-gold-light text-black font-semibold shrink-0">
+                    Aplicar
+                  </Button>
+                </div>
+                {uidError
+                  ? <p className="text-xs text-destructive">{uidError}</p>
+                  : <p className="text-xs text-muted-foreground">Pegá el UID del video en Cloudflare Stream.</p>
+                }
+              </div>
+            ) : uploading ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Subiendo a Cloudflare...
+                  </span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <Progress value={uploadProgress} className="h-1" />
+              </div>
+            ) : (
+              <>
+                <input ref={fileInputRef} type="file" accept="video/*"
+                  className="hidden" onChange={handleVideoChange} />
+                <Button type="button" variant="outline"
+                  className="w-full border-dashed border-iwon-border hover:border-gold/50 text-muted-foreground hover:text-foreground"
+                  onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Seleccionar video
+                </Button>
+              </>
+            )}
           </>
         )}
       </div>
