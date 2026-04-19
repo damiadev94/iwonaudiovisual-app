@@ -9,7 +9,6 @@ export default async function CursosPage() {
   const { data: courses } = await adminClient
     .from("courses")
     .select("*")
-    .eq("is_published", true)
     .order("sort_order", { ascending: true });
 
   const list = (courses ?? []) as Course[];
