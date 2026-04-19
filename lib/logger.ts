@@ -1,9 +1,10 @@
 type LogLevel = "info" | "warn" | "error";
 
-function log(level: LogLevel, msg: string, data?: unknown) {
+function log(level: LogLevel, msg: string, requestId: string | undefined, data?: unknown) {
   const entry = JSON.stringify({
     level,
     msg,
+    ...(requestId ? { requestId } : {}),
     ...(data !== undefined ? { data } : {}),
     ts: new Date().toISOString(),
   });
@@ -14,7 +15,12 @@ function log(level: LogLevel, msg: string, data?: unknown) {
 }
 
 export const logger = {
-  info: (msg: string, data?: unknown) => log("info", msg, data),
-  warn: (msg: string, data?: unknown) => log("warn", msg, data),
-  error: (msg: string, data?: unknown) => log("error", msg, data),
+  info: (msg: string, data?: unknown) => log("info", msg, undefined, data),
+  warn: (msg: string, data?: unknown) => log("warn", msg, undefined, data),
+  error: (msg: string, data?: unknown) => log("error", msg, undefined, data),
+  withRequestId: (requestId: string) => ({
+    info: (msg: string, data?: unknown) => log("info", msg, requestId, data),
+    warn: (msg: string, data?: unknown) => log("warn", msg, requestId, data),
+    error: (msg: string, data?: unknown) => log("error", msg, requestId, data),
+  }),
 };

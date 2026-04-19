@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscriptionStatus } from "@/lib/mercadopago/subscription";
+import { logger } from "@/lib/logger";
+import { getRequestId } from "@/lib/request-id";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const requestId = getRequestId(request);
+  const log = logger.withRequestId(requestId);
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,8 +42,8 @@ export async function GET() {
           .eq("status", "pending");
         return NextResponse.json({ status: "active" });
       }
-    } catch {
-      // Si falla la consulta a MP, devolvemos lo que hay en la DB
+    } catch (err) {
+      log.warn("[subscription/status] Fallo consulta MP, usando DB", { error: String(err) });
     }
   }
 

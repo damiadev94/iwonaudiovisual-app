@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/logger";
+import { getRequestId } from "@/lib/request-id";
 import jwt from "jsonwebtoken";
 
 export async function GET(request: Request) {
+  const requestId = getRequestId(request);
+  const log = logger.withRequestId(requestId);
   const { searchParams } = new URL(request.url);
   const publicId = searchParams.get("publicId"); // Cloudflare Stream UID
 
@@ -76,7 +80,7 @@ export async function GET(request: Request) {
     const signedUrl = `https://customer-${accountId}.cloudflarestream.com/${token}/iframe`;
     return NextResponse.json({ url: signedUrl, expiresAt });
   } catch (error: unknown) {
-    console.error("[GET /api/cursos/video-token]", error);
+    log.error("[video-token] Error generando token", { error: String(error) });
     return NextResponse.json({ error: "No se pudo generar el acceso al video." }, { status: 500 });
   }
 }

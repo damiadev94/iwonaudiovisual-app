@@ -6,6 +6,7 @@ const AUTH_ROUTES = ["/login", "/", "/register", "/confirm-email", "/reset-passw
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const requestId = crypto.randomUUID();
 
   // 1. EXCEPCIÓN PARA MERCADO PAGO
   // Permitimos que esta ruta pase sin verificar usuario ni sesión
@@ -92,10 +93,12 @@ export async function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-pathname", pathname);
     requestHeaders.set("x-user-role", "admin");
+    requestHeaders.set("x-request-id", requestId);
 
     const response = NextResponse.next({
       request: { headers: requestHeaders },
     });
+    response.headers.set("x-request-id", requestId);
 
     // Preservar las cookies de sesión que Supabase pudo haber refrescado
     for (const { name, value, ...options } of supabaseResponse.cookies.getAll()) {
@@ -108,10 +111,12 @@ export async function middleware(request: NextRequest) {
   // Para el resto de rutas, también inyectar el pathname
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
+  requestHeaders.set("x-request-id", requestId);
   
   const finalResponse = NextResponse.next({
     request: { headers: requestHeaders },
   });
+  finalResponse.headers.set("x-request-id", requestId);
 
   for (const { name, value, ...options } of supabaseResponse.cookies.getAll()) {
     finalResponse.cookies.set(name, value, options);

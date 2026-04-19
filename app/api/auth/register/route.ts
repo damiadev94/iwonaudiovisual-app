@@ -4,8 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validations/auth";
 import { ratelimit } from "@/lib/redis/client";
 import { logger } from "@/lib/logger";
+import { getRequestId } from "@/lib/request-id";
 
 export async function POST(request: Request) {
+  const requestId = getRequestId(request);
+  const log = logger.withRequestId(requestId);
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
     try {
@@ -44,7 +47,7 @@ export async function POST(request: Request) {
       ) {
         return NextResponse.json({ error: "EMAIL_EXISTS" }, { status: 409 });
       }
-      logger.error("[auth/register] Error creando usuario", { msg: error.message });
+      log.error("[auth/register] Error creando usuario", { msg: error.message });
       return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
     }
 
@@ -58,7 +61,7 @@ export async function POST(request: Request) {
       );
 
     if (profileError) {
-      logger.error("[auth/register] Error creando perfil, rollback", { userId: created.user.id, msg: profileError.message });
+      log.error("[auth/register] Error creando perfil, rollback", { userId: created.user.id, msg: profileError.message });
       await admin.auth.admin.deleteUser(created.user.id);
       return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
     }
@@ -72,14 +75,14 @@ export async function POST(request: Request) {
     });
 
     if (resendError) {
-      logger.warn("[auth/register] Error enviando email de confirmacion", { msg: resendError.message });
+      log.warn("[auth/register] Error enviando email de confirmacion", { msg: resendError.message });
     }
 
-    logger.info("[auth/register] Usuario registrado", { email });
+    log.info("[auth/register] Usuario registrado", { email });
     return NextResponse.json({ ok: true });
 
   } catch (err) {
-    logger.error("[auth/register] Error inesperado", { error: String(err) });
+    log.error("[auth/register] Error inesperado", { error: String(err) });
     return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
   }
 }

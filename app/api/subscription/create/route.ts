@@ -3,8 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscribeUrl } from "@/lib/mercadopago/subscription";
 import { logger } from "@/lib/logger";
+import { getRequestId } from "@/lib/request-id";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const requestId = getRequestId(request);
+  const log = logger.withRequestId(requestId);
   const supabase = await createClient();
   const {
     data: { user },
@@ -43,7 +46,7 @@ export async function POST() {
 
     return NextResponse.json({ init_point });
   } catch (error: unknown) {
-    logger.error("[subscription/create] MP Error", { error: String(error) });
+    log.error("[subscription/create] MP Error", { error: String(error) });
     return NextResponse.json({ error: "payment_setup_failed" }, { status: 500 });
   }
 }
