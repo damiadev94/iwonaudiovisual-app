@@ -132,7 +132,7 @@ export function LessonManager({
       const res = await fetch("/api/admin/video/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: form.title || "Lección", courseSlug, fileSize: file.size }),
+        body: JSON.stringify({ title: form.title || "Lección", courseSlug }),
       });
 
       if (!res.ok) {
@@ -180,7 +180,7 @@ export function LessonManager({
     }
   }
 
-  async function handleSubmitAdd(e: React.FormEvent) {
+  async function handleSubmitAdd(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.title.trim()) return;
     setSubmitting(true);
@@ -218,7 +218,7 @@ export function LessonManager({
     }
   }
 
-  async function handleSubmitEdit(e: React.FormEvent) {
+  async function handleSubmitEdit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!editLesson || !form.title.trim()) return;
     setSubmitting(true);
@@ -477,7 +477,7 @@ function LessonForm({
 }: {
   form: LessonFormState;
   setForm: React.Dispatch<React.SetStateAction<LessonFormState>>;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
   onVideoUpload: (file: File) => void;
   uploading: boolean;
   uploadProgress: number;

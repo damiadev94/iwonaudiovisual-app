@@ -147,7 +147,7 @@ function CourseForm({
       const res = await fetch("/api/admin/video/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: courseSlug ?? "curso", fileSize: file.size }),
+        body: JSON.stringify({ title: courseSlug ?? "curso" }),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
