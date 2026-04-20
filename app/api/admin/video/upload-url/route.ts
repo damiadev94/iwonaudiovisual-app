@@ -13,42 +13,47 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { title } = body;
+  const { title, fileSize } = body;
+
+  if (!fileSize || typeof fileSize !== "number") {
+    return NextResponse.json({ error: "fileSize requerido." }, { status: 400 });
+  }
+
+  const videoName = (title as string | undefined)?.trim() || "Sin título";
 
   try {
-    // Request a Direct Creator Upload URL from Cloudflare Stream
+    // Create a TUS resumable upload slot — supports files of any size
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/direct_upload`,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiToken}`,
-          "Content-Type": "application/json",
+          "Tus-Resumable": "1.0.0",
+          "Upload-Length": String(fileSize),
+          "Upload-Metadata": [
+            `name ${Buffer.from(videoName).toString("base64")}`,
+            `maxDurationSeconds ${Buffer.from("3600").toString("base64")}`,
+          ].join(","),
         },
-        body: JSON.stringify({
-          maxDurationSeconds: 3600,
-          meta: {
-            name: title || "Sin título",
-            title: title || "Sin título",
-          },
-        }),
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Cloudflare API Error:", errorText);
+      console.error("Cloudflare TUS error:", errorText);
       throw new Error(`Cloudflare API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    
-    // data.result.uploadURL: The URL to perform the POST to
-    // data.result.uid: The UID that will be assigned to the video
-    return NextResponse.json({
-      uploadUrl: data.result.uploadURL,
-      uid: data.result.uid,
-    });
+    // Location = public TUS upload URL (no auth needed for PATCH)
+    const uploadUrl = response.headers.get("Location");
+    const uid = response.headers.get("stream-media-id");
+
+    if (!uploadUrl || !uid) {
+      throw new Error("Cloudflare no devolvió Location o stream-media-id");
+    }
+
+    return NextResponse.json({ uploadUrl, uid });
   } catch (error: unknown) {
     console.error("[POST /api/admin/video/upload-url]", error);
     return NextResponse.json({ error: "No se pudo generar el URL de subida." }, { status: 500 });

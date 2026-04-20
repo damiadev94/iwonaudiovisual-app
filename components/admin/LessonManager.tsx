@@ -132,7 +132,7 @@ export function LessonManager({
       const res = await fetch("/api/admin/video/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: form.title || "Lección", courseSlug }),
+        body: JSON.stringify({ title: form.title || "Lección", courseSlug, fileSize: file.size }),
       });
 
       if (!res.ok) throw new Error("No se pudo obtener el URL de subida");
