@@ -20,12 +20,13 @@ export async function POST(request: Request) {
   }
 
   const videoName = (title as string | undefined)?.trim() || "Sin título";
-  // Use Origin header so CORS works both in dev and prod
-  const origin = request.headers.get("origin") ?? "https://www.iwonaudiovisual.com";
+  // --- CAMBIO AQUÍ ---
+  // Obtenemos el origin y le quitamos el protocolo (http:// o https://)
+  const rawOrigin = request.headers.get("origin") ?? "https://www.iwonaudiovisual.com";
+  const origin = rawOrigin.replace(/^https?:\/\//, ""); 
+  // -------------------
 
   try {
-    // /stream TUS endpoint — required for files >200 MB
-    // allowedorigins in metadata makes Cloudflare add CORS headers to the upload URL
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream`,
       {
