@@ -25,7 +25,7 @@ export function Pricing() {
               Membresía mensual
             </div>
             <div className="font-condensed font-black text-[56px] md:text-[72px] leading-none text-gold">
-              $9.999
+              $14.999
             </div>
             <div className="text-base text-muted-foreground mt-2">
               ARS por mes · Sin permanencia mínima

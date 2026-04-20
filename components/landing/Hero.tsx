@@ -1,18 +1,26 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col justify-end px-5 md:px-10 pb-16 overflow-hidden">
-      {/* Background: dark gradient + subtle gold grid */}
+      <Image
+        src="/images/artista_independiente_landing_1.jpg"
+        alt=""
+        fill
+        priority
+        className="object-cover object-center"
+      />
+
+      {/* Overlays */}
       <div
         className="absolute inset-0"
         style={{
           background: `
-            linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.7) 40%, rgba(10,10,10,0.3) 70%, rgba(10,10,10,0.6) 100%),
-            repeating-linear-gradient(90deg, transparent, transparent 99px, rgba(201,168,76,0.04) 99px, rgba(201,168,76,0.04) 100px),
-            repeating-linear-gradient(0deg, transparent, transparent 99px, rgba(201,168,76,0.04) 99px, rgba(201,168,76,0.04) 100px)
+            linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.75) 40%, rgba(10,10,10,0.45) 70%, rgba(10,10,10,0.65) 100%),
+            repeating-linear-gradient(90deg, transparent, transparent 99px, rgba(201,168,76,0.03) 99px, rgba(201,168,76,0.03) 100px),
+            repeating-linear-gradient(0deg, transparent, transparent 99px, rgba(201,168,76,0.03) 99px, rgba(201,168,76,0.03) 100px)
           `,
-          backgroundColor: "#0d0d0d",
         }}
       />
 
@@ -22,7 +30,7 @@ export function Hero() {
         Productora audiovisual · Buenos Aires · Desde 2022
       </div>
 
-      {/* Title — tres tratamientos: outline / blanco / dorado */}
+      {/* Title */}
       <h1
         className="relative font-condensed font-black uppercase leading-[0.88] tracking-[-0.01em]"
         style={{ fontSize: "clamp(72px, 12vw, 140px)" }}

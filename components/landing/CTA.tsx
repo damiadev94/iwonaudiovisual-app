@@ -1,14 +1,26 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function CTA() {
   return (
     <section className="py-30 px-5 md:px-10 text-center relative overflow-hidden">
-      {/* Watermark — técnica de marcas de ropa urbana */}
+      {/* Background image */}
+      <Image
+        src="/images/artista_independiente_landing_3.jpg"
+        alt=""
+        fill
+        className="object-cover object-center"
+      />
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-iwon-bg/80" />
+
+      {/* Watermark */}
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-condensed font-black whitespace-nowrap pointer-events-none select-none"
         style={{
           fontSize: "22vw",
-          color: "rgba(201,168,76,0.04)",
+          color: "rgba(201,168,76,0.06)",
           letterSpacing: "-0.02em",
         }}
       >
@@ -24,7 +36,7 @@ export function CTA() {
       </h2>
 
       <p className="relative text-muted-foreground mt-6 mb-10 italic">
-        Suscribite por $9.999/mes · Sin permanencia mínima
+        Suscribite por $14.999/mes · Sin permanencia mínima
       </p>
 
       <Link href="/register" className="relative inline-block">

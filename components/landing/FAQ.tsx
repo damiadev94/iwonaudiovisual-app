@@ -33,7 +33,9 @@ export function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-24 px-5 md:px-10">
+    <section id="faq" className="py-24 px-5 md:px-10 flex justify-center">
+      <div>
+
       <div className="flex items-center gap-2.5 text-[10px] tracking-[0.3em] uppercase text-gold mb-16">
         <span>◆</span>
         <span>Preguntas frecuentes</span>
@@ -66,6 +68,7 @@ export function FAQ() {
             </div>
           </div>
         ))}
+      </div>
       </div>
     </section>
   );
