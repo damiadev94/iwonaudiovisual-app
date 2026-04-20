@@ -132,7 +132,7 @@ export function LessonManager({
       const res = await fetch("/api/admin/video/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: form.title || "Lección", courseSlug }),
+        body: JSON.stringify({ title: form.title || "Lección", courseSlug, fileSize: file.size }),
       });
 
       if (!res.ok) {
@@ -145,7 +145,7 @@ export function LessonManager({
       await new Promise<void>((resolve, reject) => {
         const upload = new tus.Upload(file, {
           // uploadUrl = pre-created slot by Cloudflare → PATCH directly, no POST
-          endpoint: uploadUrl,
+          uploadUrl,
           chunkSize: 5 * 1024 * 1024, // 5 MB chunks
           retryDelays: [0, 3000, 6000, 12000, 24000],
           metadata: {

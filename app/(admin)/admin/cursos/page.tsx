@@ -147,7 +147,7 @@ function CourseForm({
       const res = await fetch("/api/admin/video/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: courseSlug ?? "curso" }),
+        body: JSON.stringify({ title: courseSlug ?? "curso", fileSize: file.size }),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -157,7 +157,7 @@ function CourseForm({
 
       await new Promise<void>((resolve, reject) => {
         const upload = new tus.Upload(file, {
-          endpoint: uploadUrl,
+          uploadUrl,
           chunkSize: 5 * 1024 * 1024,
           retryDelays: [0, 3000, 6000, 12000, 24000],
           metadata: { filename: file.name, filetype: file.type, name: courseSlug ?? file.name },
