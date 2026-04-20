@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import * as tus from "tus-js-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -146,22 +147,27 @@ function CourseForm({
       const res = await fetch("/api/admin/video/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "curso", courseSlug: courseSlug ?? "general" }),
+        body: JSON.stringify({ title: courseSlug ?? "curso", fileSize: file.size }),
       });
-      if (!res.ok) throw new Error("No se pudo obtener el URL de subida");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "No se pudo obtener el URL de subida");
+      }
       const { uploadUrl, uid } = await res.json();
 
-      const fd = new FormData();
-      fd.append("file", file);
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", uploadUrl);
-      xhr.upload.onprogress = (ev) => {
-        if (ev.lengthComputable) setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
-      };
       await new Promise<void>((resolve, reject) => {
-        xhr.onload = () => xhr.status < 300 ? resolve() : reject(new Error("Error en Cloudflare"));
-        xhr.onerror = () => reject(new Error("Error de red"));
-        xhr.send(fd);
+        const upload = new tus.Upload(file, {
+          uploadUrl,
+          chunkSize: 8 * 1024 * 1024,
+          retryDelays: [0, 3000, 6000, 12000, 24000],
+          metadata: { filename: file.name, filetype: file.type, name: courseSlug ?? file.name },
+          onProgress(bytesSent: number, bytesTotal: number) {
+            setUploadProgress(Math.round((bytesSent / bytesTotal) * 100));
+          },
+          onSuccess() { resolve(); },
+          onError(err: Error) { reject(err); },
+        });
+        upload.start();
       });
 
       setVideo({ uid, url: `https://stream.cloudflare.com/${uid}` });
