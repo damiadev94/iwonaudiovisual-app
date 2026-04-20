@@ -157,8 +157,8 @@ function CourseForm({
 
       await new Promise<void>((resolve, reject) => {
         const upload = new tus.Upload(file, {
-          uploadUrl,
-          chunkSize: 8 * 1024 * 1024,
+          endpoint: uploadUrl,
+          chunkSize: 5 * 1024 * 1024,
           retryDelays: [0, 3000, 6000, 12000, 24000],
           metadata: { filename: file.name, filetype: file.type, name: courseSlug ?? file.name },
           onProgress(bytesSent: number, bytesTotal: number) {
