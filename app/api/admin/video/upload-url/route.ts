@@ -15,8 +15,13 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const { title, fileSize } = body;
 
+  console.log("[upload-url] body recibido:", { title, fileSize, fileSizeType: typeof fileSize });
+
   if (!fileSize || typeof fileSize !== "number") {
-    return NextResponse.json({ error: "fileSize requerido." }, { status: 400 });
+    return NextResponse.json(
+      { error: `fileSize requerido (recibido: ${JSON.stringify(fileSize)}, tipo: ${typeof fileSize})` },
+      { status: 400 }
+    );
   }
 
   const videoName = (title as string | undefined)?.trim() || "Sin título";
