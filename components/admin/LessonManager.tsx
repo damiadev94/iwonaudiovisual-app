@@ -147,6 +147,7 @@ export function LessonManager({
           metadata: {
             filename: file.name,
             filetype: file.type,
+            name: form.title.trim() || file.name,
           },
           onProgress(bytesSent, bytesTotal) {
             const percent = Math.round((bytesSent / bytesTotal) * 100);

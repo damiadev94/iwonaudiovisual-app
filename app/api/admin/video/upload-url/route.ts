@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { title, courseSlug } = body;
+  const { title } = body;
 
   try {
     // Request a Direct Creator Upload URL from Cloudflare Stream
@@ -26,10 +26,10 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          maxDurationSeconds: 3600, // 1 hour max
+          maxDurationSeconds: 3600,
           meta: {
-            name: `cursos/${courseSlug || "general"}/${title || "video"}`,
-            title: title || "Video lección",
+            name: title || "Sin título",
+            title: title || "Sin título",
           },
         }),
       }
