@@ -25,7 +25,6 @@ export async function POST(request: Request) {
   const rawOrigin = request.headers.get("origin") ?? "https://www.iwonaudiovisual.com";
   // Esta línea elimina https://, http:// y también el puerto (ej: :3000)
   const origin = rawOrigin.replace(/^https?:\/\//, "").split(':')[0]; 
-  console.log("Origin para metadata:", origin);
   // -------------------
 
   try {
@@ -38,8 +37,7 @@ export async function POST(request: Request) {
           "Tus-Resumable": "1.0.0",
           "Upload-Length": String(fileSize),
           "Upload-Metadata": [
-            `name ${Buffer.from(videoName).toString("base64")}`,
-            `allowedorigins ${Buffer.from(origin).toString("base64")}`,
+            `name ${Buffer.from(videoName).toString("base64")}`
           ].join(","),
         },
       }
