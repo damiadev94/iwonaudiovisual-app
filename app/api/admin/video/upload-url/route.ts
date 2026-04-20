@@ -20,12 +20,6 @@ export async function POST(request: Request) {
   }
 
   const videoName = (title as string | undefined)?.trim() || "Sin título";
-  // --- CAMBIO AQUÍ ---
-  // Obtenemos el origin y le quitamos el protocolo (http:// o https://)
-  const rawOrigin = request.headers.get("origin") ?? "https://www.iwonaudiovisual.com";
-  // Esta línea elimina https://, http:// y también el puerto (ej: :3000)
-  const origin = rawOrigin.replace(/^https?:\/\//, "").split(':')[0]; 
-  // -------------------
 
   try {
     const response = await fetch(
@@ -36,9 +30,7 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${apiToken}`,
           "Tus-Resumable": "1.0.0",
           "Upload-Length": String(fileSize),
-          "Upload-Metadata": [
-            `name ${Buffer.from(videoName).toString("base64")}`
-          ].join(","),
+          "Upload-Metadata": `name ${Buffer.from(videoName).toString("base64")}`,
         },
       }
     );
