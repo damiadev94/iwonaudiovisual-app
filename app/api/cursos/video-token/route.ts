@@ -20,12 +20,14 @@ export async function GET(request: Request) {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 
   if (!accountId || !keyId || !privateKey) {
+    log.error("[video-token] Credenciales Cloudflare ausentes");
     return NextResponse.json({ error: "Cloudflare credentials missing." }, { status: 500 });
   }
 
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
+    log.warn("[video-token] Sesión Inválida", { authError: authError?.message });
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
@@ -40,6 +42,7 @@ export async function GET(request: Request) {
     .maybeSingle();
 
   if (!subscription) {
+    log.info("[video-token] Acceso denegado: sin suscripcion activa", { userId: user.id });
     return NextResponse.json({ error: "Suscripción no activa.", status: "inactive" }, { status: 403 });
   }
 
@@ -51,16 +54,19 @@ export async function GET(request: Request) {
     .maybeSingle();
 
   if (courseError || !course) {
+    log.warn("[video-token] Video no encontrado", { publicId, dbError: courseError?.message });
     return NextResponse.json({ error: "Video no encontrado." }, { status: 404 });
   }
 
   if (!course.is_published) {
+    log.warn("[video-token] Video no publicado", { publicId });
     return NextResponse.json({ error: "Contenido no disponible." }, { status: 404 });
   }
 
   if (course.release_at) {
     const releaseTime = new Date(course.release_at);
     if (releaseTime.getTime() > Date.now()) {
+      log.info("[video-token] Video pendiente de estreno", { publicId, releaseAt: releaseTime.toISOString() });
       return NextResponse.json(
         { error: "Contenido pendiente de estreno.", releaseAt: releaseTime.toISOString() },
         { status: 403 }
@@ -76,6 +82,8 @@ export async function GET(request: Request) {
       formattedKey,
       { algorithm: "RS256", header: { alg: "RS256", kid: keyId } }
     );
+
+    log.info("[video-token] Token generado exitosamente", { userId: user.id, publicId, expiresAt });
 
     const signedUrl = `https://customer-${accountId}.cloudflarestream.com/${token}/iframe`;
     return NextResponse.json({ url: signedUrl, expiresAt });
