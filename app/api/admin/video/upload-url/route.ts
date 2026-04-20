@@ -23,7 +23,9 @@ export async function POST(request: Request) {
   // --- CAMBIO AQUÍ ---
   // Obtenemos el origin y le quitamos el protocolo (http:// o https://)
   const rawOrigin = request.headers.get("origin") ?? "https://www.iwonaudiovisual.com";
-  const origin = rawOrigin.replace(/^https?:\/\//, ""); 
+  // Esta línea elimina https://, http:// y también el puerto (ej: :3000)
+  const origin = rawOrigin.replace(/^https?:\/\//, "").split(':')[0]; 
+  console.log("Origin para metadata:", origin);
   // -------------------
 
   try {
