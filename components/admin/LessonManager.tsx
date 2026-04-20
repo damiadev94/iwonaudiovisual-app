@@ -141,9 +141,10 @@ export function LessonManager({
 
       await new Promise<void>((resolve, reject) => {
         const upload = new tus.Upload(file, {
-          endpoint: uploadUrl,
-          chunkSize: 50 * 1024 * 1024, // 50 MB chunks
-          retryDelays: [0, 3000, 6000, 12000],
+          // uploadUrl = pre-created slot by Cloudflare → PATCH directly, no POST
+          uploadUrl,
+          chunkSize: 8 * 1024 * 1024, // 8 MB chunks
+          retryDelays: [0, 3000, 6000, 12000, 24000],
           metadata: {
             filename: file.name,
             filetype: file.type,
