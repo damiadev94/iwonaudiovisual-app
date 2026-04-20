@@ -135,7 +135,10 @@ export function LessonManager({
         body: JSON.stringify({ title: form.title || "Lección", courseSlug, fileSize: file.size }),
       });
 
-      if (!res.ok) throw new Error("No se pudo obtener el URL de subida");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "No se pudo obtener el URL de subida");
+      }
 
       const { uploadUrl, uid } = await res.json();
 

@@ -31,18 +31,15 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${apiToken}`,
           "Tus-Resumable": "1.0.0",
           "Upload-Length": String(fileSize),
-          "Upload-Metadata": [
-            `name ${Buffer.from(videoName).toString("base64")}`,
-            `maxDurationSeconds ${Buffer.from("3600").toString("base64")}`,
-          ].join(","),
+          "Upload-Metadata": `name ${Buffer.from(videoName).toString("base64")}`,
         },
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Cloudflare TUS error:", errorText);
-      throw new Error(`Cloudflare API error: ${response.statusText}`);
+      console.error("Cloudflare TUS error:", response.status, errorText);
+      return NextResponse.json({ error: `Cloudflare error ${response.status}: ${errorText}` }, { status: 502 });
     }
 
     // Location = public TUS upload URL (no auth needed for PATCH)
