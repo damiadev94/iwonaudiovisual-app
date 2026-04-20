@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import * as tus from "tus-js-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,44 +129,38 @@ export function LessonManager({
     setUploadProgress(0);
 
     try {
-      // 1. Get Direct Upload URL from our backend
       const res = await fetch("/api/admin/video/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: form.title || "Lección", courseSlug }),
       });
-      
+
       if (!res.ok) throw new Error("No se pudo obtener el URL de subida");
-      
+
       const { uploadUrl, uid } = await res.json();
 
-      // 2. Upload directly to Cloudflare
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", uploadUrl);
-      
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percent);
-        }
-      };
-
-      const uploadPromise = new Promise((resolve, reject) => {
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(xhr.response);
-          } else {
-            reject(new Error("Error en la subida a Cloudflare"));
-          }
-        };
-        xhr.onerror = () => reject(new Error("Error de red durante la subida"));
-        xhr.send(formData);
+      await new Promise<void>((resolve, reject) => {
+        const upload = new tus.Upload(file, {
+          endpoint: uploadUrl,
+          chunkSize: 50 * 1024 * 1024, // 50 MB chunks
+          retryDelays: [0, 3000, 6000, 12000],
+          metadata: {
+            filename: file.name,
+            filetype: file.type,
+          },
+          onProgress(bytesSent, bytesTotal) {
+            const percent = Math.round((bytesSent / bytesTotal) * 100);
+            setUploadProgress(percent);
+          },
+          onSuccess() {
+            resolve();
+          },
+          onError(err) {
+            reject(err);
+          },
+        });
+        upload.start();
       });
-
-      await uploadPromise;
 
       setForm((prev) => ({
         ...prev,
