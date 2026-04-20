@@ -1,79 +1,76 @@
-import { Users, Gift, Film, BookOpen } from "lucide-react";
-
-const steps = [
-  {
-    icon: Users,
-    title: "Selección",
-    subtitle: "Los 50",
-    description:
-      "Seleccionamos a 50 artistas que estén suscriptos para filmarles su mejor canción con equipos de cine.",
-    color: "text-gold",
-  },
-  {
-    icon: Gift,
-    title: "Sorteos",
-    subtitle: "Premios exclusivos",
-    description:
-      "Sorteos increíbles de videoclips, EP o un DISCO completo. Solo para suscriptores activos.",
-    color: "text-iwon-success",
-  },
-  {
-    icon: Film,
-    title: "Promos",
-    subtitle: "Filmación accesible",
-    description:
-      "Accedé a promociones de filmación a precios exclusivos para suscriptores. Cupos limitados.",
-    color: "text-blue-400",
-  },
-  {
-    icon: BookOpen,
-    title: "Cursos",
-    subtitle: "Formación continua",
-    description:
-      "Cursos de Negocio Musical, Marca, Publicidad, Lanzamientos, Campañas, Estética, Industria, y mucho más.",
-    color: "text-purple-400",
-  },
-];
-
 export function HowItWorks() {
   return (
-    <section id="como-funciona" className="py-24 bg-iwon-bg-secondary">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Cómo funciona
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Todos los meses hay diferentes eventos en los que vas a tener oportunidades de crecimiento para tu carrera.
-          </p>
-        </div>
+    <section id="como-funciona" className="py-24 px-5 md:px-10">
+      <div className="flex items-center gap-2.5 text-[10px] tracking-[0.3em] uppercase text-gold mb-4">
+        <span>◆</span>
+        <span>El concepto</span>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {steps.map((step, index) => (
-            <div
-              key={step.title}
-              className="relative p-6 rounded-xl bg-iwon-card border border-iwon-border hover:border-gold/30 transition-all duration-300 group"
-            >
-              {/* Step number */}
-              <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-gold text-black flex items-center justify-center text-sm font-bold">
-                {index + 1}
-              </div>
+      <h2
+        className="font-condensed font-black uppercase leading-[0.9] tracking-[-0.01em]"
+        style={{ fontSize: "clamp(42px, 7vw, 80px)" }}
+      >
+        No firmamos
+        <br />
+        artistas.
+        <br />
+        <span className="text-gold">
+          Te damos las
+          <br />
+          oportunidades.
+        </span>
+      </h2>
 
-              <step.icon className={`h-10 w-10 ${step.color} mb-4`} />
-              <h3 className="text-lg font-bold mb-1">{step.title}</h3>
-              <p className="text-sm text-gold mb-3">{step.subtitle}</p>
-              <p className="text-sm text-muted-foreground">{step.description}</p>
+      {/* Brutalista concept grid: tall left cell + 2 right cells */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 gap-px mt-16 border border-iwon-border"
+        style={{ background: "var(--color-iwon-border)" }}
+      >
+        {/* Cell 01 — spans 2 rows on md+ */}
+        <div className="bg-iwon-card p-8 md:p-10 flex flex-col justify-between md:row-span-2">
+          <div>
+            <div className="font-condensed font-black text-[80px] leading-none text-gold/10">01</div>
+            <div className="font-condensed font-extrabold text-[26px] md:text-[28px] uppercase tracking-[0.02em] mt-4 mb-3 leading-tight">
+              La primera productora audiovisual del país para artistas urbanos
+              independientes
             </div>
-          ))}
+            <div className="text-sm text-muted-foreground leading-[1.7]">
+              Cada 4 meses abrimos convocatoria. Los 50 mejores artistas reciben
+              5 videoclips profesionales filmados con equipamiento de cine. Sin
+              costo adicional.
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-iwon-border">
+            <div className="text-[11px] tracking-[0.15em] uppercase text-muted-foreground mb-2">
+              Valor por seleccionado
+            </div>
+            <div className="font-condensed font-black text-[40px] text-gold leading-none">
+              +USD $1.500
+            </div>
+          </div>
         </div>
 
-        {/* Arrow connector for desktop */}
-        <div className="hidden lg:flex justify-center mt-8">
-          <div className="flex items-center gap-2 text-gold/40">
-            <span className="text-sm">Ciclo rotativo continuo</span>
-            <svg width="40" height="20" viewBox="0 0 40 20" fill="currentColor">
-              <path d="M0 10 Q10 0, 20 10 Q30 20, 40 10" stroke="currentColor" fill="none" strokeWidth="1.5" />
-            </svg>
+        {/* Cell 02 */}
+        <div className="bg-iwon-card p-8 md:p-10">
+          <div className="font-condensed font-black text-[48px] leading-none text-gold/10">02</div>
+          <div className="font-condensed font-extrabold text-[26px] uppercase tracking-[0.02em] mt-4 mb-3">
+            Resultado en 10 días
+          </div>
+          <div className="text-sm text-muted-foreground leading-[1.7]">
+            Mandás tu demo. Nosotros evaluamos por mérito. En 10 días sabés si
+            quedaste. Sin azar, sin palancas.
+          </div>
+        </div>
+
+        {/* Cell 03 */}
+        <div className="bg-iwon-card p-8 md:p-10">
+          <div className="font-condensed font-black text-[48px] leading-none text-gold/10">03</div>
+          <div className="font-condensed font-extrabold text-[26px] uppercase tracking-[0.02em] mt-4 mb-3">
+            Libertad creativa total
+          </div>
+          <div className="text-sm text-muted-foreground leading-[1.7]">
+            Elegís vos qué canciones filmar. Se filma a tu ritmo. 1-2 revisiones
+            incluidas por videoclip.
           </div>
         </div>
       </div>

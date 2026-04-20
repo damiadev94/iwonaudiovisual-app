@@ -1,69 +1,78 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight } from "lucide-react";
 
 const features = [
-  "Acceso a SER SELECCIONADO",
-  "Acceso a SORTEOS EXCLUSIVOS",
-  "Acceso a Promociones de Filmación",
-  "Acceso a CONTENIDO y FORMACIÓN",
-  "Soporte del equipo Iwon",
-  "Cancelá cuando quieras",
+  "Acceso total a cursos de formación",
+  "Promos de filmación a $49.999",
+  "Participación en sorteos mensuales",
+  'Aplicación a "Los 50" cada 4 meses',
+  "5 videoclips profesionales si sos seleccionado",
+  "Cancelás cuando quieras, sin cargos",
 ];
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-24 bg-iwon-bg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Un solo plan. <span className="text-gold">Todo incluido.</span>
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Sin planes confusos ni costos ocultos. Un precio accesible para impulsar tu carrera.
-          </p>
-        </div>
+    <section id="pricing" className="py-24 px-5 md:px-10 bg-[#111111]">
+      <div className="flex items-center gap-2.5 text-[10px] tracking-[0.3em] uppercase text-gold mb-16">
+        <span>◆</span>
+        <span>La inversión</span>
+      </div>
 
-        <div className="max-w-lg mx-auto">
-          <div className="relative p-8 rounded-2xl bg-iwon-card border-2 border-gold/50 overflow-hidden">
-            {/* Glow effect */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gold/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gold/5 rounded-full blur-3xl" />
-
-            <div className="relative">
-              {/* Badge */}
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-semibold mb-6">
-                Plan único
-              </div>
-
-              {/* Price */}
-              <div className="mb-6">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold font-mono text-gold">$14.999</span>
-                  <span className="text-muted-foreground">/mes</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">Pesos argentinos - Sin compromiso</p>
-              </div>
-
-              {/* Features */}
-              <ul className="space-y-3 mb-8">
-                {features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-gold shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <Link href="/register">
-                <Button className="w-full bg-gold hover:bg-gold-light text-black font-bold text-lg py-6 h-auto">
-                  Suscribite ahora
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+      <div className="max-w-170 mx-auto border border-gold">
+        {/* Header */}
+        <div className="p-8 md:p-12 border-b border-iwon-border flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+          <div>
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-2">
+              Membresía mensual
+            </div>
+            <div className="font-condensed font-black text-[56px] md:text-[72px] leading-none text-gold">
+              $9.999
+            </div>
+            <div className="text-base text-muted-foreground mt-2">
+              ARS por mes · Sin permanencia mínima
             </div>
           </div>
+          <div className="sm:text-right">
+            <div className="text-[11px] tracking-[0.15em] uppercase text-muted-foreground">
+              Valor potencial
+            </div>
+            <div className="font-condensed font-black text-[28px] text-gold leading-tight">
+              +$1.500.000 ARS
+            </div>
+            <div className="text-xs text-muted-foreground">
+              si quedás entre Los 50
+            </div>
+          </div>
+        </div>
+
+        {/* Features grid */}
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 gap-px"
+          style={{ background: "var(--color-iwon-border)" }}
+        >
+          {features.map((f) => (
+            <div
+              key={f}
+              className="bg-iwon-card px-6 md:px-8 py-5 flex items-center gap-3"
+            >
+              <div
+                className="w-1.5 h-1.5 bg-gold shrink-0"
+                style={{ clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" }}
+              />
+              <span className="text-[13px] leading-snug">{f}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="px-8 md:px-12 py-8 flex justify-center">
+          <Link href="/register">
+            <button
+              className="bg-gold text-black font-condensed font-black text-base uppercase tracking-[0.12em] px-16 py-5 cursor-pointer transition-all hover:bg-gold-light hover:-translate-y-0.5"
+              style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}
+            >
+              Empezar ahora
+            </button>
+          </Link>
         </div>
       </div>
     </section>

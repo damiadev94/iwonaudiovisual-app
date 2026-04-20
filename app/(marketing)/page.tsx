@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { Hero } from "@/components/landing/Hero";
+import { Ticker } from "@/components/landing/Ticker";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Benefits } from "@/components/landing/Benefits";
+import { CalendarSection } from "@/components/landing/CalendarSection";
 import { Portfolio } from "@/components/landing/Portfolio";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
@@ -22,8 +24,10 @@ export default async function LandingPage({
   return (
     <>
       <Hero />
+      <Ticker />
       <HowItWorks />
       <Benefits />
+      <CalendarSection />
       <Portfolio />
       <Pricing />
       <FAQ />

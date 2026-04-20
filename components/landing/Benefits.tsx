@@ -1,65 +1,60 @@
-import { BookOpen, Film, Trophy, Star, CheckCircle } from "lucide-react";
-
 const benefits = [
   {
-    icon: BookOpen,
-    title: "Cursos de formación",
-    description: "Accedé a ser elegida/o, sorteos, promociones, contenido y formación desde el día 1.",
-    features: ["Negocio Musical", "Marca y Publicidad", "Lanzamientos y Campañas", "Estética e Industria"],
+    num: "01",
+    tag: "Formación",
+    title: "Cursos de negocio musical",
+    body: "Finanzas, marketing, branding, distribución. Lo que no te enseña YouTube.",
   },
   {
-    icon: Film,
+    num: "02",
+    tag: "Producción",
     title: "Promos de filmación",
-    description: "Reservá tu videoclip por un precio que solo está disponible para SUSCRIPTORES.",
-    features: ["Cupos limitados mes a mes", "One shots", "Videoclips", "Descuentos"],
+    body: "200 cupos por mes. $49.999 por videoclip profesional. Solo para suscriptores.",
   },
   {
-    icon: Trophy,
-    title: "Sorteos exclusivos",
-    description: "Participá en sorteos mensuales de videoclips, EP O DISCO completo.",
-    features: ["Sorteos mensuales", "Videoclips gratis", "EP o Disco completo"],
+    num: "03",
+    tag: "Sorteos",
+    title: "Videoclips sorteados",
+    body: "Cada mes sorteamos servicios profesionales. Participás automáticamente.",
   },
   {
-    icon: Star,
-    title: "Selección de Artistas",
-    description: "Mandanos tu canción para ser uno de los 50 artistas seleccionados y filmar tu canción.",
-    features: ["Videoclip", "Equipos cinematográficos", "Filmación en 6k"],
+    num: "04",
+    tag: "Selección",
+    title: "Los 50 — Cada 4 meses",
+    body: "Los 50 mejores reciben su disco filmado. 5 videoclips con equipamiento de cine.",
   },
 ];
 
 export function Benefits() {
   return (
-    <section id="beneficios" className="py-24 bg-iwon-bg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Beneficios desde el <span className="text-gold">día 1</span>
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            No es solo una suscripción. Es una plataforma de impulso artístico con producciones reales.
-          </p>
-        </div>
+    <section id="beneficios" className="py-24 px-5 md:px-10 bg-[#111111]">
+      <div className="flex items-center gap-2.5 text-[10px] tracking-[0.3em] uppercase text-gold mb-16">
+        <span>◆</span>
+        <span>Qué recibís desde el día 1</span>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {benefits.map((benefit) => (
-            <div
-              key={benefit.title}
-              className="p-8 rounded-xl bg-iwon-card border border-iwon-border hover:border-gold/30 transition-all duration-300"
-            >
-              <benefit.icon className="h-10 w-10 text-gold mb-4" />
-              <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
-              <p className="text-muted-foreground mb-6">{benefit.description}</p>
-              <ul className="space-y-2">
-                {benefit.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-gold shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px border border-iwon-border"
+        style={{ background: "var(--color-iwon-border)" }}
+      >
+        {benefits.map((b) => (
+          <div
+            key={b.num}
+            className="relative bg-iwon-card px-7 py-9 overflow-hidden group"
+          >
+            {/* Gold underline on hover */}
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" />
+            <div className="text-[11px] tracking-[0.2em] uppercase text-gold mb-5">
+              {b.num} ◆ {b.tag}
             </div>
-          ))}
-        </div>
+            <div className="font-condensed font-extrabold text-[20px] uppercase tracking-[0.03em] mb-2.5 leading-tight">
+              {b.title}
+            </div>
+            <div className="text-[13px] text-muted-foreground leading-[1.6]">
+              {b.body}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

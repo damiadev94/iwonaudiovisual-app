@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Barlow, Barlow_Condensed, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const inter = Inter({
+const barlow = Barlow({
+  weight: ["400", "500", "600"],
   variable: "--font-sans",
+  subsets: ["latin"],
+});
+
+const barlowCondensed = Barlow_Condensed({
+  weight: ["400", "700", "800", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-barlow-condensed",
   subsets: ["latin"],
 });
 
@@ -34,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}>
+    <html lang="es" className={`${barlow.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster richColors position="top-right" />

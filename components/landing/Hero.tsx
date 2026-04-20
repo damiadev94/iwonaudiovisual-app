@@ -1,106 +1,85 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Play, ArrowRight } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-iwon-bg via-iwon-bg to-iwon-bg-secondary" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
-
-      {/* Grid pattern overlay */}
+    <section className="relative min-h-screen flex flex-col justify-end px-5 md:px-10 pb-16 overflow-hidden">
+      {/* Background: dark gradient + subtle gold grid */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0"
         style={{
-          backgroundImage: "linear-gradient(#C9A84C 1px, transparent 1px), linear-gradient(90deg, #C9A84C 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+          background: `
+            linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.7) 40%, rgba(10,10,10,0.3) 70%, rgba(10,10,10,0.6) 100%),
+            repeating-linear-gradient(90deg, transparent, transparent 99px, rgba(201,168,76,0.04) 99px, rgba(201,168,76,0.04) 100px),
+            repeating-linear-gradient(0deg, transparent, transparent 99px, rgba(201,168,76,0.04) 99px, rgba(201,168,76,0.04) 100px)
+          `,
+          backgroundColor: "#0d0d0d",
         }}
       />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/20 bg-gold/5 mb-8">
-          <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-          <span className="text-sm text-gold">Convocatoria abierta - Abril 2026</span>
-        </div>
-
-        {/* Main title */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-          Vamos a seleccionar a {" "}
-          <span className="text-gold">50 artistas</span> y filmarles su mejor canción{" "}
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
-          Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
-          Suscribite y accedé a ser elegido, cursos, sorteos y promos de filmación.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <Link href="/register">
-            <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto">
-              Suscribite por $14.999/mes
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <a href="#portfolio">
-            <Button size="lg" variant="outline" className="border-iwon-border hover:bg-iwon-card text-lg px-8 py-6 h-auto">
-              <Play className="mr-2 h-5 w-5" />
-              Ver videoclips
-            </Button>
-          </a>
-        </div>
-
-        {/* Instagram pill */}
-        <div className="flex justify-center mb-12">
-          <a
-            href="https://www.instagram.com/iwon.audiovisual"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-gold/40 bg-white/5 backdrop-blur-md hover:bg-gold/10 hover:border-gold/70 transition-all duration-300"
-          >
-            {/* Instagram icon */}
-            <svg
-              className="w-4 h-4 text-gold flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-              <circle cx="12" cy="12" r="4" />
-              <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
-            </svg>
-            <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-              Entra a mi Instagram y enterate de todo
-            </span>
-            <ArrowRight className="w-3.5 h-3.5 text-gold opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
-          </a>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
-          <div>
-            <p className="text-3xl font-bold text-gold font-mono">+450</p>
-            <p className="text-sm text-muted-foreground">Videoclips filmados</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-gold font-mono">+500</p>
-            <p className="text-sm text-muted-foreground">Artistas</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-gold font-mono">3</p>
-            <p className="text-sm text-muted-foreground">Años de trayectoria</p>
-          </div>
-        </div>
+      {/* Eyebrow */}
+      <div className="relative flex items-center gap-3 mb-4 text-[11px] tracking-[0.25em] uppercase text-gold">
+        <span className="block w-8 h-px bg-gold flex-shrink-0" />
+        Productora audiovisual · Buenos Aires · Desde 2022
       </div>
 
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-iwon-bg-secondary to-transparent" />
+      {/* Title — tres tratamientos: outline / blanco / dorado */}
+      <h1
+        className="relative font-condensed font-black uppercase leading-[0.88] tracking-[-0.01em]"
+        style={{ fontSize: "clamp(72px, 12vw, 140px)" }}
+      >
+        <span
+          className="block"
+          style={{
+            WebkitTextStroke: "1.5px rgba(242,237,228,0.25)",
+            color: "transparent",
+          }}
+        >
+          Vamos a
+        </span>
+        <span className="block text-foreground">seleccionar</span>
+        <span className="block text-gold">a los mejores</span>
+      </h1>
+
+      {/* Subtitle */}
+      <p className="relative text-base italic text-muted-foreground mt-7 max-w-[480px] leading-relaxed">
+        y filmarles su disco con equipamiento de cine. Sin sellos, sin
+        intermediarios. Solo tu música.
+      </p>
+
+      {/* CTAs */}
+      <div className="relative flex flex-wrap items-center gap-6 mt-10">
+        <Link href="/register">
+          <button
+            className="bg-gold text-black font-condensed font-black text-[15px] uppercase tracking-[0.12em] px-10 py-[18px] cursor-pointer transition-all hover:bg-gold-light hover:-translate-y-0.5"
+            style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}
+          >
+            Suscribite ahora
+          </button>
+        </Link>
+        <a
+          href="#portfolio"
+          className="flex items-center gap-2 text-xs tracking-[0.15em] uppercase text-foreground hover:text-gold transition-colors"
+        >
+          <span className="w-5 h-px bg-current" />
+          Ver portfolio
+        </a>
+      </div>
+
+      {/* Stats */}
+      <div className="relative flex flex-wrap gap-10 mt-16">
+        <div>
+          <div className="font-condensed font-black text-[36px] text-gold leading-none">+450</div>
+          <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mt-1">Videoclips filmados</div>
+        </div>
+        <div>
+          <div className="font-condensed font-black text-[36px] text-gold leading-none">50</div>
+          <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mt-1">Seleccionados por oleada</div>
+        </div>
+        <div>
+          <div className="font-condensed font-black text-[36px] text-gold leading-none">$9.999</div>
+          <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mt-1">por mes</div>
+        </div>
+      </div>
     </section>
   );
 }

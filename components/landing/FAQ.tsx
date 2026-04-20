@@ -1,84 +1,71 @@
 "use client";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { useState } from "react";
 
 const faqs = [
   {
-    question: "¿Qué es IWON?",
-    answer:
-      "Somos la productora audiovisual low cost que más crece en Argentina. Filmamos ya más de 500 videos en 3 años. Damos oportunidades TODOS LOS MESES de ser seleccionado, filmar con calidad de cine, ganarte un Video, Ep o un DISCO, acceder a promociones, ver contenido que se actualiza todo el tiempo y mostrar tu música por el precio de una suscripción.",
+    q: "¿Es caro?",
+    a: "$9.999 por mes es menos que una pizza y medialunas. El premio potencial vale millones. Un videoclip profesional sale mínimo $200.000. Acá podés conseguir cinco.",
   },
   {
-    question: "¿Qué incluye la suscripción?",
-    answer:
-      "La suscripción te da acceso a: SER SELECCIONADO, SORTEOS EXCLUSIVOS, Promociones de Filmación, y CONTENIDO y FORMACIÓN.",
+    q: "¿Pago y me quedo esperando?",
+    a: "No. Desde el día 1 tenés acceso a cursos, podés reservar promos de filmación y participar en sorteos. El calendario rotativo elimina los tiempos muertos.",
   },
   {
-    question: '¿Qué es la Selección "Los 50"?',
-    answer:
-      "Es nuestra apuesta principal. Periódicamente seleccionamos a 50 artistas de la comunidad para filmarles su mejor canción con equipamiento de cine profesional. Solo los suscriptores activos pueden aplicar.",
+    q: "¿Y si no quedo entre los 50?",
+    a: "Seguís teniendo cursos, sorteos de videoclip guionado y promos de filmación a precio preferencial. Y podés volver a aplicar en la próxima oleada.",
   },
   {
-    question: "¿Hay permanencia mínima?",
-    answer:
-      "No. Podés cancelar tu suscripción cuando quieras sin penalidades. Tu acceso se mantiene hasta el final del período de facturación.",
+    q: "¿Los temas los elijo yo?",
+    a: "Sí. Libertad creativa total. Vos elegís qué canciones filmar. Se filma a tu ritmo, con un plazo razonable. Incluye 1-2 revisiones por videoclip.",
   },
   {
-    question: "¿Cómo son las promos de filmación?",
-    answer:
-      "Son oportunidades de filmación a precios muy por debajo del mercado, exclusivas para suscriptores. Cupos limitados.",
+    q: "¿Siempre eligen a los mismos?",
+    a: "No. Se priorizan caras nuevas en cada oleada. La selección es por mérito musical, no por antigüedad ni seguidores.",
   },
   {
-    question: "¿Qué géneros musicales aceptan?",
-    answer:
-      "Filmamos todo género, no tenemos problema.",
-  },
-  {
-    question: "¿Cómo funcionan los sorteos?",
-    answer:
-      "Realizamos sorteos periódicos de premios como sesiones de VIDEOCLIPS, EP y DISCOS. Solo podés participar si tu suscripción está activa. Un clic y ya estás participando.",
-  },
-  {
-    question: "¿Qué equipamiento usan para filmar?",
-    answer:
-      "Usamos equipamiento de cine profesional. Cámaras, lentes, iluminación y todo el equipamiento necesario para una producción de nivel cinematográfico.",
+    q: "¿Qué géneros musicales aceptan?",
+    a: "Filmamos todo género, no tenemos problema.",
   },
 ];
 
 export function FAQ() {
-  return (
-    <section id="faq" className="py-24 bg-iwon-bg-secondary">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Preguntas frecuentes
-          </h2>
-          <p className="text-muted-foreground">
-            Todo lo que necesitás saber antes de suscribirte.
-          </p>
-        </div>
+  const [open, setOpen] = useState<number | null>(null);
 
-        <Accordion className="space-y-3">
-          {faqs.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`item-${index}`}
-              className="border border-iwon-border rounded-lg px-6 bg-iwon-card"
+  return (
+    <section id="faq" className="py-24 px-5 md:px-10">
+      <div className="flex items-center gap-2.5 text-[10px] tracking-[0.3em] uppercase text-gold mb-16">
+        <span>◆</span>
+        <span>Preguntas frecuentes</span>
+      </div>
+
+      <div className="max-w-180">
+        {faqs.map((faq, i) => (
+          <div
+            key={i}
+            className="border-b border-iwon-border cursor-pointer"
+            onClick={() => setOpen(open === i ? null : i)}
+          >
+            <div className="py-6 flex justify-between items-center gap-4 font-condensed font-bold text-[18px] uppercase tracking-[0.02em]">
+              <span>{faq.q}</span>
+              <div
+                className="w-5 h-5 shrink-0 border border-iwon-border flex items-center justify-center text-[14px] text-gold transition-transform duration-300"
+                style={{ transform: open === i ? "rotate(45deg)" : "none" }}
+              >
+                +
+              </div>
+            </div>
+            <div
+              className="overflow-hidden text-[14px] text-muted-foreground leading-[1.7] transition-all duration-300"
+              style={{
+                maxHeight: open === i ? "200px" : "0",
+                paddingBottom: open === i ? "24px" : "0",
+              }}
             >
-              <AccordionTrigger className="text-left hover:no-underline hover:text-gold transition-colors">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+              {faq.a}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );
