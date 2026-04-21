@@ -7,7 +7,10 @@ const preApprovalPlan = new PreApprovalPlan(mercadopago);
 
 async function getPlanId(): Promise<string> {
   const existingPlanId = process.env.MERCADOPAGO_PLAN_ID;
-  if (existingPlanId) return existingPlanId;
+
+  if (!process.env.MERCADOPAGO_PLAN_ID) {
+    throw new Error("Falta MERCADOPAGO_PLAN_ID en entorno");
+  }
 
   const backUrl =
     process.env.MERCADOPAGO_BACK_URL ||
@@ -21,7 +24,7 @@ async function getPlanId(): Promise<string> {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        transaction_amount: 14999, 
+        transaction_amount: 14999,
         currency_id: "ARS",
       },
       back_url: `${backUrl}/suscripcion/exito`,
