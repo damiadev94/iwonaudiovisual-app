@@ -21,7 +21,10 @@ export async function GET(request: Request) {
 
   if (!accountId || !keyId || !privateKey) {
     log.error("[video-token] Credenciales Cloudflare ausentes");
-    return NextResponse.json({ error: "Cloudflare credentials missing." }, { status: 500 });
+    return NextResponse.json(
+      { error: `Cloudflare credentials missing. acc: ${!!accountId}, key: ${!!keyId}, priv: ${!!privateKey}` },
+      { status: 500 }
+    );
   }
 
   const supabase = await createClient();
@@ -100,6 +103,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ url: signedUrl, expiresAt });
   } catch (error: unknown) {
     log.error("[video-token] Error generando token", { error: String(error) });
-    return NextResponse.json({ error: "No se pudo generar el acceso al video." }, { status: 500 });
+    return NextResponse.json(
+      { error: "No se pudo generar el acceso al video.", details: String(error) },
+      { status: 500 }
+    );
   }
 }
