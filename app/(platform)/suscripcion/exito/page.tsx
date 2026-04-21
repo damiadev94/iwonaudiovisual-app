@@ -12,30 +12,35 @@ function SuscripcionExitoContent() {
 
   const [polls, setPolls] = useState(0);
   const [activated, setActivated] = useState(false);
-  const [linking, setLinking] = useState(!!preapprovalId);
+  const [linking, setLinking] = useState(true); // siempre intentamos vincular al llegar
   const [error, setError] = useState<string | null>(null);
 
   const linkSubscription = useCallback(async () => {
-    if (!preapprovalId) return;
     setLinking(true);
     setError(null);
-    console.log("[Exito] Iniciando vinculación para ID:", preapprovalId);
+    console.log("[Exito] Iniciando vinculación para ID:", preapprovalId ?? "(sin ID — MP buscará por userId)");
 
     try {
       const res = await fetch("/api/subscription/link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preapproval_id: preapprovalId }),
+        // Si no hay preapproval_id, enviamos objeto vacío — el backend busca por userId
+        body: JSON.stringify({ preapproval_id: preapprovalId || undefined }),
       });
 
       const data = await res.json();
       console.log("[Exito] Respuesta del servidor:", data);
 
       if (!res.ok) {
-        throw new Error(data.message || data.error || "Error desconocido");
+        // Si es 404 (no encontrado en MP aun), no es un error fatal — el polling seguirá
+        if (res.status === 404) {
+          console.warn("[Exito] Suscripción no encontrada en MP aun, el polling continuará...");
+        } else {
+          throw new Error(data.message || data.error || "Error desconocido");
+        }
+      } else {
+        console.log("[Exito] Vinculación completada con éxito");
       }
-
-      console.log("[Exito] Vinculación completada con éxito");
     } catch (err: unknown) {
       console.error("[Exito] Error fatal vinculando:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -45,13 +50,15 @@ function SuscripcionExitoContent() {
   }, [preapprovalId]);
 
   useEffect(() => {
-    if (preapprovalId && !activated) {
+    // Siempre intentamos vincular al llegar a esta página, con o sin preapproval_id
+    if (!activated) {
       linkSubscription();
     }
-  }, [preapprovalId, activated, linkSubscription]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // solo al montar
 
   useEffect(() => {
-    if (activated || polls >= 15 || linking || error) return;
+    if (activated || polls >= 24 || linking || error) return;
 
     const timeout = setTimeout(async () => {
       try {
@@ -66,7 +73,7 @@ function SuscripcionExitoContent() {
         // reintentar
       }
       setPolls((p) => p + 1);
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timeout);
   }, [polls, activated, router, linking, error]);
@@ -81,7 +88,7 @@ function SuscripcionExitoContent() {
     );
   }
 
-  const pollsExhausted = polls >= 15 && !linking && !error;
+  const pollsExhausted = polls >= 24 && !linking && !error;
 
   return (
     <div className="max-w-md mx-auto text-center py-20 space-y-6">

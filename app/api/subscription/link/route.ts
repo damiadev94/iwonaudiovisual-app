@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getSubscriptionStatus } from "@/lib/mercadopago/subscription";
+import { getSubscriptionStatus, findSubscriptionByExternalRef } from "@/lib/mercadopago/subscription";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -14,15 +14,27 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { preapproval_id } = await request.json();
-    console.log("[subscription/link] Iniciando vinculación para ID:", preapproval_id);
+    const body = await request.json();
+    let preapproval_id: string | undefined = body.preapproval_id;
+    console.log("[subscription/link] Iniciando vinculación para ID:", preapproval_id ?? "(no ID — buscando por external_ref)");
 
-    if (!preapproval_id) {
-      return NextResponse.json({ error: "missing_id" }, { status: 400 });
+    let mpData: { status?: string; id?: string; auto_recurring?: { transaction_amount?: number }; date_created?: string };
+
+    if (preapproval_id) {
+      // Flujo normal: MP nos pasó el preapproval_id en la URL de retorno
+      mpData = await getSubscriptionStatus(preapproval_id);
+    } else {
+      // Flujo de plan: MP no devuelve el ID en la URL — buscamos por external_reference (userId)
+      console.log("[subscription/link] Buscando suscripción por external_reference (userId):", user.id);
+      const found = await findSubscriptionByExternalRef(user.id);
+      if (!found) {
+        console.warn("[subscription/link] No se encontró suscripción en MP para el usuario", user.id);
+        return NextResponse.json({ error: "no_subscription_found", message: "No se encontró ninguna suscripción asociada a tu cuenta en Mercado Pago." }, { status: 404 });
+      }
+      mpData = found;
+      preapproval_id = found.id;
     }
 
-    // Consultar el estado real en Mercado Pago
-    const mpData = await getSubscriptionStatus(preapproval_id);
     console.log("[subscription/link] Datos recibidos de MP:", JSON.stringify(mpData));
 
     const statusMap: Record<string, string> = {

@@ -4,6 +4,7 @@ import { mercadopago } from "./client";
 const preApproval = new PreApproval(mercadopago);
 const preApprovalPlan = new PreApprovalPlan(mercadopago);
 
+
 async function getPlanId(): Promise<string> {
   const existingPlanId = process.env.MERCADOPAGO_PLAN_ID;
   if (existingPlanId) return existingPlanId;
@@ -61,4 +62,32 @@ export async function cancelSubscription(preapprovalId: string) {
 export async function getSubscriptionStatus(preapprovalId: string) {
   const result = await preApproval.get({ id: preapprovalId });
   return result;
+}
+
+/**
+ * Busca la suscripción más reciente de un usuario usando su external_reference (userId).
+ * Útil cuando MP no devuelve el preapproval_id en la URL de retorno (flujo de plan).
+ */
+export async function findSubscriptionByExternalRef(
+  userId: string
+): Promise<{ id: string; status: string; auto_recurring?: { transaction_amount?: number }; date_created?: string } | null> {
+  try {
+    // La API de MP permite filtrar preapprovals por external_reference
+    const result = await preApproval.search({
+      options: {
+        external_reference: userId,
+        sort: "date_created",
+        criteria: "desc",
+        limit: 1,
+      },
+    });
+
+    const items = (result as { results?: Array<{ id: string; status: string; auto_recurring?: { transaction_amount?: number }; date_created?: string }> }).results;
+    if (items && items.length > 0) {
+      return items[0];
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
