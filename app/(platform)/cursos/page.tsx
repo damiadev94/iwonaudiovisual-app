@@ -15,10 +15,14 @@ export default async function CursosPage() {
   const now = Date.now();
   const all = (courses ?? []) as Course[];
 
-  const published = all.filter((c) => c.is_published);
-  const upcoming = all
-    .filter((c) => !c.is_published && c.release_at && new Date(c.release_at).getTime() > now)
+  const visibleCourses = all.filter((c) => c.is_published);
+
+  const upcoming = visibleCourses
+    .filter((c) => c.release_at && new Date(c.release_at).getTime() > now)
     .sort((a, b) => new Date(a.release_at!).getTime() - new Date(b.release_at!).getTime());
+
+  const published = visibleCourses
+    .filter((c) => !c.release_at || new Date(c.release_at).getTime() <= now);
 
   const nextUp = upcoming[0] ?? null;
   const restUpcoming = upcoming.slice(1);

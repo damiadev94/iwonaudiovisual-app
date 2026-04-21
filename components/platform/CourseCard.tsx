@@ -20,36 +20,38 @@ export function CourseCard({ course }: { course: Course }) {
   if (isUpcoming) {
     // Horizontal card with countdown to the right
     return (
-      <div className="flex items-center gap-4 rounded-xl bg-iwon-card border border-iwon-border hover:border-gold/30 transition-all duration-300 overflow-hidden p-3">
-        {/* Thumbnail */}
-        <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-linear-to-br from-gold/10 to-iwon-bg-secondary flex items-center justify-center">
-          {course.thumbnail_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={course.thumbnail_url} alt={course.title}
-              className="w-full h-full object-cover" />
-          ) : (
-            <BookOpen className="h-6 w-6 text-gold/30" />
+      <Link href={`/cursos/${course.slug}`}>
+        <div className="flex items-center gap-4 rounded-xl bg-iwon-card border border-iwon-border hover:border-gold/30 transition-all duration-300 overflow-hidden p-3 group">
+          {/* Thumbnail */}
+          <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-gold/10 to-iwon-bg-secondary flex items-center justify-center">
+            {course.thumbnail_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={course.thumbnail_url} alt={course.title}
+                className="w-full h-full object-cover" />
+            ) : (
+              <BookOpen className="h-6 w-6 text-gold/30" />
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Lock className="h-3 w-3 text-gold shrink-0" />
+              <Badge variant="outline" className="text-[10px] border-gold/20 text-gold">
+                {categoryLabels[course.category] || course.category}
+              </Badge>
+            </div>
+            <p className="font-medium text-sm leading-tight line-clamp-1 group-hover:text-gold transition-colors">{course.title}</p>
+          </div>
+
+          {/* Countdown */}
+          {course.release_at && (
+            <div className="shrink-0">
+              <CourseCountdown releaseAt={course.release_at} size="sm" />
+            </div>
           )}
         </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-1">
-            <Lock className="h-3 w-3 text-gold shrink-0" />
-            <Badge variant="outline" className="text-[10px] border-gold/20 text-gold">
-              {categoryLabels[course.category] || course.category}
-            </Badge>
-          </div>
-          <p className="font-medium text-sm leading-tight line-clamp-1">{course.title}</p>
-        </div>
-
-        {/* Countdown */}
-        {course.release_at && (
-          <div className="shrink-0">
-            <CourseCountdown releaseAt={course.release_at} size="sm" />
-          </div>
-        )}
-      </div>
+      </Link>
     );
   }
 
