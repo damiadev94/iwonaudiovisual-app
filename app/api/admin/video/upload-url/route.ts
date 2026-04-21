@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
   try {
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream`,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream?direct_user=true`,
       {
         method: "POST",
         headers: {
