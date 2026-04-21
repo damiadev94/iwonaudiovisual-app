@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect, notFound } from "next/navigation";
 import { LessonVideoPlayer } from "@/components/platform/LessonVideoPlayer";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +25,8 @@ export default async function CourseDetailPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: course } = await supabase
+  const adminClient = createAdminClient();
+  const { data: course } = await adminClient
     .from("courses")
     .select("*")
     .eq("slug", slug)
