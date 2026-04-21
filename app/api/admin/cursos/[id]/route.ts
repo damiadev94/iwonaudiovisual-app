@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-guard";
 
@@ -65,6 +66,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Curso no encontrado" }, { status: 404 });
   }
 
+  revalidatePath("/cursos");
   return NextResponse.json(course);
 }
 
@@ -120,5 +122,6 @@ export async function DELETE(
     return NextResponse.json({ error: "Error al eliminar el curso" }, { status: 500 });
   }
 
+  revalidatePath("/cursos");
   return NextResponse.json({ success: true });
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-guard";
 
@@ -107,5 +108,6 @@ export async function POST(request: Request) {
     );
   }
 
+  revalidatePath("/cursos");
   return NextResponse.json(course, { status: 201 });
 }
