@@ -53,8 +53,13 @@ export function CountdownPlayer({ releaseAt, publicId, title }: CountdownPlayerP
           return;
         }
         if (res.status === 403) {
-          // Race condition: el servidor todavía no considera disponible. Reintentar.
-          setTimeout(tryFetchToken, 5000);
+          const body = await res.json().catch(() => ({}));
+          // Si el body incluye releaseAt, es que el servidor todavía no considera disponible (condición de carrera)
+          if (body.releaseAt) {
+            setTimeout(tryFetchToken, 5000);
+          } else {
+            setErrorMessage(body.error || "Suscripción requerida o acceso denegado.");
+          }
           return;
         }
         if (res.status === 401) {

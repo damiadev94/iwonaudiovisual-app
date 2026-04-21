@@ -33,17 +33,28 @@ export async function GET(request: Request) {
 
   const adminClient = createAdminClient();
 
-  // Verify active subscription
-  const { data: subscription } = await adminClient
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .maybeSingle();
+  // Check if user is an admin to bypass subscription requirements
+  const { data: profile } = await adminClient
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
-  if (!subscription) {
-    log.info("[video-token] Acceso denegado: sin suscripcion activa", { userId: user.id });
-    return NextResponse.json({ error: "Suscripción no activa.", status: "inactive" }, { status: 403 });
+  const isAdmin = profile?.role === "admin";
+
+  if (!isAdmin) {
+    // Verify active subscription
+    const { data: subscription } = await adminClient
+      .from("subscriptions")
+      .select("status")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (!subscription) {
+      log.info("[video-token] Acceso denegado: sin suscripcion activa", { userId: user.id });
+      return NextResponse.json({ error: "Suscripción no activa.", status: "inactive" }, { status: 403 });
+    }
   }
 
   // Look up course directly by video_uid

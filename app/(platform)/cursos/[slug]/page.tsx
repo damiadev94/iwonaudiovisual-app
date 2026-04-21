@@ -66,11 +66,11 @@ export default async function CourseDetailPage({
         )}
       </div>
 
-      {course.video_uid && !isUpcoming && (
+      {course.video_uid && (
         <LessonVideoPlayer publicId={course.video_uid} title={course.title} />
       )}
 
-      {!course.video_uid && !isUpcoming && (
+      {!course.video_uid && (
         <div className="aspect-video rounded-xl bg-iwon-card border border-iwon-border flex items-center justify-center">
           <p className="text-muted-foreground text-sm">Video próximamente disponible.</p>
         </div>
