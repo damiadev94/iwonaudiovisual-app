@@ -91,14 +91,25 @@ export async function GET(request: Request) {
   try {
     let signingKey: string | Buffer | jwt.Secret;
 
+    let preprocessedKey = privateKey.trim();
+
+    // 1) Test if it is Base64 encoded (a common Vercel workaround)
+    if (!preprocessedKey.startsWith("{") && !preprocessedKey.includes("-----BEGIN")) {
+      try {
+        const decoded = Buffer.from(preprocessedKey, "base64").toString("utf-8");
+        if (decoded.includes("-----BEGIN")) {
+          preprocessedKey = decoded.trim();
+        }
+      } catch {
+        // ignore if not valid base64
+      }
+    }
+
     // Detect if the key is in JWK format (JSON) or PEM format
-    const trimmedKey = privateKey.trim();
-    if (trimmedKey.startsWith("{") && trimmedKey.endsWith("}")) {
+    if (preprocessedKey.startsWith("{") && preprocessedKey.endsWith("}")) {
       // It's a JSON Web Key (JWK)
-      const jwkObject = JSON.parse(trimmedKey);
+      const jwkObject = JSON.parse(preprocessedKey);
       
-      // We must dynamically import crypto to avoid edge runtime issues if possible, 
-      // but since it's a Node API route, static require is fine.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { createPrivateKey } = require("crypto");
       
@@ -108,19 +119,25 @@ export async function GET(request: Request) {
       });
     } else {
       // It's a string PEM. Handle stringified escaped newlines \n -> literal newlines.
-      let fixedPem = trimmedKey.replace(/\\n/g, "\n");
+      let fixedPem = preprocessedKey.replace(/\\n/g, "\n");
 
-      // SELF HEAL: Vercel UI often strips newlines into spaces when pasting.
-      // If it has no newlines but has the PEM headers, fix it automatically.
-      const header = "-----BEGIN PRIVATE KEY-----";
-      const footer = "-----END PRIVATE KEY-----";
-      if (fixedPem.includes(header) && !fixedPem.includes("\n")) {
-        // Find body by slicing out the header and footer
-        const start = fixedPem.indexOf(header) + header.length;
-        const end = fixedPem.indexOf(footer);
-        if (start > -1 && end > -1 && start < end) {
-          const body = fixedPem.substring(start, end).replace(/\s+/g, ""); // Strip all corrupted spaces
-          fixedPem = `${header}\n${body}\n${footer}`;
+      // SELF HEAL: Vercel UI often strips newlines into spaces when pasting,
+      // even after base64 decoding if the base64 was messed up initially.
+      // E.g. -----BEGIN RSA PRIVATE KEY-----
+      const startMatch = fixedPem.match(/-----BEGIN [A-Z ]*KEY-----/);
+      const endMatch = fixedPem.match(/-----END [A-Z ]*KEY-----/);
+      
+      if (startMatch && endMatch && !fixedPem.includes("\n")) {
+        const startStr = startMatch[0];
+        const endStr = endMatch[0];
+        const startIdx = fixedPem.indexOf(startStr) + startStr.length;
+        const endIdx = fixedPem.indexOf(endStr);
+        
+        if (startIdx > -1 && endIdx > -1 && startIdx < endIdx) {
+          const body = fixedPem.substring(startIdx, endIdx).replace(/\s+/g, ""); // Strip all corrupted spaces
+          // Split into 64-char lines for bulletproof crypto parsing
+          const formattedBody = body.match(/.{1,64}/g)?.join("\n") || body;
+          fixedPem = `${startStr}\n${formattedBody}\n${endStr}`;
         }
       }
 
