@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { BookOpen, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CourseCountdown } from "./CourseCountdown";
