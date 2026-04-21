@@ -108,8 +108,23 @@ export async function GET(request: Request) {
       });
     } else {
       // It's a string PEM. Handle stringified escaped newlines \n -> literal newlines.
-      // A valid PEM needs literal newlines.
-      signingKey = trimmedKey.replace(/\\n/g, "\n");
+      let fixedPem = trimmedKey.replace(/\\n/g, "\n");
+
+      // SELF HEAL: Vercel UI often strips newlines into spaces when pasting.
+      // If it has no newlines but has the PEM headers, fix it automatically.
+      const header = "-----BEGIN PRIVATE KEY-----";
+      const footer = "-----END PRIVATE KEY-----";
+      if (fixedPem.includes(header) && !fixedPem.includes("\n")) {
+        // Find body by slicing out the header and footer
+        const start = fixedPem.indexOf(header) + header.length;
+        const end = fixedPem.indexOf(footer);
+        if (start > -1 && end > -1 && start < end) {
+          const body = fixedPem.substring(start, end).replace(/\s+/g, ""); // Strip all corrupted spaces
+          fixedPem = `${header}\n${body}\n${footer}`;
+        }
+      }
+
+      signingKey = fixedPem;
     }
 
     const expiresAt = Math.floor(Date.now() / 1000) + 7200;
@@ -124,9 +139,14 @@ export async function GET(request: Request) {
     const signedUrl = `https://customer-${accountId}.cloudflarestream.com/${token}/iframe`;
     return NextResponse.json({ url: signedUrl, expiresAt });
   } catch (error: unknown) {
-    log.error("[video-token] Error generando token", { error: String(error) });
+    const keyPrefix = privateKey ? privateKey.substring(0, 30) : "empty";
+    log.error("[video-token] Error generando token", { error: String(error), keyPrefix });
     return NextResponse.json(
-      { error: "No se pudo generar el acceso al video.", details: String(error) },
+      { 
+        error: "No se pudo generar el acceso al video.", 
+        details: String(error),
+        keyPrefix: keyPrefix 
+      },
       { status: 500 }
     );
   }
