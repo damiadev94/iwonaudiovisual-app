@@ -89,11 +89,33 @@ export async function GET(request: Request) {
   }
 
   try {
-    const formattedKey = privateKey.replace(/\\n/g, "\n");
+    let signingKey: string | Buffer | jwt.Secret;
+
+    // Detect if the key is in JWK format (JSON) or PEM format
+    const trimmedKey = privateKey.trim();
+    if (trimmedKey.startsWith("{") && trimmedKey.endsWith("}")) {
+      // It's a JSON Web Key (JWK)
+      const jwkObject = JSON.parse(trimmedKey);
+      
+      // We must dynamically import crypto to avoid edge runtime issues if possible, 
+      // but since it's a Node API route, static require is fine.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { createPrivateKey } = require("crypto");
+      
+      signingKey = createPrivateKey({
+        key: jwkObject,
+        format: "jwk",
+      });
+    } else {
+      // It's a string PEM. Handle stringified escaped newlines \n -> literal newlines.
+      // A valid PEM needs literal newlines.
+      signingKey = trimmedKey.replace(/\\n/g, "\n");
+    }
+
     const expiresAt = Math.floor(Date.now() / 1000) + 7200;
     const token = jwt.sign(
       { sub: publicId, exp: expiresAt },
-      formattedKey,
+      signingKey,
       { algorithm: "RS256", header: { alg: "RS256", kid: keyId } }
     );
 
