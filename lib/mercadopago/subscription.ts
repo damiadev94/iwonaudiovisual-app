@@ -6,10 +6,14 @@ const preApprovalPlan = new PreApprovalPlan(mercadopago);
 
 
 async function getPlanId(): Promise<string> {
-  const existingPlanId = process.env.MERCADOPAGO_PLAN_ID;
+  const existingPlanId = process.env.MERCADOPAGO_PLAN_ID?.trim();
 
-  if (!process.env.MERCADOPAGO_PLAN_ID) {
-    throw new Error("Falta MERCADOPAGO_PLAN_ID en entorno");
+  // Si el ID ya está configurado (no vacío), usarlo directamente
+  if (existingPlanId) return existingPlanId;
+
+  // En producción, no auto-crear — fallar rápido y claro
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Falta MERCADOPAGO_PLAN_ID en entorno de producción");
   }
 
   const backUrl =
