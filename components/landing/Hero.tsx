@@ -27,8 +27,9 @@ export function Hero() {
 
         {/* Main title */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-          Vamos a seleccionar a {" "}
-          <span className="text-gold">50 artistas</span> y filmarles su mejor canción{" "}
+          COMENZÓ EL SORTEO{" "} <br />
+          <span className="text-gold text-6xl">DE UN EP. 4 CANCIONES</span> <br />
+          <span className="text-6xl italic">PARA 1 ARTISTA</span>
         </h1>
 
         {/* Subtitle */}
