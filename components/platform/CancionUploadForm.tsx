@@ -104,7 +104,7 @@ export function CancionUploadForm({
           file_type: file.type,
           song_title: songTitle,
           genre: genre,
-          notes: notes || null,
+          notes: notes || undefined,
         }),
       });
 

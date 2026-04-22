@@ -30,7 +30,7 @@ export const cancionRegistrarSchema = z.object({
     .string()
     .min(1, "El género es requerido")
     .max(50, "El género no puede superar 50 caracteres"),
-  notes: z.string().max(1000, "Las notas no pueden superar 1000 caracteres").optional(),
+  notes: z.string().max(1000, "Las notas no pueden superar 1000 caracteres").nullable().optional(),
 });
 
 export type CancionRegistrarInput = z.infer<typeof cancionRegistrarSchema>;
