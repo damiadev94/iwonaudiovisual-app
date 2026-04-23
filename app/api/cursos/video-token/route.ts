@@ -149,6 +149,7 @@ export async function GET(request: Request) {
       sub: publicId,
       kid: keyId,
       exp: expiresAt,
+      downloadable: false,
       accessRules: [
         {
           type: "any",
@@ -160,7 +161,7 @@ export async function GET(request: Request) {
     const token = jwt.sign(
       payload,
       signingKey,
-      { algorithm: "RS256", header: { alg: "RS256", kid: keyId } }
+      { algorithm: "RS256", keyid: keyId }
     );
 
     log.info("[video-token] Token generado exitosamente", { userId: user.id, publicId, expiresAt });
