@@ -18,6 +18,7 @@ export async function GET(request: Request) {
   const keyId = process.env.CLOUDFLARE_STREAM_KEY_ID;
   const privateKey = process.env.CLOUDFLARE_STREAM_PRIVATE_KEY;
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const customerSubdomain = process.env.CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN!;
 
   if (!accountId || !keyId || !privateKey) {
     log.error("[video-token] Credenciales Cloudflare ausentes");
@@ -109,10 +110,10 @@ export async function GET(request: Request) {
     if (preprocessedKey.startsWith("{") && preprocessedKey.endsWith("}")) {
       // It's a JSON Web Key (JWK)
       const jwkObject = JSON.parse(preprocessedKey);
-      
+
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { createPrivateKey } = require("crypto");
-      
+
       signingKey = createPrivateKey({
         key: jwkObject,
         format: "jwk",
@@ -126,13 +127,13 @@ export async function GET(request: Request) {
       // E.g. -----BEGIN RSA PRIVATE KEY-----
       const startMatch = fixedPem.match(/-----BEGIN [A-Z ]*KEY-----/);
       const endMatch = fixedPem.match(/-----END [A-Z ]*KEY-----/);
-      
+
       if (startMatch && endMatch && !fixedPem.includes("\n")) {
         const startStr = startMatch[0];
         const endStr = endMatch[0];
         const startIdx = fixedPem.indexOf(startStr) + startStr.length;
         const endIdx = fixedPem.indexOf(endStr);
-        
+
         if (startIdx > -1 && endIdx > -1 && startIdx < endIdx) {
           const body = fixedPem.substring(startIdx, endIdx).replace(/\s+/g, ""); // Strip all corrupted spaces
           // Split into 64-char lines for bulletproof crypto parsing
@@ -166,16 +167,16 @@ export async function GET(request: Request) {
 
     log.info("[video-token] Token generado exitosamente", { userId: user.id, publicId, expiresAt });
 
-    const signedUrl = `https://customer-${accountId}.cloudflarestream.com/${token}/iframe`;
+    const signedUrl = `https://customer-${customerSubdomain}.cloudflarestream.com/${token}/iframe`;
     return NextResponse.json({ url: signedUrl, expiresAt });
   } catch (error: unknown) {
     const keyPrefix = privateKey ? privateKey.substring(0, 30) : "empty";
     log.error("[video-token] Error generando token", { error: String(error), keyPrefix });
     return NextResponse.json(
-      { 
-        error: "No se pudo generar el acceso al video.", 
+      {
+        error: "No se pudo generar el acceso al video.",
         details: String(error),
-        keyPrefix: keyPrefix 
+        keyPrefix: keyPrefix
       },
       { status: 500 }
     );
