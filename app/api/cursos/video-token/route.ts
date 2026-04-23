@@ -145,8 +145,20 @@ export async function GET(request: Request) {
     }
 
     const expiresAt = Math.floor(Date.now() / 1000) + 7200;
+    const payload = {
+      sub: publicId,
+      kid: keyId,
+      exp: expiresAt,
+      accessRules: [
+        {
+          type: "any",
+          action: "allow"
+        }
+      ]
+    };
+
     const token = jwt.sign(
-      { sub: publicId, exp: expiresAt },
+      payload,
       signingKey,
       { algorithm: "RS256", header: { alg: "RS256", kid: keyId } }
     );
