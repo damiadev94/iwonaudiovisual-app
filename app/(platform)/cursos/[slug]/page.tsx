@@ -48,7 +48,7 @@ export default async function CourseDetailPage({
           {isUpcoming && (
             <Badge className="bg-gold text-black border-gold uppercase tracking-widest text-[10px] font-black">
               <Lock className="h-3 w-3 mr-1" />
-              Próximamente
+              Próximamente Testing
             </Badge>
           )}
         </div>
