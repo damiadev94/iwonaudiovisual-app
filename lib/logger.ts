@@ -1,3 +1,5 @@
+import { recordAndCheckAlert, type AlertType } from "@/lib/alerts";
+
 type LogLevel = "info" | "warn" | "error";
 
 interface MetricData {
@@ -22,6 +24,13 @@ function log(level: LogLevel, msg: string, requestId: string | undefined, data?:
   else console.log(entry);
 }
 
+function alertType(status: number): AlertType | null {
+  if (status === 401) return "401";
+  if (status === 403) return "403";
+  if (status >= 500) return "5xx";
+  return null;
+}
+
 function logMetric(requestId: string | undefined, data: MetricData) {
   console.log(
     JSON.stringify({
@@ -31,6 +40,12 @@ function logMetric(requestId: string | undefined, data: MetricData) {
       ...data,
     })
   );
+
+  const type = alertType(data.status);
+  if (type) {
+    // Fire-and-forget: never block the response
+    recordAndCheckAlert(type, data.path).catch(() => undefined);
+  }
 }
 
 export const logger = {
