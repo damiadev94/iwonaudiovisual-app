@@ -6,8 +6,25 @@ import { getRequestId } from "@/lib/request-id";
 import jwt from "jsonwebtoken";
 
 export async function GET(request: Request) {
+  const start = performance.now();
   const requestId = getRequestId(request);
   const log = logger.withRequestId(requestId);
+
+  const response = await handleVideoToken(request, log);
+
+  log.metric({
+    path: "/api/cursos/video-token",
+    status: response.status,
+    durationMs: Math.round(performance.now() - start),
+  });
+
+  return response;
+}
+
+async function handleVideoToken(
+  request: Request,
+  log: ReturnType<typeof logger.withRequestId>
+): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const publicId = searchParams.get("publicId"); // Cloudflare Stream UID
 
