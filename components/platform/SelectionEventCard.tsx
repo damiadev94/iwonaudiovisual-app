@@ -55,6 +55,8 @@ export function SelectionEventCard({
       return;
     }
 
+    // Leer antes de cualquier await — currentTarget se vuelve null tras el primer yield
+    const formData = new FormData(e.currentTarget);
     setLoading(true);
 
     try {
@@ -70,8 +72,6 @@ export function SelectionEventCard({
         toast.error("Error al subir el archivo: " + uploadError.message);
         return;
       }
-
-      const formData = new FormData(e.currentTarget);
       const res = await fetch("/api/seleccion/aplicar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
