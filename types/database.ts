@@ -86,6 +86,7 @@ export type Selection = {
   id: string;
   title: string;
   description: string | null;
+  prize: string | null;
   status: "draft" | "open" | "reviewing" | "announced" | "in_production" | "completed";
   open_date: string | null;
   close_date: string | null;
