@@ -81,7 +81,7 @@ function SelectionForm({
       </div>
       <div className="space-y-2">
         <Label>Fecha límite</Label>
-        <Input
+        <input
           name="close_date"
           type="datetime-local"
           defaultValue={
@@ -89,7 +89,7 @@ function SelectionForm({
               ? new Date(defaultValues.close_date).toISOString().slice(0, 16)
               : ""
           }
-          className="bg-iwon-bg border-iwon-border"
+          className="flex h-8 w-full rounded-lg border border-iwon-border bg-iwon-bg px-2.5 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold scheme-dark"
         />
       </div>
       <div className="space-y-2">
