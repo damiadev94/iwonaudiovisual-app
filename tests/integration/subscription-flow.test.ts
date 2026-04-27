@@ -202,7 +202,7 @@ describe("Flujo de suscripción completo (integración)", () => {
     // ── Fase 1: usuario solicita suscripción ─────────────────────────────────
     mockGetUser.mockResolvedValue({ data: { user: USER }, error: null });
 
-    const createResponse = await createRoute();
+    const createResponse = await createRoute(new Request("http://localhost"));
     const createData = await createResponse.json();
 
     // Devuelve init_point para que el cliente redirija al checkout
@@ -340,7 +340,7 @@ describe("Flujo de suscripción completo (integración)", () => {
 
     mockGetUser.mockResolvedValue({ data: { user: USER }, error: null });
 
-    const response = await createRoute();
+    const response = await createRoute(new Request("http://localhost"));
     const data = await response.json();
 
     expect(response.status).toBe(200);

@@ -61,7 +61,7 @@ describe("POST /api/subscription/create", () => {
   it("retorna 401 si el usuario no está autenticado", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
-    const response = await POST();
+    const response = await POST(new Request("http://localhost"));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -75,7 +75,7 @@ describe("POST /api/subscription/create", () => {
     });
     mockExistingActiveSub();
 
-    const response = await POST();
+    const response = await POST(new Request("http://localhost"));
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -93,7 +93,7 @@ describe("POST /api/subscription/create", () => {
       "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=PLAN_123&external_reference=user-123";
     mockGetSubscribeUrl.mockResolvedValue(checkoutUrl);
 
-    const response = await POST();
+    const response = await POST(new Request("http://localhost"));
     const data = await response.json();
 
     expect(mockGetSubscribeUrl).toHaveBeenCalledWith("user-123", "test@example.com");
@@ -119,7 +119,7 @@ describe("POST /api/subscription/create", () => {
     mockGetSubscribeUrl.mockRejectedValue(new Error("MP API error"));
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const response = await POST();
+    const response = await POST(new Request("http://localhost"));
     const data = await response.json();
     consoleSpy.mockRestore();
 

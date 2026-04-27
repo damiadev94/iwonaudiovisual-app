@@ -12,6 +12,7 @@ export default async function CursosPage() {
     .select("*")
     .order("sort_order", { ascending: true });
 
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const all = (courses ?? []) as Course[];
 

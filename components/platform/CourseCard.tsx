@@ -13,6 +13,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function CourseCard({ course }: { course: Course }) {
+  // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
   const releaseMs = course.release_at ? new Date(course.release_at).getTime() : null;
   const isUpcoming = releaseMs !== null && releaseMs > nowMs;

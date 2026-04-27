@@ -36,6 +36,7 @@ export default async function CourseDetailPage({
   if (!course) notFound();
 
   const releaseAt = course.release_at ? new Date(course.release_at) : null;
+  // eslint-disable-next-line react-hooks/purity
   const isUpcoming = releaseAt !== null && releaseAt.getTime() > Date.now();
 
   return (
