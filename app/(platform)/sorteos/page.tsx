@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Gift, CheckCircle, Trophy, Calendar, Sparkles, Crown, Clock } from "lucide-react";
+import { Gift, CheckCircle, Trophy, Calendar, Crown, Clock, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import type { Raffle } from "@/types";
 
@@ -62,12 +62,16 @@ export default function SorteosPage() {
   const [entries, setEntries] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [participating, setParticipating] = useState<string | null>(null);
+  const [withdrawing, setWithdrawing] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      setUserId(user.id);
 
       const { data: rafflesData } = await supabase
         .from("raffles")
@@ -112,6 +116,31 @@ export default function SorteosPage() {
     }
   }
 
+  async function handleWithdraw(raffleId: string) {
+    if (!userId) return;
+    setWithdrawing(raffleId);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("raffle_entries")
+        .delete()
+        .eq("raffle_id", raffleId)
+        .eq("user_id", userId);
+
+      if (error) {
+        toast.error("Error al retirarse del sorteo");
+        return;
+      }
+
+      setEntries(entries.filter((id) => id !== raffleId));
+      toast.success("Te retiraste del sorteo");
+    } catch {
+      toast.error("Error al retirarse del sorteo");
+    } finally {
+      setWithdrawing(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -135,50 +164,8 @@ export default function SorteosPage() {
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* Main content */}
         <div className="flex-1 min-w-0 space-y-6">
-          {/* Sorteo Especial Automático */}
-          <Card className="bg-gradient-to-br from-gold/15 via-iwon-card to-iwon-card border-gold/40 overflow-hidden relative shadow-[0_0_30px_rgba(212,175,55,0.15)]">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold to-yellow-200" />
-
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-gold font-bold tracking-wider text-sm uppercase mb-2">
-                    <Sparkles className="h-4 w-4" /> Gran Sorteo Especial
-                  </div>
-                  <CardTitle className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">
-                    Grabación de un EP (4 Canciones)
-                  </CardTitle>
-                </div>
-                <Badge className="bg-gold/10 text-gold border-gold/30 px-3 py-1 uppercase tracking-widest hidden md:inline-flex">
-                  Beneficio Exclusivo
-                </Badge>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-6 pt-2">
-              <p className="text-muted-foreground text-sm md:text-base max-w-3xl leading-relaxed">
-                Estamos buscando a 1 artista para producirle y grabarle un EP completo de 4 canciones en máxima calidad, totalmente sin cargo. Como agradecimiento por ser parte de la comunidad IWON, tenés entrada directa asegurada.
-              </p>
-
-              <div className="flex items-center gap-4 bg-iwon-success/10 border border-iwon-success/20 p-5 rounded-xl shadow-inner">
-                <div className="bg-iwon-success/20 p-2.5 rounded-full shrink-0">
-                  <CheckCircle className="h-6 w-6 text-iwon-success" />
-                </div>
-                <div>
-                  <p className="font-bold text-iwon-success text-base md:text-lg tracking-wide uppercase">
-                    ¡Ya estás participando!
-                  </p>
-                  <p className="text-sm text-iwon-success/90 mt-0.5">
-                    Por tener tu suscripción activa, tu nombre ya está adentro del sorteo.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Más sorteos */}
           <div>
-            <h2 className="text-xl font-bold mb-4">Más Sorteos Activos</h2>
+            <h2 className="text-xl font-bold mb-4">Sorteos Activos</h2>
             {activeRaffles.length === 0 ? (
               <Card className="bg-iwon-card border-iwon-border">
                 <CardContent className="py-12 text-center">
@@ -237,9 +224,21 @@ export default function SorteosPage() {
 
                         <div className="mt-auto pt-2">
                           {hasEntered ? (
-                            <div className="flex items-center gap-2 text-iwon-success text-sm">
-                              <CheckCircle className="h-4 w-4" />
-                              Ya estás participando
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 text-iwon-success text-sm">
+                                <CheckCircle className="h-4 w-4 shrink-0" />
+                                Ya estás participando
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-xs text-muted-foreground hover:text-iwon-error hover:bg-iwon-error/10"
+                                onClick={() => handleWithdraw(raffle.id)}
+                                disabled={withdrawing === raffle.id}
+                              >
+                                <LogOut className="h-3.5 w-3.5 mr-1" />
+                                {withdrawing === raffle.id ? "Saliendo..." : "Salir"}
+                              </Button>
                             </div>
                           ) : (
                             <Button
