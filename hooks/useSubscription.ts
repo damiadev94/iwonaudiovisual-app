@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { cacheGet, cacheSet } from "@/lib/cache/memoryCache";
 import type { Subscription } from "@/types";
 
 export function useSubscription(userId: string | undefined) {
@@ -10,6 +11,15 @@ export function useSubscription(userId: string | undefined) {
 
   useEffect(() => {
     if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    const key = `subscription:${userId}`;
+    const cached = cacheGet<Subscription>(key);
+
+    if (cached) {
+      setSubscription(cached);
       setLoading(false);
       return;
     }
@@ -26,6 +36,7 @@ export function useSubscription(userId: string | undefined) {
         .limit(1)
         .single();
 
+      if (data) cacheSet(key, data);
       setSubscription(data);
       setLoading(false);
     }
