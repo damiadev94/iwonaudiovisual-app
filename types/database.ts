@@ -99,7 +99,9 @@ export type SelectionApplication = {
   id: string;
   selection_id: string;
   user_id: string;
-  demo_url: string;
+  demo_url: string | null;
+  file_path: string | null;
+  file_name: string | null;
   demo_description: string | null;
   tracks_count: number;
   status: "pending" | "reviewing" | "selected" | "rejected";

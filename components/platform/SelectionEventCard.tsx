@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SelectionTimer } from "@/components/platform/SelectionTimer";
 import { toast } from "sonner";
-import { Trophy, CheckCircle2, Music2, Star } from "lucide-react";
+import { Trophy, CheckCircle2, Music2, Star, Upload, Music } from "lucide-react";
 import type { Selection } from "@/types";
+
+const ACCEPTED_TYPES = ["audio/mpeg", "audio/wav", "audio/wave", "audio/x-wav"];
+const MAX_SIZE_BYTES = 50 * 1024 * 1024;
 
 interface SelectionEventCardProps {
   selection: Selection;
@@ -26,29 +30,65 @@ export function SelectionEventCard({
   const [applied, setApplied] = useState(initialHasApplied);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    if (!ACCEPTED_TYPES.includes(selected.type)) {
+      toast.error("Solo se aceptan archivos MP3 o WAV");
+      return;
+    }
+    if (selected.size > MAX_SIZE_BYTES) {
+      toast.error("El archivo no puede superar los 50MB");
+      return;
+    }
+    setFile(selected);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!file) {
+      toast.error("Seleccioná tu canción antes de enviar");
+      return;
+    }
+
     setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      selection_id: selection.id,
-      demo_url: formData.get("demo_url") as string,
-      demo_description: formData.get("demo_description") as string,
-      tracks_count: parseInt(formData.get("tracks_count") as string) || 1,
-    };
-
     try {
+      const supabase = createClient();
+      const ext = file.name.split(".").pop();
+      const filePath = `${userId}/selections/${selection.id}-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("canciones")
+        .upload(filePath, file, { contentType: file.type });
+
+      if (uploadError) {
+        toast.error("Error al subir el archivo: " + uploadError.message);
+        return;
+      }
+
+      const formData = new FormData(e.currentTarget);
       const res = await fetch("/api/seleccion/aplicar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          selection_id: selection.id,
+          file_path: filePath,
+          file_name: file.name,
+          demo_description: formData.get("demo_description") as string,
+          tracks_count: parseInt(formData.get("tracks_count") as string) || 1,
+        }),
       });
 
       const result = await res.json();
 
       if (!res.ok) {
+        // Limpiar el archivo si falla el registro
+        await supabase.storage.from("canciones").remove([filePath]);
         toast.error(result.error || "Error al enviar la aplicación");
         return;
       }
@@ -105,91 +145,101 @@ export function SelectionEventCard({
           <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
             <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-green-400">¡Ya aplicaste a esta convocatoria!</p>
+              <p className="text-sm font-semibold text-green-400">
+                ¡Ya aplicaste a esta convocatoria!
+              </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Revisá tu correo para novedades.
               </p>
             </div>
           </div>
+        ) : !showForm ? (
+          <Button
+            className="w-full bg-gold hover:bg-gold-light text-black font-semibold"
+            onClick={() => setShowForm(true)}
+          >
+            <Star className="h-4 w-4 mr-2" />
+            Participar en esta convocatoria
+          </Button>
         ) : (
-          <>
-            {!showForm ? (
-              <Button
-                className="w-full bg-gold hover:bg-gold-light text-black font-semibold"
-                onClick={() => setShowForm(true)}
-              >
-                <Star className="h-4 w-4 mr-2" />
-                Participar en esta convocatoria
-              </Button>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 pt-2 border-t border-iwon-border">
-                <p className="text-sm font-semibold text-white">Enviá tu canción</p>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2 border-t border-iwon-border">
+            <p className="text-sm font-semibold text-white">Enviá tu canción</p>
 
-                <div className="space-y-2">
-                  <Label htmlFor={`demo_url_${selection.id}`}>Link a tu demo *</Label>
-                  <Input
-                    id={`demo_url_${selection.id}`}
-                    name="demo_url"
-                    type="url"
-                    required
-                    placeholder="https://drive.google.com/... o https://soundcloud.com/..."
-                    className="bg-iwon-bg border-iwon-border"
-                  />
+            {/* File upload zone */}
+            <div
+              className="border-2 border-dashed border-iwon-border rounded-lg p-8 text-center cursor-pointer hover:border-gold/40 transition-colors"
+              onClick={() => inputRef.current?.click()}
+            >
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".mp3,.wav"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              {file ? (
+                <div className="space-y-1">
+                  <Music className="h-8 w-8 text-gold mx-auto" />
+                  <p className="font-medium text-sm">{file.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    Google Drive, SoundCloud, YouTube u otra plataforma accesible.
+                    {(file.size / 1024 / 1024).toFixed(1)} MB · Hacé clic para cambiar
                   </p>
                 </div>
-
+              ) : (
                 <div className="space-y-2">
-                  <Label htmlFor={`demo_description_${selection.id}`}>
-                    Descripción de tu proyecto *
-                  </Label>
-                  <Textarea
-                    id={`demo_description_${selection.id}`}
-                    name="demo_description"
-                    required
-                    minLength={10}
-                    maxLength={500}
-                    rows={3}
-                    placeholder="Contá sobre tu estilo, tu propuesta artística..."
-                    className="bg-iwon-bg border-iwon-border resize-none"
-                  />
+                  <Upload className="h-8 w-8 text-muted-foreground mx-auto" />
+                  <p className="font-medium text-sm">Seleccioná tu canción</p>
+                  <p className="text-xs text-muted-foreground">MP3 o WAV · Máximo 50MB</p>
                 </div>
+              )}
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor={`tracks_count_${selection.id}`}>Cantidad de tracks</Label>
-                  <Input
-                    id={`tracks_count_${selection.id}`}
-                    name="tracks_count"
-                    type="number"
-                    min={1}
-                    max={20}
-                    defaultValue={1}
-                    className="bg-iwon-bg border-iwon-border"
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor={`desc_${selection.id}`}>Descripción de tu proyecto *</Label>
+              <Textarea
+                id={`desc_${selection.id}`}
+                name="demo_description"
+                required
+                minLength={10}
+                maxLength={500}
+                rows={3}
+                placeholder="Contá sobre tu estilo, tu propuesta artística..."
+                className="bg-iwon-bg border-iwon-border resize-none"
+              />
+            </div>
 
-                <div className="flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1 border-iwon-border"
-                    onClick={() => setShowForm(false)}
-                    disabled={loading}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1 bg-gold hover:bg-gold-light text-black font-semibold"
-                    disabled={loading}
-                  >
-                    {loading ? "Enviando..." : "Enviar aplicación"}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </>
+            <div className="space-y-2">
+              <Label htmlFor={`tracks_${selection.id}`}>Cantidad de tracks</Label>
+              <Input
+                id={`tracks_${selection.id}`}
+                name="tracks_count"
+                type="number"
+                min={1}
+                max={20}
+                defaultValue={1}
+                className="bg-iwon-bg border-iwon-border"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 border-iwon-border"
+                onClick={() => { setShowForm(false); setFile(null); }}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-gold hover:bg-gold-light text-black font-semibold"
+                disabled={loading || !file}
+              >
+                {loading ? "Subiendo..." : "Enviar canción"}
+              </Button>
+        </div>
+          </form>
         )}
       </CardContent>
     </Card>

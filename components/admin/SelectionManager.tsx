@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { SelectionApplication, Profile } from "@/types";
-import { ExternalLink } from "lucide-react";
+import { Download, ExternalLink, FileAudio } from "lucide-react";
+import { toast } from "sonner";
 
 interface ApplicationWithProfile extends SelectionApplication {
   profiles: Profile;
@@ -31,6 +34,43 @@ const statusColors: Record<string, string> = {
   rejected: "bg-iwon-error/10 text-iwon-error border-iwon-error/20",
 };
 
+function DownloadButton({ filePath, fileName }: { filePath: string; fileName: string }) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleDownload() {
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.storage
+        .from("canciones")
+        .createSignedUrl(filePath, 60);
+
+      if (error || !data) {
+        toast.error("No se pudo generar el enlace de descarga");
+        return;
+      }
+
+      window.open(data.signedUrl, "_blank");
+    } catch {
+      toast.error("Error al descargar");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleDownload}
+      disabled={loading}
+      className="flex items-center gap-1.5 text-gold hover:text-gold-light text-sm disabled:opacity-50"
+    >
+      <FileAudio className="h-3.5 w-3.5 shrink-0" />
+      <span className="truncate max-w-30">{fileName}</span>
+      <Download className="h-3 w-3 shrink-0" />
+    </button>
+  );
+}
+
 export function SelectionManager({
   applications,
   onUpdateStatus,
@@ -44,7 +84,7 @@ export function SelectionManager({
         <TableHeader>
           <TableRow className="border-iwon-border bg-iwon-bg-secondary">
             <TableHead>Artista</TableHead>
-            <TableHead>Demo</TableHead>
+            <TableHead>Canción</TableHead>
             <TableHead>Tracks</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Acciones</TableHead>
@@ -62,19 +102,27 @@ export function SelectionManager({
               <TableRow key={app.id} className="border-iwon-border">
                 <TableCell>
                   <div>
-                    <p className="font-medium">{app.profiles?.artist_name || app.profiles?.full_name || "-"}</p>
+                    <p className="font-medium">
+                      {app.profiles?.artist_name || app.profiles?.full_name || "-"}
+                    </p>
                     <p className="text-xs text-muted-foreground">{app.profiles?.email}</p>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <a
-                    href={app.demo_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-gold hover:text-gold-light text-sm"
-                  >
-                    Ver demo <ExternalLink className="h-3 w-3" />
-                  </a>
+                  {app.file_path && app.file_name ? (
+                    <DownloadButton filePath={app.file_path} fileName={app.file_name} />
+                  ) : app.demo_url ? (
+                    <a
+                      href={app.demo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-gold hover:text-gold-light text-sm"
+                    >
+                      Ver demo <ExternalLink className="h-3 w-3" />
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell>{app.tracks_count}</TableCell>
                 <TableCell>

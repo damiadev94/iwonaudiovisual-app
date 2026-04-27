@@ -64,11 +64,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Necesitas una suscripcion activa" }, { status: 403 });
     }
 
+    // Validate file ownership if a file was uploaded
+    if (result.data.file_path && !result.data.file_path.startsWith(`${user.id}/`)) {
+      return NextResponse.json({ error: "Ruta de archivo invalida" }, { status: 400 });
+    }
+
     // Create application
     const { error } = await adminClient.from("selection_applications").insert({
       selection_id: selectionId,
       user_id: user.id,
-      demo_url: result.data.demo_url,
+      demo_url: result.data.demo_url ?? null,
+      file_path: result.data.file_path ?? null,
+      file_name: result.data.file_name ?? null,
       demo_description: result.data.demo_description,
       tracks_count: result.data.tracks_count,
     });
