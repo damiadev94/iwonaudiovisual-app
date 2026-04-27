@@ -126,15 +126,24 @@ export default function SorteosAdminPage() {
     const randomIndex = Math.floor(Math.random() * entries.length);
     const winnerId = entries[randomIndex].user_id;
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, artist_name, email")
+      .eq("id", winnerId)
+      .single();
+
+    const winnerName =
+      profile?.artist_name || profile?.full_name || profile?.email || "Ganador desconocido";
+
     const { error } = await supabase
       .from("raffles")
-      .update({ winner_id: winnerId, status: "completed" })
+      .update({ winner_id: winnerId, winner_name: winnerName, status: "completed" })
       .eq("id", raffleId);
 
     if (error) {
       toast.error("Error al seleccionar ganador");
     } else {
-      toast.success("Ganador seleccionado!");
+      toast.success(`¡Ganador: ${winnerName}!`);
       fetchRaffles();
     }
   }
@@ -169,7 +178,7 @@ export default function SorteosAdminPage() {
                   name="draw_date" 
                   type="date" 
                   required 
-                  className="flex h-10 w-full rounded-lg border border-iwon-border bg-iwon-bg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold [color-scheme:dark]" 
+                  className="flex h-10 w-full rounded-lg border border-iwon-border bg-iwon-bg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold scheme-dark" 
                 />
               </div>
               <div className="space-y-2">
@@ -282,9 +291,11 @@ export default function SorteosAdminPage() {
                 </div>
 
                 {raffle.winner_id && (
-                  <div className="p-2 bg-iwon-success/10 rounded-lg text-xs text-iwon-success flex items-center justify-center gap-2 font-bold animate-in zoom-in duration-300">
-                    <Users className="h-4 w-4" />
-                    ¡Ganador seleccionado!
+                  <div className="p-2 bg-iwon-success/10 rounded-lg text-xs text-iwon-success flex items-center gap-2 animate-in zoom-in duration-300">
+                    <Users className="h-4 w-4 shrink-0" />
+                    <span className="font-bold truncate">
+                      {raffle.winner_name ?? "Ganador seleccionado"}
+                    </span>
                   </div>
                 )}
               </div>
@@ -313,7 +324,7 @@ export default function SorteosAdminPage() {
                   type="date" 
                   defaultValue={editRaffle.draw_date ? new Date(editRaffle.draw_date).toISOString().split('T')[0] : ''} 
                   required 
-                  className="flex h-10 w-full rounded-lg border border-iwon-border bg-iwon-bg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold [color-scheme:dark]" 
+                  className="flex h-10 w-full rounded-lg border border-iwon-border bg-iwon-bg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold scheme-dark" 
                 />
               </div>
               <div className="space-y-2">

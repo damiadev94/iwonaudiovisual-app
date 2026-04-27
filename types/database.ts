@@ -115,6 +115,7 @@ export type Raffle = {
   status: "draft" | "active" | "completed" | "cancelled";
   draw_date: string | null;
   winner_id: string | null;
+  winner_name: string | null;
   created_at: string;
 };
 
