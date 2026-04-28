@@ -13,15 +13,22 @@ type State =
   | { kind: "subscription" }
   | { kind: "error"; message: string };
 
+export type PreloadedVideoState = Exclude<State, { kind: "loading" } | { kind: "error" }>;
+
 interface LessonVideoPlayerProps {
   publicId: string;
   title: string;
+  /** Token pre-generado en el server. Si se omite, se fetcha en el cliente (fallback). */
+  preloadedState?: PreloadedVideoState;
 }
 
-export function LessonVideoPlayer({ publicId, title }: LessonVideoPlayerProps) {
-  const [state, setState] = useState<State>({ kind: "loading" });
+export function LessonVideoPlayer({ publicId, title, preloadedState }: LessonVideoPlayerProps) {
+  const [state, setState] = useState<State>(preloadedState ?? { kind: "loading" });
 
   useEffect(() => {
+    // Skip client fetch if the server already provided a valid state
+    if (preloadedState) return;
+
     let cancelled = false;
 
     async function fetchToken() {
@@ -62,7 +69,7 @@ export function LessonVideoPlayer({ publicId, title }: LessonVideoPlayerProps) {
     return () => {
       cancelled = true;
     };
-  }, [publicId]);
+  }, [publicId, preloadedState]);
 
   if (state.kind === "loading") {
     return (

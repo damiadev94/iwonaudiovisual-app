@@ -3,9 +3,10 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect, notFound } from "next/navigation";
-import { LessonVideoPlayer } from "@/components/platform/LessonVideoPlayer";
+import { LessonVideoPlayer, type PreloadedVideoState } from "@/components/platform/LessonVideoPlayer";
 import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
+import { generateSignedVideoUrl } from "@/lib/cloudflare-stream";
 
 const categoryLabels: Record<string, string> = {
   negocio: "Negocio",
@@ -39,6 +40,44 @@ export default async function CourseDetailPage({
   // eslint-disable-next-line react-hooks/purity
   const isUpcoming = releaseAt !== null && releaseAt.getTime() > Date.now();
 
+  // Prefetch video state server-side to eliminate client round-trip on first load
+  let preloadedState: PreloadedVideoState | undefined;
+  if (course.video_uid) {
+    if (isUpcoming && releaseAt) {
+      preloadedState = { kind: "countdown", releaseAt: releaseAt.toISOString() };
+    } else {
+      // Check subscription (mirrors the API route logic)
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      const isAdmin = profile?.role === "admin";
+      let hasAccess = isAdmin;
+
+      if (!isAdmin) {
+        const { data: subscription } = await adminClient
+          .from("subscriptions")
+          .select("status")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .maybeSingle();
+        hasAccess = !!subscription;
+      }
+
+      if (!hasAccess) {
+        preloadedState = { kind: "subscription" };
+      } else {
+        const result = await generateSignedVideoUrl(course.video_uid);
+        if (result.ok) {
+          preloadedState = { kind: "ready", url: result.url };
+        }
+        // If signing fails, preloadedState stays undefined → client falls back to useEffect fetch
+      }
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
@@ -70,7 +109,11 @@ export default async function CourseDetailPage({
       </div>
 
       {course.video_uid && (
-        <LessonVideoPlayer publicId={course.video_uid} title={course.title} />
+        <LessonVideoPlayer
+          publicId={course.video_uid}
+          title={course.title}
+          preloadedState={preloadedState}
+        />
       )}
 
       {!course.video_uid && (

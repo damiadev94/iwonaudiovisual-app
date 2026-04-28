@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logger";
 import { getRequestId } from "@/lib/request-id";
-import jwt from "jsonwebtoken";
+import { generateSignedVideoUrl } from "@/lib/cloudflare-stream";
 
 export async function GET(request: Request) {
   const start = performance.now();
@@ -32,18 +32,7 @@ async function handleVideoToken(
     return NextResponse.json({ error: "Falta el publicId." }, { status: 400 });
   }
 
-  const keyId = process.env.CLOUDFLARE_STREAM_KEY_ID;
-  const privateKey = process.env.CLOUDFLARE_STREAM_PRIVATE_KEY;
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const customerSubdomain = process.env.CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN!;
-
-  if (!accountId || !keyId || !privateKey) {
-    log.error("[video-token] Credenciales Cloudflare ausentes");
-    return NextResponse.json(
-      { error: `Cloudflare credentials missing. acc: ${!!accountId}, key: ${!!keyId}, priv: ${!!privateKey}` },
-      { status: 500 }
-    );
-  }
 
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -106,96 +95,20 @@ async function handleVideoToken(
     }
   }
 
-  try {
-    let signingKey: string | Buffer | jwt.Secret;
+  const result = await generateSignedVideoUrl(publicId);
 
-    let preprocessedKey = privateKey.trim();
-
-    // 1) Test if it is Base64 encoded (a common Vercel workaround)
-    if (!preprocessedKey.startsWith("{") && !preprocessedKey.includes("-----BEGIN")) {
-      try {
-        const decoded = Buffer.from(preprocessedKey, "base64").toString("utf-8");
-        if (decoded.includes("-----BEGIN")) {
-          preprocessedKey = decoded.trim();
-        }
-      } catch {
-        // ignore if not valid base64
-      }
+  if (!result.ok) {
+    if (result.reason === "credentials_missing") {
+      log.error("[video-token] Credenciales Cloudflare ausentes", { accountId: !!accountId });
+      return NextResponse.json({ error: "Cloudflare credentials missing." }, { status: 500 });
     }
-
-    // Detect if the key is in JWK format (JSON) or PEM format
-    if (preprocessedKey.startsWith("{") && preprocessedKey.endsWith("}")) {
-      // It's a JSON Web Key (JWK)
-      const jwkObject = JSON.parse(preprocessedKey);
-
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { createPrivateKey } = require("crypto");
-
-      signingKey = createPrivateKey({
-        key: jwkObject,
-        format: "jwk",
-      });
-    } else {
-      // It's a string PEM. Handle stringified escaped newlines \n -> literal newlines.
-      let fixedPem = preprocessedKey.replace(/\\n/g, "\n");
-
-      // SELF HEAL: Vercel UI often strips newlines into spaces when pasting,
-      // even after base64 decoding if the base64 was messed up initially.
-      // E.g. -----BEGIN RSA PRIVATE KEY-----
-      const startMatch = fixedPem.match(/-----BEGIN [A-Z ]*KEY-----/);
-      const endMatch = fixedPem.match(/-----END [A-Z ]*KEY-----/);
-
-      if (startMatch && endMatch && !fixedPem.includes("\n")) {
-        const startStr = startMatch[0];
-        const endStr = endMatch[0];
-        const startIdx = fixedPem.indexOf(startStr) + startStr.length;
-        const endIdx = fixedPem.indexOf(endStr);
-
-        if (startIdx > -1 && endIdx > -1 && startIdx < endIdx) {
-          const body = fixedPem.substring(startIdx, endIdx).replace(/\s+/g, ""); // Strip all corrupted spaces
-          // Split into 64-char lines for bulletproof crypto parsing
-          const formattedBody = body.match(/.{1,64}/g)?.join("\n") || body;
-          fixedPem = `${startStr}\n${formattedBody}\n${endStr}`;
-        }
-      }
-
-      signingKey = fixedPem;
-    }
-
-    const expiresAt = Math.floor(Date.now() / 1000) + 7200;
-    const payload = {
-      sub: publicId,
-      kid: keyId,
-      exp: expiresAt,
-      downloadable: false,
-      accessRules: [
-        {
-          type: "any",
-          action: "allow"
-        }
-      ]
-    };
-
-    const token = jwt.sign(
-      payload,
-      signingKey,
-      { algorithm: "RS256", keyid: keyId }
-    );
-
-    log.info("[video-token] Token generado exitosamente", { userId: user.id, publicId, expiresAt });
-
-    const signedUrl = `https://customer-${customerSubdomain}.cloudflarestream.com/${token}/iframe`;
-    return NextResponse.json({ url: signedUrl, expiresAt });
-  } catch (error: unknown) {
-    const keyPrefix = privateKey ? privateKey.substring(0, 30) : "empty";
-    log.error("[video-token] Error generando token", { error: String(error), keyPrefix });
+    log.error("[video-token] Error generando token", { detail: result.detail });
     return NextResponse.json(
-      {
-        error: "No se pudo generar el acceso al video.",
-        details: String(error),
-        keyPrefix: keyPrefix
-      },
+      { error: "No se pudo generar el acceso al video.", details: result.detail },
       { status: 500 }
     );
   }
+
+  log.info("[video-token] Token generado exitosamente", { userId: user.id, publicId, expiresAt: result.expiresAt });
+  return NextResponse.json({ url: result.url, expiresAt: result.expiresAt });
 }
