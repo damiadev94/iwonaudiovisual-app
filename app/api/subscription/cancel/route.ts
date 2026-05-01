@@ -32,12 +32,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Suscripcion no encontrada" }, { status: 404 });
     }
 
-    // Cancel in MP if has preapproval ID
+    // Cancel in MP best-effort — a network/API failure must not prevent DB update
     if (subscription.mp_preapproval_id) {
-      await cancelSubscription(subscription.mp_preapproval_id);
+      try {
+        await cancelSubscription(subscription.mp_preapproval_id);
+      } catch (mpError) {
+        console.error("Cancel subscription: MP cancellation failed, proceeding with DB update", {
+          subscriptionId: subscription.id,
+          mpPreapprovalId: subscription.mp_preapproval_id,
+          error: mpError instanceof Error ? mpError.message : String(mpError),
+        });
+      }
     }
 
-    // Update in DB
+    // Always update DB — this is the authoritative access gate
     await adminClient
       .from("subscriptions")
       .update({
