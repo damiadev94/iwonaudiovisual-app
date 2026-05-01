@@ -5,8 +5,22 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Film, Users } from "lucide-react";
-import type { Promo } from "@/types";
+import { Film, Users, Clock } from "lucide-react";
+import Image from "next/image";
+import type { Promo, PromoBooking } from "@/types";
+import { ReservaButton } from "@/components/platform/ReservaButton";
+
+function formatARS(value: number) {
+  return value.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
+}
+
+function formatFecha(iso: string) {
+  return new Date(iso).toLocaleDateString("es-AR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export default async function PromosPage() {
   const supabase = await createClient();
@@ -21,17 +35,18 @@ export default async function PromosPage() {
 
   const { data: bookings } = await supabase
     .from("promo_bookings")
-    .select("*")
+    .select("promo_id, booking_token")
     .eq("user_id", user.id);
 
   const typedPromos = (promos || []) as Promo[];
+  const typedBookings = (bookings || []) as Pick<PromoBooking, "promo_id" | "booking_token">[];
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Promos de filmación</h1>
         <p className="text-muted-foreground">
-          Reservá tu sesión de filmación a precios exclusivos para suscriptores.
+          Reservá tu sesión a precios exclusivos para suscriptores.
         </p>
       </div>
 
@@ -48,14 +63,25 @@ export default async function PromosPage() {
           {typedPromos.map((promo) => {
             const slotsAvailable = promo.max_slots - promo.slots_taken;
             const isSoldOut = promo.status === "sold_out" || slotsAvailable <= 0;
-            const hasBooked = (bookings || []).some(
-              (b: { promo_id: string }) => b.promo_id === promo.id
-            );
+            const booking = typedBookings.find((b) => b.promo_id === promo.id);
 
             return (
               <Card key={promo.id} className="bg-iwon-card border-iwon-border overflow-hidden">
-                {/* Top accent */}
-                <div className="h-1 bg-gradient-to-r from-gold to-gold-light" />
+                {/* Cover image */}
+                {promo.cover_image_path ? (
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/promo-covers/${promo.cover_image_path}`}
+                      alt={promo.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-iwon-card/80 to-transparent" />
+                  </div>
+                ) : (
+                  <div className="h-1 bg-linear-to-r from-gold to-gold-light" />
+                )}
 
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -77,42 +103,58 @@ export default async function PromosPage() {
                     <p className="text-sm text-muted-foreground">{promo.description}</p>
                   )}
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-2xl font-bold font-mono text-gold">
-                        ${promo.price.toLocaleString("es-AR")}
+                  {/* Prices */}
+                  <div className="flex items-end gap-3">
+                    <p className="text-2xl font-bold font-mono text-gold">
+                      {formatARS(promo.price)}
+                    </p>
+                    {promo.original_price && (
+                      <p className="text-sm text-muted-foreground line-through pb-0.5">
+                        {formatARS(promo.original_price)}
                       </p>
-                      <p className="text-xs text-muted-foreground">Pago único</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 text-sm">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className={slotsAvailable <= 10 ? "text-iwon-warning" : ""}>
-                          {slotsAvailable}/{promo.max_slots} cupos
-                        </span>
+                    )}
+                  </div>
+
+                  {/* Deadline + slots row */}
+                  <div className="flex items-center justify-between text-sm">
+                    {promo.available_until && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>Hasta el {formatFecha(promo.available_until)}</span>
                       </div>
+                    )}
+                    <div className="flex items-center gap-1 ml-auto">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span className={slotsAvailable <= 10 ? "text-iwon-warning font-medium" : ""}>
+                        {slotsAvailable}/{promo.max_slots} cupos
+                      </span>
                     </div>
                   </div>
 
-                  {/* Progress bar for slots */}
+                  {/* Progress bar */}
                   <div className="w-full bg-iwon-bg rounded-full h-2">
                     <div
                       className="bg-gold rounded-full h-2 transition-all"
-                      style={{ width: `${(promo.slots_taken / promo.max_slots) * 100}%` }}
+                      style={{ width: `${Math.min((promo.slots_taken / promo.max_slots) * 100, 100)}%` }}
                     />
                   </div>
 
-                  {hasBooked ? (
-                    <Button disabled className="w-full">
-                      Ya reservaste esta promo
-                    </Button>
+                  {/* CTA */}
+                  {booking ? (
+                    <div className="space-y-2">
+                      <Button disabled className="w-full">
+                        Ya reservaste esta promo
+                      </Button>
+                      <p className="text-xs text-center text-muted-foreground font-mono">
+                        Código: {booking.booking_token}
+                      </p>
+                    </div>
                   ) : (
-                    <Button
-                      className="w-full bg-gold hover:bg-gold-light text-black font-semibold"
-                      disabled={isSoldOut}
-                    >
-                      {isSoldOut ? "Agotado" : "Reservar"}
-                    </Button>
+                    <ReservaButton
+                      promoId={promo.id}
+                      promoTitle={promo.title}
+                      isSoldOut={isSoldOut}
+                    />
                   )}
                 </CardContent>
               </Card>

@@ -133,6 +133,8 @@ export type Promo = {
   id: string;
   title: string;
   description: string | null;
+  cover_image_path: string | null;
+  original_price: number | null;
   price: number;
   max_slots: number;
   slots_taken: number;
@@ -146,6 +148,7 @@ export type PromoBooking = {
   id: string;
   promo_id: string;
   user_id: string;
+  booking_token: string;
   mp_payment_id: string | null;
   status: "pending" | "confirmed" | "cancelled";
   created_at: string;
