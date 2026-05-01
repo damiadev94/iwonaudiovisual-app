@@ -25,14 +25,18 @@ values (
 )
 on conflict (id) do nothing;
 
--- Allow admins to upload/delete in promo-covers
+-- Allow admins to read/delete in promo-covers
 create policy "Admins can manage promo covers" on storage.objects
   for all using (
     bucket_id = 'promo-covers'
     and exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  )
+  with check (
+    bucket_id = 'promo-covers'
+    and exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
   );
 
--- Allow public read of promo covers (bucket is public, but policy required for auth checks)
+-- Allow public read of promo covers
 create policy "Public can view promo covers" on storage.objects
   for select using (bucket_id = 'promo-covers');
 

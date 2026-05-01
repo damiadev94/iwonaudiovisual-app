@@ -88,15 +88,17 @@ export default function PromosAdminPage() {
     let coverPath: string | null = null;
 
     if (file) {
-      const uploadFd = new FormData();
-      uploadFd.append("file", file);
-      const res = await fetch("/api/admin/upload/promo-cover", { method: "POST", body: uploadFd });
-      if (!res.ok) {
+      const ext = file.type.split("/")[1].replace("jpeg", "jpg");
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const supabaseForUpload = createClient();
+      const { error: uploadError } = await supabaseForUpload.storage
+        .from("promo-covers")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (uploadError) {
         toast.error("Error al subir la portada");
         return;
       }
-      const json = await res.json();
-      coverPath = json.path;
+      coverPath = path;
     }
 
     const supabase = createClient();
