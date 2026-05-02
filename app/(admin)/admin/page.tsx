@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { StatsCards } from "@/components/admin/StatsCards";
+import { ActiveSubscribersCard } from "@/components/admin/ActiveSubscribersCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AdminDashboardPage() {
@@ -12,13 +13,42 @@ export default async function AdminDashboardPage() {
     .select("*", { count: "exact", head: true })
     .eq("status", "active");
 
-  const { data: payments } = await supabase
+  const firstDayOfMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1
+  ).toISOString();
+
+  // Ingresos estimados: suscripciones activas renovadas o creadas este mes.
+  // Fuente primaria: payments aprobados este mes.
+  // Fallback: plan_amount de suscripciones cuyo período actual inició este mes.
+  const { data: paymentsThisMonth } = await supabase
     .from("payments")
     .select("amount")
     .eq("status", "approved")
-    .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+    .gte("created_at", firstDayOfMonth);
 
-  const monthlyRevenue = (payments || []).reduce((sum: number, p: { amount: number }) => sum + p.amount, 0);
+  const paymentsRevenue = (paymentsThisMonth || []).reduce(
+    (sum: number, p: { amount: number }) => sum + p.amount,
+    0
+  );
+
+  let monthlyRevenue = paymentsRevenue;
+
+  if (monthlyRevenue === 0) {
+    const { data: renewedThisMonth } = await supabase
+      .from("subscriptions")
+      .select("plan_amount, created_at, current_period_start")
+      .eq("status", "active")
+      .or(
+        `current_period_start.gte.${firstDayOfMonth},and(current_period_start.is.null,created_at.gte.${firstDayOfMonth})`
+      );
+
+    monthlyRevenue = (renewedThisMonth || []).reduce(
+      (sum: number, s: { plan_amount: number | null }) => sum + (s.plan_amount ?? 0),
+      0
+    );
+  }
 
   const { count: activeSelections } = await supabase
     .from("selections")
@@ -29,12 +59,11 @@ export default async function AdminDashboardPage() {
     .from("profiles")
     .select("*", { count: "exact", head: true });
 
-  // Recent subscribers
-  const { data: recentProfiles } = await supabase
-    .from("profiles")
-    .select("full_name, artist_name, email, created_at")
-    .order("created_at", { ascending: false })
-    .limit(5);
+  const { data: activeSubscribersList } = await supabase
+    .from("subscriptions")
+    .select("id, status, plan_amount, created_at, profiles(email, full_name, artist_name)")
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
 
   return (
     <div className="space-y-8">
@@ -51,29 +80,7 @@ export default async function AdminDashboardPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-iwon-card border-iwon-border">
-          <CardHeader>
-            <CardTitle className="text-lg">Registros recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {(recentProfiles || []).map((profile: { full_name: string | null; artist_name: string | null; email: string; created_at: string }, index: number) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b border-iwon-border last:border-0">
-                  <div>
-                    <p className="text-sm font-medium">{profile.full_name || profile.artist_name || "Sin nombre"}</p>
-                    <p className="text-xs text-muted-foreground">{profile.email}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(profile.created_at).toLocaleDateString("es-AR")}
-                  </span>
-                </div>
-              ))}
-              {(!recentProfiles || recentProfiles.length === 0) && (
-                <p className="text-sm text-muted-foreground">No hay registros aún.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <ActiveSubscribersCard subscribers={activeSubscribersList ?? []} />
 
         <Card className="bg-iwon-card border-iwon-border">
           <CardHeader>
