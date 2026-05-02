@@ -61,7 +61,7 @@ export default async function AdminDashboardPage() {
 
   const { data: activeSubscribersList } = await supabase
     .from("subscriptions")
-    .select("id, status, plan_amount, created_at, profiles(email, full_name, artist_name)")
+    .select("id, status, plan_amount, created_at, current_period_start, current_period_end, profiles(email, full_name, artist_name)")
     .eq("status", "active")
     .order("created_at", { ascending: false });
 

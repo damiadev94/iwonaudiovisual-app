@@ -129,6 +129,20 @@ export default function PerfilPage() {
             <span className="text-sm text-muted-foreground">Estado</span>
             <SubscriptionStatus subscription={subscription} />
           </div>
+          {subscription?.status === "active" && (() => {
+            const base =
+              subscription.current_period_end ??
+              (subscription.current_period_start
+                ? new Date(new Date(subscription.current_period_start).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                : new Date(new Date(subscription.created_at).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString());
+            const renewal = new Date(base).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" });
+            return (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Próxima renovación</span>
+                <span className="text-sm font-medium">{renewal}</span>
+              </div>
+            );
+          })()}
           {subscription?.status === "active" && (
             <Button
               variant="outline"

@@ -17,6 +17,8 @@ interface ActiveSubscriber {
   status: string;
   plan_amount: number | null;
   created_at: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
   profiles:
     | { email: string; full_name: string | null; artist_name: string | null }
     | { email: string; full_name: string | null; artist_name: string | null }[]
@@ -92,6 +94,17 @@ export function ActiveSubscribersCard({
   );
 }
 
+function renewalDate(sub: ActiveSubscriber): string | null {
+  const base =
+    sub.current_period_end ??
+    (sub.current_period_start
+      ? new Date(new Date(sub.current_period_start).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      : null) ??
+    new Date(new Date(sub.created_at).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  return new Date(base).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
 function SubscriberRow({ sub }: { sub: ActiveSubscriber }) {
   const profile = Array.isArray(sub.profiles) ? sub.profiles[0] : sub.profiles;
   const name =
@@ -103,12 +116,16 @@ function SubscriberRow({ sub }: { sub: ActiveSubscriber }) {
   const amount = sub.plan_amount
     ? `$${sub.plan_amount.toLocaleString("es-AR")}`
     : null;
+  const renewal = renewalDate(sub);
 
   return (
     <div className="flex items-center justify-between py-2 border-b border-iwon-border last:border-0">
       <div className="min-w-0">
         <p className="text-sm font-medium truncate">{name}</p>
         <p className="text-xs text-muted-foreground truncate">{email}</p>
+        {renewal && (
+          <p className="text-xs text-muted-foreground">Renueva: {renewal}</p>
+        )}
       </div>
       <div className="flex items-center gap-2 ml-2 shrink-0">
         {amount && (
