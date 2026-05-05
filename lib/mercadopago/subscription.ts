@@ -62,16 +62,20 @@ export async function createSubscriptionForUser(
   userId: string,
   email: string
 ): Promise<CreatedSubscription> {
-  const planId = await getPlanId();
   const backUrl = getBackUrl();
 
   const result = await preApproval.create({
     body: {
-      preapproval_plan_id: planId,
+      reason: "Iwon Audiovisual - Suscripción Mensual",
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: "months",
+        transaction_amount: 14999,
+        currency_id: "ARS",
+      },
       payer_email: email,
       external_reference: userId,
       back_url: `${backUrl}/suscripcion/exito`,
-      status: "pending",
     },
   });
 

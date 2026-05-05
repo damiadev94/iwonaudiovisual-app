@@ -52,8 +52,9 @@ export async function POST(request: Request) {
     );
 
     return NextResponse.json({ init_point });
-  } catch (error: unknown) {
-    log.error("[subscription/create] MP Error", { error: String(error) });
+  } catch (error: any) {
+    const errorDetails = error.response?.data || error.message || JSON.stringify(error);
+    log.error("[subscription/create] MP Error", { error: errorDetails });
     return NextResponse.json({ error: "payment_setup_failed" }, { status: 500 });
   }
 }

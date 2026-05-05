@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       mp_subscription_id: preapproval_id,
       mp_preapproval_id: preapproval_id,
       status,
-      plan_amount: mpTyped.auto_recurring?.transaction_amount ?? 1000,
+      plan_amount: mpTyped.auto_recurring?.transaction_amount ?? 14999,
       currency: "ARS",
       current_period_start: mpTyped.date_created,
     };

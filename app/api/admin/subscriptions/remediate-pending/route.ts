@@ -39,6 +39,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}));
   const dryRun = Boolean(body?.dry_run);
+  const forceActivate = Boolean(body?.force_activate);
 
   const adminClient = createAdminClient();
   const preApproval = new PreApproval(mercadopago);
@@ -85,7 +86,24 @@ export async function POST(request: Request) {
       continue;
     }
 
-    // 3) Buscar en MP por external_reference (poco fiable en plan checkout) y por payer_email
+    // 3a) Modo force_activate: activar directo sin buscar en MP
+    if (forceActivate) {
+      if (!dryRun) {
+        const { error: updateError } = await adminClient
+          .from("subscriptions")
+          .update({ status: "active" })
+          .eq("id", sub.id);
+
+        if (updateError) {
+          results.push({ subscription_id: sub.id, user_id: sub.user_id, email, action: "error", detail: `DB update failed: ${updateError.message}` });
+          continue;
+        }
+      }
+      results.push({ subscription_id: sub.id, user_id: sub.user_id, email, action: "activated", detail: dryRun ? "dry_run" : "force_activated" });
+      continue;
+    }
+
+    // 3b) Buscar en MP por external_reference (poco fiable en plan checkout) y por payer_email
     type MPItem = {
       id?: string;
       status?: string;
@@ -93,7 +111,13 @@ export async function POST(request: Request) {
       date_created?: string | number;
     };
 
+    const serializeMPError = (err: unknown): string => {
+      if (err instanceof Error) return err.message;
+      try { return JSON.stringify(err); } catch { return String(err); }
+    };
+
     let candidates: MPItem[] = [];
+    let extRefError: string | null = null;
     try {
       const byExtRef = await preApproval.search({
         options: {
@@ -104,8 +128,8 @@ export async function POST(request: Request) {
         },
       });
       candidates = ((byExtRef as { results?: MPItem[] }).results ?? []).slice();
-    } catch {
-      // si falla la búsqueda por external_reference, seguimos con email
+    } catch (err) {
+      extRefError = serializeMPError(err);
     }
 
     if (candidates.length === 0) {
@@ -125,7 +149,7 @@ export async function POST(request: Request) {
           user_id: sub.user_id,
           email,
           action: "error",
-          detail: `MP search failed: ${err instanceof Error ? err.message : String(err)}`,
+          detail: `MP search failed — extRef: ${extRefError ?? "ok"} | email: ${serializeMPError(err)}`,
         });
         continue;
       }
