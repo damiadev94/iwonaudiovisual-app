@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Hoist mock fns
-const { mockGetUser, mockAdminFrom, mockGetSubscribeUrl } = vi.hoisted(() => ({
+const { mockGetUser, mockAdminFrom, mockCreateSubscriptionForUser } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
   mockAdminFrom: vi.fn(),
-  mockGetSubscribeUrl: vi.fn(),
+  mockCreateSubscriptionForUser: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -18,7 +18,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 vi.mock("@/lib/mercadopago/subscription", () => ({
-  getSubscribeUrl: mockGetSubscribeUrl,
+  createSubscriptionForUser: mockCreateSubscriptionForUser,
 }));
 
 import { POST } from "@/app/api/subscription/create/route";
@@ -82,24 +82,28 @@ describe("POST /api/subscription/create", () => {
     expect(data.redirect).toBe("/dashboard");
   });
 
-  it("genera URL de checkout y retorna init_point", async () => {
+  it("crea PreApproval y guarda mp_preapproval_id en pending", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
     });
     const { mockUpsert } = mockNoExistingSub();
 
-    const checkoutUrl =
-      "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=PLAN_123&external_reference=user-123";
-    mockGetSubscribeUrl.mockResolvedValue(checkoutUrl);
+    const initPoint = "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_id=PREAPPROVAL_ABC";
+    mockCreateSubscriptionForUser.mockResolvedValue({
+      preapproval_id: "PREAPPROVAL_ABC",
+      init_point: initPoint,
+    });
 
     const response = await POST(new Request("http://localhost"));
     const data = await response.json();
 
-    expect(mockGetSubscribeUrl).toHaveBeenCalledWith("user-123", "test@example.com");
+    expect(mockCreateSubscriptionForUser).toHaveBeenCalledWith("user-123", "test@example.com");
     expect(mockUpsert).toHaveBeenCalledWith(
       {
         user_id: "user-123",
+        mp_preapproval_id: "PREAPPROVAL_ABC",
+        mp_subscription_id: "PREAPPROVAL_ABC",
         status: "pending",
         plan_amount: 14999,
         currency: "ARS",
@@ -107,16 +111,16 @@ describe("POST /api/subscription/create", () => {
       { onConflict: "user_id" }
     );
     expect(response.status).toBe(200);
-    expect(data.init_point).toBe(checkoutUrl);
+    expect(data.init_point).toBe(initPoint);
   });
 
-  it("retorna 500 con mensaje si getSubscribeUrl lanza un error", async () => {
+  it("retorna 500 si createSubscriptionForUser lanza un error", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-123", email: "test@example.com" } },
       error: null,
     });
     mockNoExistingSub();
-    mockGetSubscribeUrl.mockRejectedValue(new Error("MP API error"));
+    mockCreateSubscriptionForUser.mockRejectedValue(new Error("MP API error"));
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const response = await POST(new Request("http://localhost"));
@@ -124,7 +128,6 @@ describe("POST /api/subscription/create", () => {
     consoleSpy.mockRestore();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe("payment_error");
-    expect(data.message).toBe("MP API error");
+    expect(data.error).toBe("payment_setup_failed");
   });
 });

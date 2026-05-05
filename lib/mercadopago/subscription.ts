@@ -8,10 +8,8 @@ const preApprovalPlan = new PreApprovalPlan(mercadopago);
 async function getPlanId(): Promise<string> {
   const existingPlanId = process.env.MERCADOPAGO_PLAN_ID?.trim();
 
-  // Si el ID ya está configurado (no vacío), usarlo directamente
   if (existingPlanId) return existingPlanId;
 
-  // En producción, no auto-crear — fallar rápido y claro
   if (process.env.NODE_ENV === "production") {
     throw new Error("Falta MERCADOPAGO_PLAN_ID en entorno de producción");
   }
@@ -21,7 +19,6 @@ async function getPlanId(): Promise<string> {
     process.env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000";
 
-  // Primera vez: crear el plan y loguear el ID para guardarlo en .env
   const plan = await preApprovalPlan.create({
     body: {
       reason: "Iwon Audiovisual - Suscripción Mensual",
@@ -35,8 +32,6 @@ async function getPlanId(): Promise<string> {
     },
   });
 
-
-
   console.warn(
     "[mercadopago] Plan creado. Guardá este ID en MERCADOPAGO_PLAN_ID:",
     plan.id
@@ -45,18 +40,52 @@ async function getPlanId(): Promise<string> {
   return plan.id!;
 }
 
-export async function getSubscribeUrl(userId: string, _email: string): Promise<string> {
-  const planId = await getPlanId();
-
-  // Usamos la URL directa del checkout de planes de Mercado Pago.
-  // Esto evita errores de 'card_token_id is required' y es el flujo oficial de Checkout Pro.
-  // El usuario será vinculado al finalizar en el back_url mediante el preapproval_id.
-  const domain = "www.mercadopago.com.ar"; // Ajustado para ARS (Argentina)
-  return `https://${domain}/subscriptions/checkout?preapproval_plan_id=${planId}&external_reference=${userId}`;
+function getBackUrl(): string {
+  return (
+    process.env.MERCADOPAGO_BACK_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000"
+  );
 }
 
+export type CreatedSubscription = {
+  preapproval_id: string;
+  init_point: string;
+};
 
+/**
+ * Crea una PreApproval en MercadoPago vinculada al plan, con external_reference
+ * persistido en el body (no en la URL). Esto es lo que permite al webhook ubicar
+ * al usuario incluso cuando MP no devuelve el preapproval_id en el back_url.
+ */
+export async function createSubscriptionForUser(
+  userId: string,
+  email: string
+): Promise<CreatedSubscription> {
+  const planId = await getPlanId();
+  const backUrl = getBackUrl();
 
+  const result = await preApproval.create({
+    body: {
+      preapproval_plan_id: planId,
+      payer_email: email,
+      external_reference: userId,
+      back_url: `${backUrl}/suscripcion/exito`,
+      status: "pending",
+    },
+  });
+
+  if (!result.id || !result.init_point) {
+    throw new Error(
+      `MP devolvió una preapproval inválida (id=${result.id}, init_point=${result.init_point})`
+    );
+  }
+
+  return {
+    preapproval_id: result.id,
+    init_point: result.init_point,
+  };
+}
 
 export async function cancelSubscription(preapprovalId: string) {
   const result = await preApproval.update({
@@ -79,7 +108,6 @@ export async function findSubscriptionByExternalRef(
   userId: string
 ): Promise<{ id: string; status: string; auto_recurring?: { transaction_amount?: number }; date_created?: string } | null> {
   try {
-    // La API de MP permite filtrar preapprovals por external_reference
     const result = await preApproval.search({
       options: {
         external_reference: userId,

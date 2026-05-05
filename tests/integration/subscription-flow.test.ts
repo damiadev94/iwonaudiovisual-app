@@ -44,7 +44,14 @@ const db = {
 // ─── Mock del cliente Supabase con estado compartido ─────────────────────────
 function createMockSupabaseClient() {
   return {
-    from(table: "subscriptions" | "payments") {
+    from(table: "subscriptions" | "payments" | "webhook_events") {
+      if (table === "webhook_events") {
+        // El handler usa webhook_events solo para idempotencia (insert);
+        // en los tests no nos interesa rastrearlos.
+        return {
+          insert: async () => ({ data: null, error: null }),
+        };
+      }
       if (table === "subscriptions") {
         return {
           select(_cols: string) {
@@ -123,13 +130,13 @@ function createMockSupabaseClient() {
 // ─── Fns hoisted para los mocks ──────────────────────────────────────────────
 const {
   mockGetUser,
-  mockGetSubscribeUrl,
+  mockCreateSubscriptionForUser,
   mockCancelSubscription,
   mockMPPreApprovalGet,
   mockMPPaymentGet,
 } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
-  mockGetSubscribeUrl: vi.fn(),
+  mockCreateSubscriptionForUser: vi.fn(),
   mockCancelSubscription: vi.fn(),
   mockMPPreApprovalGet: vi.fn(),
   mockMPPaymentGet: vi.fn(),
@@ -146,12 +153,13 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(() => createMockSupabaseClient()),
 }));
 
-// El create route usa getSubscribeUrl; el cancel route usa cancelSubscription.
+// El create route usa createSubscriptionForUser; el cancel route usa cancelSubscription.
 // Mockeamos el módulo completo para aislar los handlers de la API de MP.
 vi.mock("@/lib/mercadopago/subscription", () => ({
-  getSubscribeUrl: mockGetSubscribeUrl,
+  createSubscriptionForUser: mockCreateSubscriptionForUser,
   cancelSubscription: mockCancelSubscription,
   getSubscriptionStatus: vi.fn(),
+  findSubscriptionByExternalRef: vi.fn(),
 }));
 
 // El webhook handler sigue usando el SDK directamente via PreApproval y Payment.
@@ -175,7 +183,7 @@ import { POST as cancelRoute } from "@/app/api/subscription/cancel/route";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const USER = { id: "user-flow-abc", email: "flow@example.com" };
 const MP_PREAPPROVAL_ID = "PREAPPROVAL_FLOW_001";
-const MP_CHECKOUT_URL = "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=PLAN_123&external_reference=user-flow-abc";
+const MP_CHECKOUT_URL = `https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_id=${MP_PREAPPROVAL_ID}`;
 const MP_PAYMENT_ID = "PAY_FLOW_999";
 const SECRET = "TEST_WEBHOOK_SECRET";
 
@@ -194,7 +202,10 @@ describe("Flujo de suscripción completo (integración)", () => {
     process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
     process.env.MERCADOPAGO_BACK_URL = "http://localhost:3000";
     process.env.MERCADOPAGO_WEBHOOK_SECRET = SECRET;
-    mockGetSubscribeUrl.mockResolvedValue(MP_CHECKOUT_URL);
+    mockCreateSubscriptionForUser.mockResolvedValue({
+      preapproval_id: MP_PREAPPROVAL_ID,
+      init_point: MP_CHECKOUT_URL,
+    });
     mockCancelSubscription.mockResolvedValue({});
   });
 
@@ -209,10 +220,11 @@ describe("Flujo de suscripción completo (integración)", () => {
     expect(createResponse.status).toBe(200);
     expect(createData.init_point).toBe(MP_CHECKOUT_URL);
 
-    // DB tiene una suscripción en estado pending (sin mp_preapproval_id aún)
+    // DB tiene una suscripción en estado pending y ya con mp_preapproval_id grabado
     expect(db.subscriptions).toHaveLength(1);
     expect(db.subscriptions[0].status).toBe("pending");
     expect(db.subscriptions[0].user_id).toBe(USER.id);
+    expect(db.subscriptions[0].mp_preapproval_id).toBe(MP_PREAPPROVAL_ID);
 
     const subscriptionId = db.subscriptions[0].id;
 
@@ -346,7 +358,7 @@ describe("Flujo de suscripción completo (integración)", () => {
     expect(response.status).toBe(200);
     expect(data.redirect).toBe("/dashboard");
     // MP no fue contactado
-    expect(mockGetSubscribeUrl).not.toHaveBeenCalled();
+    expect(mockCreateSubscriptionForUser).not.toHaveBeenCalled();
     // No se creó una segunda suscripción
     expect(db.subscriptions).toHaveLength(1);
   });

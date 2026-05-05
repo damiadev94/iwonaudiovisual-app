@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getSubscribeUrl } from "@/lib/mercadopago/subscription";
+import { createSubscriptionForUser } from "@/lib/mercadopago/subscription";
 import { logger } from "@/lib/logger";
 import { getRequestId } from "@/lib/request-id";
 
@@ -31,12 +31,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    const init_point = await getSubscribeUrl(user.id, user.email!);
+    const { preapproval_id, init_point } = await createSubscriptionForUser(
+      user.id,
+      user.email!
+    );
 
-    // Pre-crear la suscripción en estado pendiente para que la app lo reconozca
+    // Guardamos el mp_preapproval_id desde el inicio. Esto permite al webhook,
+    // al cron de sync y al layout encontrar la sub aunque MP no incluya el
+    // preapproval_id en el back_url ni el external_reference en sus respuestas.
     await adminClient.from("subscriptions").upsert(
       {
         user_id: user.id,
+        mp_preapproval_id: preapproval_id,
+        mp_subscription_id: preapproval_id,
         status: "pending",
         plan_amount: 14999,
         currency: "ARS",

@@ -128,7 +128,13 @@ describe("lib/mercadopago/webhook", () => {
     function setupSubMock() {
       const mockEq = vi.fn().mockResolvedValue({ data: null, error: null });
       const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
-      mockSupabaseFrom.mockReturnValue({ update: mockUpdate });
+      const mockEventsInsert = vi
+        .fn()
+        .mockResolvedValue({ data: null, error: null });
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === "webhook_events") return { insert: mockEventsInsert };
+        return { update: mockUpdate };
+      });
       return { mockUpdate, mockEq };
     }
 
@@ -193,21 +199,22 @@ describe("lib/mercadopago/webhook", () => {
       );
     });
 
-    it("actualiza el campo mp_preapproval_id con el ID de MP", async () => {
+    it("actualiza por mp_preapproval_id cuando MP no devuelve external_reference", async () => {
       mockPreApprovalGet.mockResolvedValue({
         id: "PREAPPROVAL_ABC",
         status: "authorized",
         date_created: "2024-06-01T00:00:00Z",
       });
-      const { mockUpdate } = setupSubMock();
+      const { mockUpdate, mockEq } = setupSubMock();
 
       await processWebhookEvent(buildSubEvent("PREAPPROVAL_ABC"));
 
       expect(mockUpdate).toHaveBeenCalledWith({
         status: "active",
-        mp_preapproval_id: "PREAPPROVAL_ABC",
+        mp_subscription_id: "PREAPPROVAL_ABC",
         current_period_start: "2024-06-01T00:00:00Z",
       });
+      expect(mockEq).toHaveBeenCalledWith("mp_preapproval_id", "PREAPPROVAL_ABC");
     });
 
     it("maneja errores de MP sin lanzar excepción", async () => {
@@ -260,8 +267,12 @@ describe("lib/mercadopago/webhook", () => {
       const mockInsert = vi
         .fn()
         .mockResolvedValue({ data: null, error: null });
+      const mockEventsInsert = vi
+        .fn()
+        .mockResolvedValue({ data: null, error: null });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === "webhook_events") return { insert: mockEventsInsert };
         if (table === "subscriptions") return { select: mockSelect };
         if (table === "payments") return { insert: mockInsert };
       });
@@ -300,8 +311,12 @@ describe("lib/mercadopago/webhook", () => {
       const mockInsert = vi
         .fn()
         .mockResolvedValue({ data: null, error: null });
+      const mockEventsInsert = vi
+        .fn()
+        .mockResolvedValue({ data: null, error: null });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === "webhook_events") return { insert: mockEventsInsert };
         if (table === "subscriptions") return { select: mockSelect };
         if (table === "payments") return { insert: mockInsert };
       });
@@ -323,16 +338,28 @@ describe("lib/mercadopago/webhook", () => {
         payment_method_id: "credit_card",
       });
 
-      const mockInsert = vi.fn();
-      mockSupabaseFrom.mockReturnValue({ insert: mockInsert });
+      const paymentsInsert = vi.fn();
+      const mockEventsInsert = vi
+        .fn()
+        .mockResolvedValue({ data: null, error: null });
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === "webhook_events") return { insert: mockEventsInsert };
+        return { insert: paymentsInsert };
+      });
 
       await processWebhookEvent(buildPaymentEvent("777"));
 
-      expect(mockInsert).not.toHaveBeenCalled();
+      expect(paymentsInsert).not.toHaveBeenCalled();
     });
 
     it("maneja errores de MP sin lanzar excepción", async () => {
       mockPaymentGet.mockRejectedValue(new Error("MP API error"));
+      const mockEventsInsert = vi
+        .fn()
+        .mockResolvedValue({ data: null, error: null });
+      mockSupabaseFrom.mockImplementation(() => ({
+        insert: mockEventsInsert,
+      }));
       const consoleSpy = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});

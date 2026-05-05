@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Hoist mock fns so they're available inside vi.mock factory (which is hoisted above imports)
-const { mockPlanCreate, mockUpdate, mockGet } = vi.hoisted(() => ({
+const { mockPlanCreate, mockPreApprovalCreate, mockUpdate, mockGet } = vi.hoisted(() => ({
   mockPlanCreate: vi.fn(),
+  mockPreApprovalCreate: vi.fn(),
   mockUpdate: vi.fn(),
   mockGet: vi.fn(),
 }));
@@ -10,7 +11,7 @@ const { mockPlanCreate, mockUpdate, mockGet } = vi.hoisted(() => ({
 vi.mock("mercadopago", () => ({
   MercadoPagoConfig: vi.fn(function () {}),
   PreApproval: vi.fn(function () {
-    return { update: mockUpdate, get: mockGet };
+    return { create: mockPreApprovalCreate, update: mockUpdate, get: mockGet };
   }),
   PreApprovalPlan: vi.fn(function () {
     return { create: mockPlanCreate };
@@ -25,7 +26,7 @@ vi.mock("@/lib/mercadopago/client", () => ({
 }));
 
 import {
-  getSubscribeUrl,
+  createSubscriptionForUser,
   cancelSubscription,
   getSubscriptionStatus,
 } from "@/lib/mercadopago/subscription";
@@ -44,75 +45,82 @@ describe("lib/mercadopago/subscription", () => {
     process.env = { ...originalEnv };
   });
 
-  describe("getSubscribeUrl", () => {
-    it("usa MERCADOPAGO_PLAN_ID si está definido y devuelve la URL correcta", async () => {
+  describe("createSubscriptionForUser", () => {
+    beforeEach(() => {
+      // Por defecto setear plan_id para no caer en la rama de auto-creación
       process.env.MERCADOPAGO_PLAN_ID = "EXISTING_PLAN_ID";
-
-      const url = await getSubscribeUrl("user-uuid-123", "test@example.com");
-
-      expect(mockPlanCreate).not.toHaveBeenCalled();
-      expect(url).toContain("preapproval_plan_id=EXISTING_PLAN_ID");
-      expect(url).toContain("external_reference=user-uuid-123");
+      mockPreApprovalCreate.mockResolvedValue({
+        id: "PREAPPROVAL_ABC",
+        init_point: "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_id=PREAPPROVAL_ABC",
+      });
     });
 
-    it("crea un plan cuando MERCADOPAGO_PLAN_ID no está definido", async () => {
-      mockPlanCreate.mockResolvedValue({ id: "NEW_PLAN_ID" });
+    it("crea una PreApproval con external_reference y devuelve preapproval_id + init_point", async () => {
+      const result = await createSubscriptionForUser("user-uuid-123", "test@example.com");
 
-      const url = await getSubscribeUrl("user-uuid-123", "test@example.com");
-
-      expect(mockPlanCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          body: expect.objectContaining({
-            reason: expect.any(String),
-            auto_recurring: expect.objectContaining({
-              frequency: 1,
-              frequency_type: "months",
-              transaction_amount: 14999,
-              currency_id: "ARS",
-            }),
-          }),
-        })
-      );
-      expect(url).toContain("preapproval_plan_id=NEW_PLAN_ID");
+      expect(mockPreApprovalCreate).toHaveBeenCalledWith({
+        body: expect.objectContaining({
+          preapproval_plan_id: "EXISTING_PLAN_ID",
+          payer_email: "test@example.com",
+          external_reference: "user-uuid-123",
+          status: "pending",
+        }),
+      });
+      expect(result.preapproval_id).toBe("PREAPPROVAL_ABC");
+      expect(result.init_point).toContain("mercadopago");
     });
 
-    it("usa MERCADOPAGO_BACK_URL en el back_url del plan", async () => {
+    it("usa MERCADOPAGO_BACK_URL en el back_url cuando está definido", async () => {
       process.env.MERCADOPAGO_BACK_URL = "https://app.example.com";
-      mockPlanCreate.mockResolvedValue({ id: "PLAN_123" });
 
-      await getSubscribeUrl("user-uuid-123", "test@example.com");
+      await createSubscriptionForUser("user-uuid-123", "test@example.com");
 
-      expect(mockPlanCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          body: expect.objectContaining({
-            back_url: expect.stringContaining("https://app.example.com"),
-          }),
-        })
-      );
+      expect(mockPreApprovalCreate).toHaveBeenCalledWith({
+        body: expect.objectContaining({
+          back_url: "https://app.example.com/suscripcion/exito",
+        }),
+      });
     });
 
     it("usa NEXT_PUBLIC_APP_URL como fallback si MERCADOPAGO_BACK_URL no está definido", async () => {
       delete process.env.MERCADOPAGO_BACK_URL;
       process.env.NEXT_PUBLIC_APP_URL = "https://iwon.example.com";
-      mockPlanCreate.mockResolvedValue({ id: "PLAN_123" });
 
-      await getSubscribeUrl("user-uuid-123", "test@example.com");
+      await createSubscriptionForUser("user-uuid-123", "test@example.com");
 
-      expect(mockPlanCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          body: expect.objectContaining({
-            back_url: expect.stringContaining("https://iwon.example.com"),
-          }),
-        })
-      );
+      expect(mockPreApprovalCreate).toHaveBeenCalledWith({
+        body: expect.objectContaining({
+          back_url: "https://iwon.example.com/suscripcion/exito",
+        }),
+      });
+    });
+
+    it("falla si MP devuelve una PreApproval sin id o sin init_point", async () => {
+      mockPreApprovalCreate.mockResolvedValue({ id: "X" });
+
+      await expect(
+        createSubscriptionForUser("user-uuid-123", "test@example.com")
+      ).rejects.toThrow(/preapproval inválida/i);
     });
 
     it("propaga errores del SDK de MercadoPago", async () => {
-      mockPlanCreate.mockRejectedValue(new Error("MP API error"));
+      mockPreApprovalCreate.mockRejectedValue(new Error("MP API error"));
 
       await expect(
-        getSubscribeUrl("user-uuid-123", "test@example.com")
+        createSubscriptionForUser("user-uuid-123", "test@example.com")
       ).rejects.toThrow("MP API error");
+    });
+
+    it("crea un plan cuando MERCADOPAGO_PLAN_ID no está definido (modo dev)", async () => {
+      delete process.env.MERCADOPAGO_PLAN_ID;
+      mockPlanCreate.mockResolvedValue({ id: "NEW_PLAN_ID" });
+
+      await createSubscriptionForUser("user-uuid-123", "test@example.com");
+
+      expect(mockPlanCreate).toHaveBeenCalled();
+      expect(mockPreApprovalCreate).toHaveBeenCalledWith({
+        body: expect.objectContaining({ preapproval_plan_id: "NEW_PLAN_ID" }),
+      });
     });
   });
 

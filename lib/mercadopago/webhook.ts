@@ -66,7 +66,8 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
       const mpTyped = preapprovalData as MPPreApprovalData;
       const externalRef = mpTyped.external_reference;
 
-      // Intentar crear/actualizar la suscripción buscando por external_reference (User ID)
+      // Camino feliz: MP nos devuelve external_reference (es el user_id que pasamos
+      // al crear la PreApproval). UPSERT por user_id cubre tanto creación como update.
       if (externalRef) {
         await supabase.from("subscriptions").upsert(
           {
@@ -84,16 +85,17 @@ export async function processWebhookEvent(event: MPWebhookEvent) {
         return;
       }
 
-      // Fallback: actualizar por mp_subscription_id si ya existe el registro
+      // Fallback: si MP no devolvió external_reference, ubicamos el row por
+      // mp_preapproval_id (que ya quedó grabado al crear la PreApproval por API).
       await supabase
         .from("subscriptions")
         .update({
           status,
-          mp_preapproval_id: preapprovalData.id,
+          mp_subscription_id: preapprovalData.id,
           current_period_start:
             preapprovalData.last_modified ?? preapprovalData.date_created,
         })
-        .eq("mp_subscription_id", preapprovalData.id);
+        .eq("mp_preapproval_id", preapprovalData.id);
     } catch (error) {
       logger.error("Webhook error procesando preapproval", { id: event.data.id, error: String(error) });
     }
