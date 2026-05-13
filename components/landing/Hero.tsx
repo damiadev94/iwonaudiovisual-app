@@ -26,24 +26,32 @@ export function Hero() {
         </div>
 
         {/* Main title */}
+        <div className="relative">
+          {/* Blur blobs behind title */}
+          <div className="absolute inset-0 -z-10 flex items-center justify-center pointer-events-none">
+            <div className="absolute w-[480px] h-[280px] rounded-full bg-gold/10 blur-[80px] translate-y-4" />
+            <div className="absolute w-[320px] h-[180px] rounded-full bg-white/5 blur-[60px] -translate-y-6 translate-x-8" />
+          </div>
+
         <h1 className="font-black tracking-tighter leading-none mb-6 uppercase">
-          <span className="block text-2xl sm:text-3xl font-extrabold tracking-[0.25em] text-white/40 mb-1">
-            COMENZÓ
+          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/40 mb-1" style={{ fontFamily: "var(--font-graffiti)" }}>
+            Comenzó
           </span>
           <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-none">
             LA SELECCIÓN
           </span>
-          <span className="block text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest text-white/50 my-1">
-            DE LA MEJOR
+          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/50 my-1" style={{ fontFamily: "var(--font-graffiti)" }}>
+            de la mejor
           </span>
           <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-gold leading-none italic">
             CANCIÓN
           </span>
-          <span className="block text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-[0.3em] text-white/30 mt-2">
-            EN{" "}
-            <span className="text-gold/80 not-italic font-black">MAYO</span>
+          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/30 mt-2" style={{ fontFamily: "var(--font-graffiti)" }}>
+            en{" "}
+            <span className="text-gold/80">mayo</span>
           </span>
         </h1>
+        </div>
 
         {/* Subtitle */}
         <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
