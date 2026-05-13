@@ -22,14 +22,27 @@ export function Hero() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/20 bg-gold/5 mb-8">
           <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-          <span className="text-sm text-gold">Convocatoria abierta - Abril 2026</span>
+          <span className="text-sm text-gold">Convocatoria abierta - Mayo 2026</span>
         </div>
 
         {/* Main title */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-          COMENZÓ EL SORTEO{" "} <br />
-          <span className="text-gold text-6xl">DE UN EP. 4 CANCIONES</span> <br />
-          <span className="text-6xl italic">PARA 1 ARTISTA</span>
+        <h1 className="font-black tracking-tighter leading-none mb-6 uppercase">
+          <span className="block text-2xl sm:text-3xl font-extrabold tracking-[0.25em] text-white/40 mb-1">
+            COMENZÓ
+          </span>
+          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-none">
+            LA SELECCIÓN
+          </span>
+          <span className="block text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest text-white/50 my-1">
+            DE LA MEJOR
+          </span>
+          <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-gold leading-none italic">
+            CANCIÓN
+          </span>
+          <span className="block text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-[0.3em] text-white/30 mt-2">
+            EN{" "}
+            <span className="text-gold/80 not-italic font-black">MAYO</span>
+          </span>
         </h1>
 
         {/* Subtitle */}
