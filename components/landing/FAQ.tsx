@@ -19,9 +19,9 @@ const faqs = [
       "La suscripción te da acceso a: SER SELECCIONADO, SORTEOS EXCLUSIVOS, Promociones de Filmación, y CONTENIDO y FORMACIÓN.",
   },
   {
-    question: '¿Qué es la Selección "Los 50"?',
+    question: '¿Qué es la "Selección"?',
     answer:
-      "Es nuestra apuesta principal. Periódicamente seleccionamos a 50 artistas de la comunidad para filmarles su mejor canción con equipamiento de cine profesional. Solo los suscriptores activos pueden aplicar.",
+      "Es nuestra apuesta principal. Periódicamente seleccionamos a artistas de la comunidad para filmarles su mejor canción con equipamiento de cine profesional. Solo los suscriptores activos pueden aplicar.",
   },
   {
     question: "¿Hay permanencia mínima?",

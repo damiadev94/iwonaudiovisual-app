@@ -4,9 +4,9 @@ const steps = [
   {
     icon: Users,
     title: "Selección",
-    subtitle: "Los 50",
+    subtitle: "Rodaje sin costo",
     description:
-      "Seleccionamos a 50 artistas que estén suscriptos para filmarles su mejor canción con equipos de cine.",
+      "Seleccionamos a artistas que estén suscriptos para filmarles su mejor canción con equipos de cine.",
     color: "text-gold",
   },
   {

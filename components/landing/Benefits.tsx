@@ -22,7 +22,7 @@ const benefits = [
   {
     icon: Star,
     title: "Selección de Artistas",
-    description: "Mandanos tu canción para ser uno de los 50 artistas seleccionados y filmar tu canción.",
+    description: "Mandanos tu canción para ser uno de los artistas seleccionados y filmar tu canción.",
     features: ["Videoclip", "Equipos cinematográficos", "Filmación en 6k"],
   },
 ];
