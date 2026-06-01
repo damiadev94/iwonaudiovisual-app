@@ -1,12 +1,12 @@
 import { ButtonPrimary } from "@/components/ui/ButtonPrimary";
 
 const features = [
-  "Acceso total a cursos de formación",
-  "Promos de filmación a $49.999",
-  "Participación en sorteos mensuales",
-  'Aplicación a "Los 50" cada 4 meses',
-  "5 videoclips profesionales si sos seleccionado",
-  "Cancelás cuando querés, sin cargos",
+  "Registro 100% gratuito",
+  "Participación automática en el sorteo mensual",
+  "Videoclip en una toma si ganás el sorteo",
+  "Acceso a cursos de formación musical",
+  "Promos de filmación a precio especial",
+  "Sin compromisos ni permanencia",
 ];
 
 export function PricingSection() {
@@ -24,7 +24,7 @@ export function PricingSection() {
           gap: "10px",
         }}
       >
-        — La inversión
+        — Acceso libre
       </div>
 
       <div
@@ -55,7 +55,7 @@ export function PricingSection() {
                 color: "#888",
               }}
             >
-              Membresía mensual
+              Registro
             </div>
             <div
               style={{
@@ -66,10 +66,10 @@ export function PricingSection() {
                 color: "#D4A843",
               }}
             >
-              $14.999
+              Gratis
             </div>
             <div style={{ fontSize: "16px", color: "#888", marginTop: "8px" }}>
-              ARS por mes · Sin permanencia mínima
+              Sin costo · Sin permanencia · Sin compromisos
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
@@ -81,7 +81,7 @@ export function PricingSection() {
                 color: "#888",
               }}
             >
-              Valor potencial
+              Premio mensual
             </div>
             <div
               style={{
@@ -91,9 +91,9 @@ export function PricingSection() {
                 color: "#D4A843",
               }}
             >
-              +$1.500.000 ARS
+              1 videoclip
             </div>
-            <div style={{ fontSize: "12px", color: "#888" }}>si quedás entre Los 50</div>
+            <div style={{ fontSize: "12px", color: "#888" }}>sorteado entre todos los registrados</div>
           </div>
         </div>
 
@@ -131,7 +131,7 @@ export function PricingSection() {
         {/* CTA */}
         <div style={{ padding: "32px 48px", display: "flex", justifyContent: "center" }}>
           <ButtonPrimary href="/register" size="lg">
-            Empezar ahora
+            Registrate gratis
           </ButtonPrimary>
         </div>
       </div>

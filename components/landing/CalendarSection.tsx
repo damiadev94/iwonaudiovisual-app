@@ -1,26 +1,26 @@
 const months = [
   {
     num: "01",
-    event: "Selección masiva",
-    desc: "Convocatoria abierta. Audición de demos. Los 50 mejores reciben 5 videoclips.",
+    event: "Sorteo de videoclip",
+    desc: "Se sortea un videoclip filmado con equipamiento de cine entre todos los registrados.",
     active: true,
   },
   {
     num: "02",
-    event: "Sorteo",
-    desc: "Se sortea un videoclip con guión profesional entre todos los suscriptores activos.",
+    event: "Promos de filmación",
+    desc: "Cupos exclusivos a precio especial. Un videoclip profesional solo para la comunidad.",
     active: false,
   },
   {
     num: "03",
-    event: "Promos de filmación",
-    desc: "200 cupos. Un videoclip en una toma. A $49.999. Solo para miembros.",
+    event: "Cursos nuevos",
+    desc: "Nueva tanda de formación estratégica: marketing, branding y distribución musical.",
     active: false,
   },
   {
     num: "04",
-    event: "Cursos nuevos",
-    desc: "Nueva tanda de formación estratégica. Se calienta la próxima selección masiva.",
+    event: "Nuevo sorteo",
+    desc: "El ciclo se repite. Seguís participando automáticamente mes a mes.",
     active: false,
   },
 ];

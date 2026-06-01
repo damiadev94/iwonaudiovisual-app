@@ -66,7 +66,7 @@ export function LandingNavbar() {
           </a>
         ))}
         <ButtonPrimary href="/register" size="sm">
-          Suscribite
+          Registrate gratis
         </ButtonPrimary>
       </div>
 
@@ -123,7 +123,7 @@ export function LandingNavbar() {
             </a>
           ))}
           <ButtonPrimary href="/register" size="sm">
-            Suscribite
+            Registrate gratis
           </ButtonPrimary>
         </div>
       )}

@@ -56,12 +56,12 @@ export function FooterCTA() {
           fontStyle: "italic",
         }}
       >
-        Suscribite por $14.999/mes · Sin permanencia mínima
+        Registrate gratis · Participás automáticamente en el sorteo mensual
       </p>
 
       <div style={{ position: "relative" }}>
         <ButtonPrimary href="/register" size="lg">
-          Suscribite ahora
+          Registrate gratis
         </ButtonPrimary>
       </div>
     </section>

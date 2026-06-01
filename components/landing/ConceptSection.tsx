@@ -87,8 +87,8 @@ export function ConceptSection() {
               La primera productora audiovisual del país para artistas urbanos independientes
             </div>
             <div style={{ fontSize: "14px", color: "#888", lineHeight: 1.7 }}>
-              Cada 4 meses abrimos convocatoria. Los 50 mejores artistas reciben 5 videoclips
-              profesionales filmados con equipamiento de cine. Sin costo adicional.
+              Registrate gratis y participás automáticamente por un videoclip filmado con
+              equipamiento de cine. Cada mes sorteamos entre todos los registrados.
             </div>
           </div>
           <div
@@ -106,7 +106,7 @@ export function ConceptSection() {
                 marginBottom: "8px",
               }}
             >
-              Valor por seleccionado
+              Costo de registro
             </div>
             <div
               style={{
@@ -116,7 +116,7 @@ export function ConceptSection() {
                 color: "#D4A843",
               }}
             >
-              +USD $1.500
+              Gratis
             </div>
           </div>
         </div>

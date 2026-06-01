@@ -1,27 +1,27 @@
 const benefits = [
   {
     num: "01",
+    tag: "Registro",
+    title: "Totalmente gratuito",
+    body: "Sin tarjeta, sin compromiso. Te registrás y ya sos parte de la comunidad Iwon.",
+  },
+  {
+    num: "02",
+    tag: "Sorteo mensual",
+    title: "Videoclip en una toma",
+    body: "Cada mes sorteamos un videoclip filmado con equipamiento de cine. Participás automáticamente solo por estar registrado.",
+  },
+  {
+    num: "03",
     tag: "Formación",
     title: "Cursos de negocio musical",
     body: "Finanzas, marketing, branding, distribución. Lo que no te enseña YouTube.",
   },
   {
-    num: "02",
+    num: "04",
     tag: "Producción",
     title: "Promos de filmación",
-    body: "200 cupos por mes. $49.999 por videoclip profesional. Solo para suscriptores.",
-  },
-  {
-    num: "03",
-    tag: "Sorteos",
-    title: "Videoclips sorteados",
-    body: "Cada mes sorteamos servicios profesionales. Participás automáticamente.",
-  },
-  {
-    num: "04",
-    tag: "Selección",
-    title: "Los 50 — Cada 4 meses",
-    body: "Los 50 mejores reciben su disco filmado. 5 videoclips con equipamiento de cine.",
+    body: "Cupos exclusivos a precio especial para registrados. Un videoclip profesional accesible.",
   },
 ];
 

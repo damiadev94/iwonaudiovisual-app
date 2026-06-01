@@ -2,8 +2,8 @@ import { ButtonPrimary } from "@/components/ui/ButtonPrimary";
 
 const stats = [
   { num: "+450", label: "Videoclips filmados" },
-  { num: "50", label: "Seleccionados por oleada" },
-  { num: "$14.999", label: "por mes" },
+  { num: "Gratis", label: "Registro" },
+  { num: "100%", label: "Participación automática" },
 ];
 
 export function Hero() {
@@ -103,7 +103,7 @@ export function Hero() {
           fontStyle: "italic",
         }}
       >
-        Suscribite y accedé a producción real con equipamiento de cine. Sin sellos, sin intermediarios.
+        Registrate gratis y participá automáticamente por un videoclip con equipamiento de cine. Sin sellos, sin intermediarios.
       </p>
 
       {/* CTAs */}
@@ -118,7 +118,7 @@ export function Hero() {
         }}
       >
         <ButtonPrimary href="/register" size="md">
-          Suscribite por $14.999/mes
+          Registrate gratis
         </ButtonPrimary>
         <a
           href="#portfolio"

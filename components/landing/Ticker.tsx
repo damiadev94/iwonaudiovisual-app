@@ -1,7 +1,7 @@
 const items = [
-  "Los 50",
+  "Registro gratuito",
   "Videoclips profesionales",
-  "Sin permanencia mínima",
+  "Participación automática",
   "Equipamiento de cine",
   "Conurbano · CABA · Argentina",
   "Sorteos mensuales",

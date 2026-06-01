@@ -4,24 +4,24 @@ import { useState } from "react";
 
 const faqs = [
   {
-    q: "¿Es caro?",
-    a: "$14.999 por mes es menos que una pizza y medialunas. El premio potencial vale millones. Un videoclip profesional sale mínimo $200.000. Acá podés conseguir cinco.",
+    q: "¿El registro es realmente gratis?",
+    a: "Sí, 100% gratis. Sin tarjeta de crédito, sin costos ocultos, sin permanencia. Te registrás y ya sos parte de la comunidad.",
   },
   {
-    q: "¿Pago y me quedo esperando?",
-    a: "No. Desde el día 1 tenés acceso a cursos, podés reservar promos de filmación y participar en sorteos. El calendario rotativo elimina los tiempos muertos.",
+    q: "¿Cómo funciona el sorteo?",
+    a: "Cada mes sorteamos un videoclip filmado con equipamiento de cine entre todos los usuarios registrados. La participación es automática: no tenés que hacer nada más que estar registrado.",
   },
   {
-    q: "¿Y si no quedo entre los 50?",
-    a: "Seguís teniendo cursos, sorteos de videoclip guionado y promos de filmación a precio preferencial. Y podés volver a aplicar en la próxima oleada.",
+    q: "¿Qué tipo de videoclip sortean?",
+    a: "Un videoclip simple, en una toma, filmado con equipamiento profesional de cine. Rápido, real y de alta calidad.",
   },
   {
     q: "¿Los temas los elijo yo?",
-    a: "Sí. Libertad creativa total. Vos elegís qué canciones filmar. Se filma a tu ritmo, con un plazo razonable. Incluye 1-2 revisiones por videoclip.",
+    a: "Sí. Si ganás el sorteo, vos elegís qué canción filmar. Libertad creativa total.",
   },
   {
-    q: "¿Siempre eligen a los mismos?",
-    a: "No. Se priorizan caras nuevas en cada oleada. La selección es por mérito musical, no por antigüedad ni seguidores.",
+    q: "¿Qué más obtengo al registrarme?",
+    a: "Acceso a cursos de formación musical (marketing, branding, distribución) y promos de filmación a precio especial para registrados.",
   },
 ];
 
