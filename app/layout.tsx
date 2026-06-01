@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Permanent_Marker } from "next/font/google";
+import { Inter, JetBrains_Mono, Permanent_Marker, Barlow, Barlow_Condensed } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -17,6 +17,19 @@ const permanentMarker = Permanent_Marker({
   variable: "--font-graffiti",
   subsets: ["latin"],
   weight: "400",
+});
+
+const barlow = Barlow({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-condensed",
+  subsets: ["latin"],
+  weight: ["400", "700", "800", "900"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +53,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable} ${permanentMarker.variable} h-full antialiased`}>
+    <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable} ${permanentMarker.variable} ${barlow.variable} ${barlowCondensed.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster richColors position="top-right" />

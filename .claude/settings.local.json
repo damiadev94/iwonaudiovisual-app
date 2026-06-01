@@ -39,7 +39,8 @@
       "Bash(npx tsc *)",
       "Bash(Get-ChildItem -Path \"d:\\\\[TRABAJO]\\\\[IWON] iwonaudiovisual-app\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(git -C \"d:\\\\[TRABAJO]\\\\[IWON] iwonaudiovisual-app\" log --oneline -20)"
+      "Bash(git -C \"d:\\\\[TRABAJO]\\\\[IWON] iwonaudiovisual-app\" log --oneline -20)",
+      "Bash(grep -E \"\\\\.tsx$\")"
     ]
   }
 }

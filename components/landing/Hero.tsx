@@ -1,128 +1,184 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Play, ArrowRight } from "lucide-react";
+import { ButtonPrimary } from "@/components/ui/ButtonPrimary";
+
+const stats = [
+  { num: "+450", label: "Videoclips filmados" },
+  { num: "50", label: "Seleccionados por oleada" },
+  { num: "$14.999", label: "por mes" },
+];
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-iwon-bg via-iwon-bg to-iwon-bg-secondary" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
-
-      {/* Grid pattern overlay */}
+    <section
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-end",
+        padding: "0 40px 60px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Grid + noise background */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        aria-hidden="true"
         style={{
-          backgroundImage: "linear-gradient(#C9A84C 1px, transparent 1px), linear-gradient(90deg, #C9A84C 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+          position: "absolute",
+          inset: 0,
+          background: `
+            linear-gradient(to top, rgba(8,8,8,1) 0%, rgba(8,8,8,0.7) 40%, rgba(8,8,8,0.3) 70%, rgba(8,8,8,0.6) 100%),
+            repeating-linear-gradient(90deg, transparent, transparent 99px, rgba(212,168,67,0.04) 99px, rgba(212,168,67,0.04) 100px),
+            repeating-linear-gradient(0deg, transparent, transparent 99px, rgba(212,168,67,0.04) 99px, rgba(212,168,67,0.04) 100px)
+          `,
+          backgroundColor: "#0d0d0d",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.035,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
+          backgroundSize: "200px",
         }}
       />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/20 bg-gold/5 mb-8">
-          <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-          <span className="text-sm text-gold">Convocatoria abierta - Mayo 2026</span>
-        </div>
-
-        {/* Main title */}
-        <div className="relative">
-          {/* Blur blobs behind title */}
-          <div className="absolute inset-0 -z-10 flex items-center justify-center pointer-events-none">
-            <div className="absolute w-[480px] h-[280px] rounded-full bg-gold/10 blur-[80px] translate-y-4" />
-            <div className="absolute w-[320px] h-[180px] rounded-full bg-white/5 blur-[60px] -translate-y-6 translate-x-8" />
-          </div>
-
-        <h1 className="font-black tracking-tighter leading-none mb-6 uppercase">
-          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/40 mb-1" style={{ fontFamily: "var(--font-graffiti)" }}>
-            Comenzó
-          </span>
-          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-none">
-            LA SELECCIÓN
-          </span>
-          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/50 my-1" style={{ fontFamily: "var(--font-graffiti)" }}>
-            de la mejor
-          </span>
-          <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-gold leading-none italic">
-            CANCIÓN
-          </span>
-          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/30 mt-2" style={{ fontFamily: "var(--font-graffiti)" }}>
-            en{" "}
-            <span className="text-gold/80">mayo</span>
-          </span>
-        </h1>
-        </div>
-
-        {/* Subtitle */}
-        <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
-          Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
-          Suscribite y accedé a ser elegido, cursos, sorteos y promos de filmación.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <Link href="/register">
-            <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto">
-              Suscribite por $14.999/mes
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <a href="#portfolio">
-            <Button size="lg" variant="outline" className="border-iwon-border hover:bg-iwon-card text-lg px-8 py-6 h-auto">
-              <Play className="mr-2 h-5 w-5" />
-              Ver videoclips
-            </Button>
-          </a>
-        </div>
-
-        {/* Instagram pill */}
-        <div className="flex justify-center mb-12">
-          <a
-            href="https://www.instagram.com/iwon.audiovisual"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-gold/40 bg-white/5 backdrop-blur-md hover:bg-gold/10 hover:border-gold/70 transition-all duration-300"
-          >
-            {/* Instagram icon */}
-            <svg
-              className="w-4 h-4 text-gold flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-              <circle cx="12" cy="12" r="4" />
-              <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
-            </svg>
-            <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-              Entra a mi Instagram y enterate de todo
-            </span>
-            <ArrowRight className="w-3.5 h-3.5 text-gold opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
-          </a>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
-          <div>
-            <p className="text-3xl font-bold text-gold font-mono">+450</p>
-            <p className="text-sm text-muted-foreground">Videoclips filmados</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-gold font-mono">+500</p>
-            <p className="text-sm text-muted-foreground">Artistas</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-gold font-mono">3</p>
-            <p className="text-sm text-muted-foreground">Años de trayectoria</p>
-          </div>
-        </div>
+      {/* Eyebrow */}
+      <div
+        style={{
+          position: "relative",
+          fontSize: "11px",
+          letterSpacing: "0.25em",
+          textTransform: "uppercase",
+          color: "#D4A843",
+          marginBottom: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{ display: "block", width: "32px", height: "1px", background: "#D4A843", flexShrink: 0 }}
+        />
+        Productora audiovisual · Buenos Aires · Desde 2022
       </div>
 
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-iwon-bg-secondary to-transparent" />
+      {/* Headline */}
+      <h1
+        style={{
+          position: "relative",
+          fontFamily: "var(--font-condensed)",
+          fontWeight: 900,
+          fontSize: "clamp(72px, 12vw, 140px)",
+          lineHeight: 0.88,
+          textTransform: "uppercase",
+          letterSpacing: "-0.01em",
+          margin: 0,
+        }}
+      >
+        <span
+          style={{
+            display: "block",
+            WebkitTextStroke: "1.5px rgba(242,237,228,0.25)",
+            color: "transparent",
+          }}
+        >
+          Comenzá
+        </span>
+        <span style={{ display: "block", color: "#F2EDE4" }}>tu carrera</span>
+        <span style={{ display: "block", color: "#D4A843" }}>audiovisual</span>
+      </h1>
+
+      {/* Subtitle */}
+      <p
+        style={{
+          position: "relative",
+          fontSize: "16px",
+          color: "#888",
+          marginTop: "28px",
+          maxWidth: "480px",
+          lineHeight: 1.6,
+          fontStyle: "italic",
+        }}
+      >
+        Suscribite y accedé a producción real con equipamiento de cine. Sin sellos, sin intermediarios.
+      </p>
+
+      {/* CTAs */}
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          gap: "24px",
+          marginTop: "40px",
+          flexWrap: "wrap",
+        }}
+      >
+        <ButtonPrimary href="/register" size="md">
+          Suscribite por $14.999/mes
+        </ButtonPrimary>
+        <a
+          href="#portfolio"
+          style={{
+            color: "#F2EDE4",
+            fontSize: "12px",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontFamily: "var(--font-body)",
+            textDecoration: "none",
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{ display: "block", width: "20px", height: "1px", background: "#F2EDE4" }}
+          />
+          Ver portfolio
+        </a>
+      </div>
+
+      {/* Stats */}
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          gap: "48px",
+          marginTop: "60px",
+          flexWrap: "wrap",
+        }}
+      >
+        {stats.map(({ num, label }) => (
+          <div key={label}>
+            <div
+              style={{
+                fontFamily: "var(--font-condensed)",
+                fontWeight: 900,
+                fontSize: "36px",
+                color: "#D4A843",
+                lineHeight: 1,
+              }}
+            >
+              {num}
+            </div>
+            <div
+              style={{
+                fontSize: "10px",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "#888",
+                marginTop: "4px",
+              }}
+            >
+              {label}
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

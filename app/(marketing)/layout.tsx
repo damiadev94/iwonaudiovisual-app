@@ -1,16 +1,18 @@
-import { Navbar } from "@/components/shared/Navbar";
-import { Footer } from "@/components/shared/Footer";
+import { LandingNavbar } from "@/components/landing/LandingNavbar";
 
-export default function MarketingLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Navbar />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </>
+    <div
+      className="landing"
+      style={{
+        background: "#080808",
+        color: "#F2EDE4",
+        fontFamily: "var(--font-body, sans-serif)",
+        overflowX: "hidden",
+      }}
+    >
+      <LandingNavbar />
+      <main>{children}</main>
+    </div>
   );
 }

@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { Hero } from "@/components/landing/Hero";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { Benefits } from "@/components/landing/Benefits";
-import { Portfolio } from "@/components/landing/Portfolio";
-import { Pricing } from "@/components/landing/Pricing";
-import { FAQ } from "@/components/landing/FAQ";
-import { CTA } from "@/components/landing/CTA";
+import { Ticker } from "@/components/landing/Ticker";
+import { ConceptSection } from "@/components/landing/ConceptSection";
+import { BenefitsSection } from "@/components/landing/BenefitsSection";
+import { CalendarSection } from "@/components/landing/CalendarSection";
+import { PricingSection } from "@/components/landing/PricingSection";
+import { FAQSection } from "@/components/landing/FAQSection";
+import { FooterCTA } from "@/components/landing/FooterCTA";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 
 export default async function LandingPage({
   searchParams,
@@ -15,19 +17,19 @@ export default async function LandingPage({
   // OAuth fallback: when /callback is not in the redirect allowlist,
   // the auth code lands here — forward it to the callback handler
   const { code } = await searchParams;
-  if (code) {
-    redirect(`/callback?code=${code}`);
-  }
+  if (code) redirect(`/callback?code=${code}`);
 
   return (
     <>
       <Hero />
-      <HowItWorks />
-      <Benefits />
-      <Portfolio />
-      <Pricing />
-      <FAQ />
-      <CTA />
+      <Ticker />
+      <ConceptSection />
+      <BenefitsSection />
+      <CalendarSection />
+      <PricingSection />
+      <FAQSection />
+      <FooterCTA />
+      <LandingFooter />
     </>
   );
 }
