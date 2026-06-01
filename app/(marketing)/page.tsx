@@ -3,6 +3,7 @@ import { Hero } from "@/components/landing/Hero";
 import { Ticker } from "@/components/landing/Ticker";
 import { ConceptSection } from "@/components/landing/ConceptSection";
 import { BenefitsSection } from "@/components/landing/BenefitsSection";
+import { PortfolioSection } from "@/components/landing/PortfolioSection";
 import { CalendarSection } from "@/components/landing/CalendarSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FAQSection } from "@/components/landing/FAQSection";
@@ -25,6 +26,7 @@ export default async function LandingPage({
       <Ticker />
       <ConceptSection />
       <BenefitsSection />
+      <PortfolioSection />
       <CalendarSection />
       <PricingSection />
       <FAQSection />
