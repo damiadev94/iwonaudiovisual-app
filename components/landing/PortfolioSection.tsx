@@ -2,13 +2,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { PortfolioItem } from "@/types";
 
 export async function PortfolioSection() {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("portfolio")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  const items: PortfolioItem[] = data || [];
+  let items: PortfolioItem[] = [];
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("portfolio")
+      .select("*")
+      .order("created_at", { ascending: false });
+    items = data || [];
+  } catch {
+    // fallback to placeholder grid
+  }
 
   return (
     <section
