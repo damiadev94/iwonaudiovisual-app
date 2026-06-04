@@ -39,19 +39,19 @@ export function Hero({ promoEndDate }: HeroProps) {
           </div>
 
         <h1 className="leading-none mb-6 uppercase">
-          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.18em] text-white/40 mb-3">
+          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.18em] text-white/40 mb-1">
             este mes,
           </span>
           <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-white leading-none">
             TODOS
           </span>
-          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.22em] text-white/40 my-3">
+          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.22em] text-white/40 my-1">
             los suscriptores
           </span>
           <span className="block text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] font-black tracking-tighter text-gold leading-none italic">
             GANAN
           </span>
-          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.12em] text-white/30 mt-3">
+          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.12em] text-white/30 mt-1">
             un videoclip en{" "}
             <span className="text-gold/80 font-semibold">1 toma</span>
           </span>

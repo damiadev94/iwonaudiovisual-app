@@ -18,12 +18,12 @@ export function CTA({ promoEndDate }: CTAProps) {
           Tu música merece ser vista.{" "}
           <span className="text-gold">Nosotros la filmamos.</span>
         </h2>
-        <Link href="/register">
-          <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-10 py-6 h-auto">
+        <Link href="/register" className="block w-full sm:w-auto sm:inline-block">
+          <Button size="lg" className="w-full sm:w-auto bg-gold hover:bg-gold-light text-black font-bold text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-6 h-auto">
             {promoEndDate
               ? `Registrate gratis — hasta el ${formatPromoEndDate(promoEndDate)}`
               : "Suscribite por $14.999/mes"}
-            <ArrowRight className="ml-2 h-5 w-5" />
+            <ArrowRight className="ml-2 h-5 w-5 shrink-0" />
           </Button>
         </Link>
 
