@@ -87,7 +87,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { href: "/cursos", icon: BookOpen, title: "Cursos", desc: "Formación continua", color: "text-purple-400" },
-          { href: "/seleccion", icon: Users, title: "Selección", desc: 'Aplicá a "Los 50"', color: "text-gold" },
+          { href: "/seleccion", icon: Users, title: "Selección", desc: "Convocatoria Junio 2026", color: "text-gold" },
           { href: "/promos", icon: Film, title: "Promos", desc: "Filmación accesible", color: "text-blue-400" },
           { href: "/sorteos", icon: Gift, title: "Sorteos", desc: "Premios exclusivos", color: "text-iwon-success" },
         ].map((item) => (

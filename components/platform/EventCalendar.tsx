@@ -3,8 +3,8 @@ import { Calendar, Users, Gift, Film, BookOpen } from "lucide-react";
 const events = [
   {
     icon: Users,
-    title: "Selección - Los 50",
-    description: "Convocatoria abierta para la próxima oleada",
+    title: "Selección Junio 2026",
+    description: "Convocatoria abierta — registrate antes del 9 de junio",
     color: "text-gold",
   },
   {
