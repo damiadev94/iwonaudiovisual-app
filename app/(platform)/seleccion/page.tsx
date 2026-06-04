@@ -16,23 +16,36 @@ export default async function SeleccionPage() {
 
   const adminClient = createAdminClient();
 
-  const { data: sub } = await adminClient
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", user.id)
-    .in("status", ["active", "pending"])
-    .maybeSingle();
-
-  const { data: profile } = await adminClient
-    .from("profiles")
-    .select("role, promo_access_until")
-    .eq("id", user.id)
-    .single();
+  const now = new Date().toISOString();
+  const [{ data: sub }, { data: profile }, { data: globalPromo }] =
+    await Promise.all([
+      adminClient
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", user.id)
+        .in("status", ["active", "pending"])
+        .maybeSingle(),
+      adminClient
+        .from("profiles")
+        .select("role, promo_access_until")
+        .eq("id", user.id)
+        .single(),
+      adminClient
+        .from("promotions")
+        .select("id")
+        .eq("is_active", true)
+        .lte("starts_at", now)
+        .gte("ends_at", now)
+        .in("type", ["full_access", "selections"])
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
   const isAdmin = profile?.role === "admin";
-  const hasPromoAccess =
+  const hasPersonalPromo =
     !!profile?.promo_access_until &&
     new Date(profile.promo_access_until) > new Date();
+  const hasPromoAccess = hasPersonalPromo || !!globalPromo;
 
   if (!sub && !isAdmin && !hasPromoAccess) redirect("/dashboard");
 

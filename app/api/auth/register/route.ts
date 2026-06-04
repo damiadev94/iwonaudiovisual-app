@@ -68,12 +68,7 @@ export async function POST(request: Request) {
     const { error: profileError } = await admin
       .from("profiles")
       .upsert(
-        {
-          id: created.user.id,
-          email,
-          full_name: full_name ?? "",
-          ...(activePromo ? { promo_access_until: activePromo.access_until ?? activePromo.ends_at } : {}),
-        },
+        { id: created.user.id, email, full_name: full_name ?? "" },
         { onConflict: "id", ignoreDuplicates: true }
       );
 
@@ -81,6 +76,16 @@ export async function POST(request: Request) {
       log.error("[auth/register] Error creando perfil, rollback", { userId: created.user.id, msg: profileError.message });
       await admin.auth.admin.deleteUser(created.user.id);
       return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
+    }
+
+    // Set promo_access_until separately so it always applies regardless of
+    // whether the trigger or the upsert created the profile row.
+    if (activePromo) {
+      const promoAccessUntil = activePromo.access_until ?? activePromo.ends_at;
+      await admin
+        .from("profiles")
+        .update({ promo_access_until: promoAccessUntil })
+        .eq("id", created.user.id);
     }
 
     // admin.createUser no envía el email de confirmación automáticamente.

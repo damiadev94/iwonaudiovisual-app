@@ -16,24 +16,35 @@ export default async function SubirCancionPage() {
 
   const adminClient = createAdminClient();
 
-  // Solo usuarios con suscripcion activa, pendiente, o con promo personal pueden acceder
-  const [{ data: sub }, { data: profile }] = await Promise.all([
-    adminClient
-      .from("subscriptions")
-      .select("status")
-      .eq("user_id", user.id)
-      .in("status", ["active", "pending"])
-      .maybeSingle(),
-    adminClient
-      .from("profiles")
-      .select("promo_access_until")
-      .eq("id", user.id)
-      .single(),
-  ]);
+  const now = new Date().toISOString();
+  const [{ data: sub }, { data: profile }, { data: globalPromo }] =
+    await Promise.all([
+      adminClient
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", user.id)
+        .in("status", ["active", "pending"])
+        .maybeSingle(),
+      adminClient
+        .from("profiles")
+        .select("promo_access_until")
+        .eq("id", user.id)
+        .single(),
+      adminClient
+        .from("promotions")
+        .select("id")
+        .eq("is_active", true)
+        .lte("starts_at", now)
+        .gte("ends_at", now)
+        .eq("type", "full_access")
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
-  const hasPromoAccess =
+  const hasPersonalPromo =
     !!profile?.promo_access_until &&
     new Date(profile.promo_access_until) > new Date();
+  const hasPromoAccess = hasPersonalPromo || !!globalPromo;
 
   if (!sub && !hasPromoAccess) redirect("/dashboard");
 
