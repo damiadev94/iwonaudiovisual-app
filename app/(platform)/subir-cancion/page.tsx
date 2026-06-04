@@ -16,15 +16,26 @@ export default async function SubirCancionPage() {
 
   const adminClient = createAdminClient();
 
-  // Solo usuarios con suscripcion activa o pendiente pueden acceder
-  const { data: sub } = await adminClient
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", user.id)
-    .in("status", ["active", "pending"])
-    .maybeSingle();
+  // Solo usuarios con suscripcion activa, pendiente, o con promo personal pueden acceder
+  const [{ data: sub }, { data: profile }] = await Promise.all([
+    adminClient
+      .from("subscriptions")
+      .select("status")
+      .eq("user_id", user.id)
+      .in("status", ["active", "pending"])
+      .maybeSingle(),
+    adminClient
+      .from("profiles")
+      .select("promo_access_until")
+      .eq("id", user.id)
+      .single(),
+  ]);
 
-  if (!sub) redirect("/dashboard");
+  const hasPromoAccess =
+    !!profile?.promo_access_until &&
+    new Date(profile.promo_access_until) > new Date();
+
+  if (!sub && !hasPromoAccess) redirect("/dashboard");
 
   // Buscar submission existente del usuario
   const { data: existingSubmission } = await adminClient

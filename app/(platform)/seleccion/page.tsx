@@ -25,13 +25,16 @@ export default async function SeleccionPage() {
 
   const { data: profile } = await adminClient
     .from("profiles")
-    .select("role")
+    .select("role, promo_access_until")
     .eq("id", user.id)
     .single();
 
   const isAdmin = profile?.role === "admin";
+  const hasPromoAccess =
+    !!profile?.promo_access_until &&
+    new Date(profile.promo_access_until) > new Date();
 
-  if (!sub && !isAdmin) redirect("/dashboard");
+  if (!sub && !isAdmin && !hasPromoAccess) redirect("/dashboard");
 
   // Fetch open selections
   const { data: openSelections } = await adminClient
