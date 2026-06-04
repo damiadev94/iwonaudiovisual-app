@@ -38,28 +38,28 @@ export function Hero({ promoEndDate }: HeroProps) {
             <div className="absolute w-[320px] h-[180px] rounded-full bg-white/5 blur-[60px] -translate-y-6 translate-x-8" />
           </div>
 
-        <h1 className="font-black tracking-tighter leading-none mb-6 uppercase">
-          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/40 mb-1" style={{ fontFamily: "var(--font-graffiti)" }}>
+        <h1 className="leading-none mb-6 uppercase">
+          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.18em] text-white/40 mb-3">
             este mes,
           </span>
-          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-none">
+          <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-white leading-none">
             TODOS
           </span>
-          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/50 my-1" style={{ fontFamily: "var(--font-graffiti)" }}>
+          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.22em] text-white/40 my-3">
             los suscriptores
           </span>
-          <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-gold leading-none italic">
+          <span className="block text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] font-black tracking-tighter text-gold leading-none italic">
             GANAN
           </span>
-          <span className="block text-3xl sm:text-4xl md:text-5xl text-white/30 mt-2" style={{ fontFamily: "var(--font-graffiti)" }}>
+          <span className="block text-xl sm:text-2xl md:text-3xl font-light tracking-[0.12em] text-white/30 mt-3">
             un videoclip en{" "}
-            <span className="text-gold/80">1 toma</span>
+            <span className="text-gold/80 font-semibold">1 toma</span>
           </span>
         </h1>
         </div>
 
         {/* Subtitle — adjusted when promo is active */}
-        <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto mb-10 px-2 sm:px-0">
           {promoEndDate ? (
             <>
               Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
@@ -75,18 +75,18 @@ export function Hero({ promoEndDate }: HeroProps) {
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <Link href="/register">
-            <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-16 w-full max-w-lg mx-auto sm:max-w-none">
+          <Link href="/register" className="w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto bg-gold hover:bg-gold-light text-black font-bold text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 h-auto">
               {promoEndDate
                 ? `Accedé gratis hasta el ${formatPromoEndDate(promoEndDate)}`
                 : "Suscribite por $14.999/mes"}
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-5 w-5 shrink-0" />
             </Button>
           </Link>
-          <a href="#portfolio">
-            <Button size="lg" variant="outline" className="border-iwon-border hover:bg-iwon-card text-lg px-8 py-6 h-auto">
-              <Play className="mr-2 h-5 w-5" />
+          <a href="#portfolio" className="w-full sm:w-auto">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto border-iwon-border hover:bg-iwon-card text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 h-auto">
+              <Play className="mr-2 h-5 w-5 shrink-0" />
               Ver videoclips
             </Button>
           </a>
