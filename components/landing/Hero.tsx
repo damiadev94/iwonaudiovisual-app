@@ -27,7 +27,7 @@ export function Hero({ promoEndDate }: HeroProps) {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/20 bg-gold/5 mb-8">
           <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-          <span className="text-sm text-gold">Convocatoria abierta - Mayo 2026</span>
+          <span className="text-sm text-gold">Junio 2026 — Inscribite ahora</span>
         </div>
 
         {/* Main title */}
@@ -40,20 +40,20 @@ export function Hero({ promoEndDate }: HeroProps) {
 
         <h1 className="font-black tracking-tighter leading-none mb-6 uppercase">
           <span className="block text-3xl sm:text-4xl md:text-5xl text-white/40 mb-1" style={{ fontFamily: "var(--font-graffiti)" }}>
-            Comenzó
+            este mes,
           </span>
           <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-none">
-            LA SELECCIÓN
+            TODOS
           </span>
           <span className="block text-3xl sm:text-4xl md:text-5xl text-white/50 my-1" style={{ fontFamily: "var(--font-graffiti)" }}>
-            de la mejor
+            los suscriptores
           </span>
           <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-gold leading-none italic">
-            CANCIÓN
+            GANAN
           </span>
           <span className="block text-3xl sm:text-4xl md:text-5xl text-white/30 mt-2" style={{ fontFamily: "var(--font-graffiti)" }}>
-            en{" "}
-            <span className="text-gold/80">mayo</span>
+            un videoclip en{" "}
+            <span className="text-gold/80">1 toma</span>
           </span>
         </h1>
         </div>
