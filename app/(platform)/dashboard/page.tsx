@@ -31,6 +31,19 @@ export default async function DashboardPage() {
     .maybeSingle();
 
   const isActive = subscription?.status === "active";
+  const promoUntil = profile?.promo_access_until
+    ? new Date(profile.promo_access_until)
+    : null;
+  const hasPersonalPromo = promoUntil !== null && promoUntil > new Date();
+  const promoEndLabel = promoUntil
+    ? promoUntil.toLocaleDateString("es-AR", {
+        day: "numeric",
+        month: "long",
+        timeZone: "America/Argentina/Buenos_Aires",
+      })
+    : null;
+
+  const cardHighlighted = isActive || hasPersonalPromo;
 
   return (
     <div className="space-y-8">
@@ -43,20 +56,29 @@ export default async function DashboardPage() {
       </div>
 
       {/* Subscription status */}
-      <Card className={isActive ? "bg-gold/5 border-gold/20" : "bg-iwon-card border-iwon-border"}>
+      <Card className={cardHighlighted ? "bg-gold/5 border-gold/20" : "bg-iwon-card border-iwon-border"}>
         <CardContent className="flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <Crown className={`h-5 w-5 ${isActive ? "text-gold" : "text-muted-foreground"}`} />
+            <Crown className={`h-5 w-5 ${cardHighlighted ? "text-gold" : "text-muted-foreground"}`} />
             <div>
               <p className="font-medium">Suscripción</p>
               <p className="text-sm text-muted-foreground">
-                {isActive ? "Plan Iwon - $14.999/mes" : "Sin acceso completo a la plataforma"}
+                {isActive
+                  ? "Plan Iwon - $14.999/mes"
+                  : hasPersonalPromo
+                  ? `Acceso gratuito hasta el ${promoEndLabel}`
+                  : "Sin acceso completo a la plataforma"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <SubscriptionStatus subscription={subscription as Subscription | null} />
-            {!isActive && <SubscribeButton compact />}
+            {isActive && <SubscriptionStatus subscription={subscription as Subscription | null} />}
+            {!isActive && !hasPersonalPromo && <SubscribeButton compact />}
+            {hasPersonalPromo && !isActive && (
+              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gold/10 text-gold border border-gold/20">
+                Promo activa
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
