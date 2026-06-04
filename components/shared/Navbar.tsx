@@ -6,7 +6,11 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 
-export function Navbar() {
+interface NavbarProps {
+  isPromoActive?: boolean;
+}
+
+export function Navbar({ isPromoActive = false }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -37,7 +41,7 @@ export function Navbar() {
             </Link>
             <Link href="/register">
               <Button size="sm" className="bg-gold hover:bg-gold-light text-black font-semibold">
-                Suscribite
+                {isPromoActive ? "Registrate gratis" : "Suscribite"}
               </Button>
             </Link>
           </div>
@@ -75,7 +79,7 @@ export function Navbar() {
               </Link>
               <Link href="/register">
                 <Button size="sm" className="bg-gold hover:bg-gold-light text-black font-semibold">
-                  Suscribite
+                  {isPromoActive ? "Registrate gratis" : "Suscribite"}
                 </Button>
               </Link>
             </div>

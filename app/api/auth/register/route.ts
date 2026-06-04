@@ -51,12 +51,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "REGISTRATION_FAILED" }, { status: 500 });
     }
 
+    // Check for active full_access promo to grant personal access period
+    const now = new Date().toISOString();
+    const { data: activePromo } = await admin
+      .from("promotions")
+      .select("ends_at")
+      .eq("is_active", true)
+      .eq("type", "full_access")
+      .lte("starts_at", now)
+      .gte("ends_at", now)
+      .limit(1)
+      .single();
+
     // Garantizar que el perfil existe. El trigger handle_new_user debería haberlo
     // creado, pero si falló silenciosamente lo creamos aquí con ignoreDuplicates.
     const { error: profileError } = await admin
       .from("profiles")
       .upsert(
-        { id: created.user.id, email, full_name: full_name ?? "" },
+        {
+          id: created.user.id,
+          email,
+          full_name: full_name ?? "",
+          ...(activePromo ? { promo_access_until: activePromo.ends_at } : {}),
+        },
         { onConflict: "id", ignoreDuplicates: true }
       );
 

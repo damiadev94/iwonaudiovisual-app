@@ -39,10 +39,10 @@ export default async function PlatformLayout({
 
   const adminClient = createAdminClient();
 
-  // 1. Get profile for role check
+  // 1. Get profile for role check and personal promo access
   const { data: profile } = await adminClient
     .from("profiles")
-    .select("role")
+    .select("role, promo_access_until")
     .eq("id", user.id)
     .single();
 
@@ -94,13 +94,20 @@ export default async function PlatformLayout({
   const promos = activePromotions ?? [];
   const contentType = getContentTypeForPath(pathname);
 
-  const hasPromoAccess = promos.some(
+  const hasGlobalPromo = promos.some(
     (p) =>
       p.type === "full_access" ||
       (contentType !== null && p.type === contentType)
   );
 
-  const isActive = effectiveStatus === "active" || hasPromoAccess;
+  const personalPromoUntil = profile?.promo_access_until
+    ? new Date(profile.promo_access_until)
+    : null;
+  const hasPersonalPromo =
+    personalPromoUntil !== null && personalPromoUntil > new Date();
+
+  const isActive =
+    effectiveStatus === "active" || hasGlobalPromo || hasPersonalPromo;
   const isAdmin = profile?.role === "admin";
   const isSuccessPage = pathname.startsWith("/suscripcion/exito");
   const isPerfilPage = pathname.startsWith("/perfil");
@@ -108,12 +115,17 @@ export default async function PlatformLayout({
   // Block content for users without active subscription, promo access, or admin role
   const shouldBlock = !isActive && !isAdmin && !isSuccessPage && !isPerfilPage;
 
-  // Find the most relevant promo to show in the banner:
-  // prefer full_access promos, then fall back to first available
+  // Banner: prefer personal promo date, fallback to global promo
   const relevantPromo =
     promos.find((p) => p.type === "full_access") ?? promos[0] ?? null;
 
-  const endDate = relevantPromo
+  const bannerDate = personalPromoUntil
+    ? personalPromoUntil.toLocaleDateString("es-AR", {
+        day: "numeric",
+        month: "long",
+        timeZone: "America/Argentina/Buenos_Aires",
+      })
+    : relevantPromo
     ? new Date(relevantPromo.ends_at).toLocaleDateString("es-AR", {
         day: "numeric",
         month: "long",
@@ -121,11 +133,13 @@ export default async function PlatformLayout({
       })
     : null;
 
+  const showBanner = (hasPersonalPromo || (promos.length > 0 && relevantPromo)) && bannerDate;
+
   return (
     <PlatformLayoutShell>
-      {promos.length > 0 && relevantPromo && endDate && (
+      {showBanner && (
         <div className="bg-gold/10 border-b border-gold/20 px-4 py-2 text-center text-sm text-gold">
-          {relevantPromo.name} — acceso gratuito hasta el {endDate}
+          Acceso gratuito hasta el {bannerDate}
         </div>
       )}
 
