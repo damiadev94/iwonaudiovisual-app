@@ -139,8 +139,9 @@ function StatusBadge({ status }: { status: PromoStatus }) {
 interface PromotionFormValues {
   name: string;
   type: PromotionType;
-  starts_at: string; // UTC ISO
-  ends_at: string; // UTC ISO
+  starts_at: string;
+  ends_at: string;
+  access_until: string | null;
   is_active: boolean;
 }
 
@@ -166,6 +167,9 @@ function PromotionForm({
   const defaultEndsAt = defaultValues?.ends_at
     ? toLocalDatetimeInput(defaultValues.ends_at)
     : "";
+  const defaultAccessUntil = defaultValues?.access_until
+    ? toLocalDatetimeInput(defaultValues.access_until)
+    : "";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -174,8 +178,15 @@ function PromotionForm({
     const startsAtLocal = fd.get("starts_at") as string;
     const endsAtLocal = fd.get("ends_at") as string;
 
+    const accessUntilLocal = fd.get("access_until") as string;
+
     if (startsAtLocal && endsAtLocal && endsAtLocal <= startsAtLocal) {
       toast.error("La fecha de fin debe ser posterior a la de inicio");
+      setSubmitting(false);
+      return;
+    }
+    if (accessUntilLocal && endsAtLocal && accessUntilLocal <= endsAtLocal) {
+      toast.error("El acceso extendido debe ser posterior a la fecha de fin");
       setSubmitting(false);
       return;
     }
@@ -186,6 +197,9 @@ function PromotionForm({
         type,
         starts_at: fromLocalDatetimeInputToUTC(startsAtLocal),
         ends_at: fromLocalDatetimeInputToUTC(endsAtLocal),
+        access_until: accessUntilLocal
+          ? fromLocalDatetimeInputToUTC(accessUntilLocal)
+          : null,
         is_active: isActive,
       });
     } finally {
@@ -243,7 +257,7 @@ function PromotionForm({
 
       {/* Ends at */}
       <div className="space-y-2">
-        <Label htmlFor="promo-ends">Fin *</Label>
+        <Label htmlFor="promo-ends">Cierre de inscripción *</Label>
         <input
           id="promo-ends"
           name="ends_at"
@@ -253,7 +267,22 @@ function PromotionForm({
           className="h-8 w-full rounded-lg border border-iwon-border bg-iwon-bg px-2.5 py-1 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 scheme-dark"
         />
         <p className="text-xs text-muted-foreground">
-          Hora de Argentina (UTC-3).
+          Hasta cuándo se puede registrar gratis. Hora Argentina (UTC-3).
+        </p>
+      </div>
+
+      {/* Access until */}
+      <div className="space-y-2">
+        <Label htmlFor="promo-access-until">Acceso extendido hasta</Label>
+        <input
+          id="promo-access-until"
+          name="access_until"
+          type="datetime-local"
+          defaultValue={defaultAccessUntil}
+          className="h-8 w-full rounded-lg border border-iwon-border bg-iwon-bg px-2.5 py-1 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 scheme-dark"
+        />
+        <p className="text-xs text-muted-foreground">
+          Opcional. Hasta cuándo tienen acceso los que se registraron. Si no se completa, usa la fecha de cierre.
         </p>
       </div>
 

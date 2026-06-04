@@ -24,6 +24,11 @@ const patchSchema = z.object({
     .string()
     .datetime({ message: "ends_at debe ser una fecha ISO válida" })
     .optional(),
+  access_until: z
+    .string()
+    .datetime({ message: "access_until debe ser una fecha ISO válida" })
+    .nullable()
+    .optional(),
   is_active: z.boolean().optional(),
 });
 

@@ -190,8 +190,9 @@ export type Promotion = {
   id: string;
   name: string;
   type: PromotionType;
-  starts_at: string; // ISO string
-  ends_at: string; // ISO string
+  starts_at: string;
+  ends_at: string;
+  access_until: string | null; // how long registered users keep access; falls back to ends_at if null
   is_active: boolean;
   created_by: string | null;
   created_at: string;

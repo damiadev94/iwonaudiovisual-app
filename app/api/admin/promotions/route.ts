@@ -15,9 +15,13 @@ const PROMOTION_TYPES = [
 const createSchema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(200),
   type: z.enum(PROMOTION_TYPES),
-  // Accept ISO strings; datetime() validates format strictly
   starts_at: z.string().datetime({ message: "starts_at debe ser una fecha ISO válida" }),
   ends_at: z.string().datetime({ message: "ends_at debe ser una fecha ISO válida" }),
+  access_until: z
+    .string()
+    .datetime({ message: "access_until debe ser una fecha ISO válida" })
+    .nullable()
+    .optional(),
 });
 
 export async function GET() {

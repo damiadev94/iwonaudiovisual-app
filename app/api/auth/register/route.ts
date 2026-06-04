@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     const { data: activePromo } = await admin
       .from("promotions")
-      .select("ends_at")
+      .select("ends_at, access_until")
       .eq("is_active", true)
       .eq("type", "full_access")
       .lte("starts_at", now)
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
           id: created.user.id,
           email,
           full_name: full_name ?? "",
-          ...(activePromo ? { promo_access_until: activePromo.ends_at } : {}),
+          ...(activePromo ? { promo_access_until: activePromo.access_until ?? activePromo.ends_at } : {}),
         },
         { onConflict: "id", ignoreDuplicates: true }
       );
