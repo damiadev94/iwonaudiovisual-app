@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Play, ArrowRight } from "lucide-react";
+import { formatPromoEndDate } from "@/lib/promo";
 
-export function Hero() {
+interface HeroProps {
+  promoEndDate: Date | null;
+}
+
+export function Hero({ promoEndDate }: HeroProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background gradient */}
@@ -53,17 +58,29 @@ export function Hero() {
         </h1>
         </div>
 
-        {/* Subtitle */}
+        {/* Subtitle — adjusted when promo is active */}
         <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
-          Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
-          Suscribite y accedé a ser elegido, cursos, sorteos y promos de filmación.
+          {promoEndDate ? (
+            <>
+              Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
+              Accedé <span className="text-gold font-medium">gratis hasta el {formatPromoEndDate(promoEndDate)}</span> y
+              participá en selecciones, sorteos, cursos y promos de filmación.
+            </>
+          ) : (
+            <>
+              Iwon Audiovisual es la plataforma de impulso para artistas independientes en Argentina.
+              Suscribite y accedé a ser elegido, cursos, sorteos y promos de filmación.
+            </>
+          )}
         </p>
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
           <Link href="/register">
             <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-8 py-6 h-auto">
-              Suscribite por $14.999/mes
+              {promoEndDate
+                ? `Accedé gratis hasta el ${formatPromoEndDate(promoEndDate)}`
+                : "Suscribite por $14.999/mes"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

@@ -178,3 +178,22 @@ export type PortfolioItem = {
   nombre_artista: string;
   created_at: string;
 };
+
+export type PromotionType =
+  | "full_access"
+  | "courses"
+  | "raffles"
+  | "selections"
+  | "promos";
+
+export type Promotion = {
+  id: string;
+  name: string;
+  type: PromotionType;
+  starts_at: string; // ISO string
+  ends_at: string; // ISO string
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};

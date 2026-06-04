@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRight } from "lucide-react";
+import { formatPromoEndDate } from "@/lib/promo";
 
 const features = [
   "Acceso a SER SELECCIONADO",
@@ -11,16 +12,32 @@ const features = [
   "Cancelá cuando quieras",
 ];
 
-export function Pricing() {
+interface PricingProps {
+  promoEndDate: Date | null;
+}
+
+export function Pricing({ promoEndDate }: PricingProps) {
   return (
     <section id="pricing" className="py-24 bg-iwon-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Un solo plan. <span className="text-gold">Todo incluido.</span>
+            {promoEndDate ? (
+              <>
+                Acceso{" "}
+                <span className="text-gold">completamente gratis.</span>
+              </>
+            ) : (
+              <>
+                Un solo plan.{" "}
+                <span className="text-gold">Todo incluido.</span>
+              </>
+            )}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Sin planes confusos ni costos ocultos. Un precio accesible para impulsar tu carrera.
+            {promoEndDate
+              ? "Por tiempo limitado, accedé a todo sin costo. Sin planes confusos ni compromisos."
+              : "Sin planes confusos ni costos ocultos. Un precio accesible para impulsar tu carrera."}
           </p>
         </div>
 
@@ -33,16 +50,29 @@ export function Pricing() {
             <div className="relative">
               {/* Badge */}
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-semibold mb-6">
-                Plan único
+                {promoEndDate
+                  ? `Gratis hasta el ${formatPromoEndDate(promoEndDate)}`
+                  : "Plan único"}
               </div>
 
               {/* Price */}
               <div className="mb-6">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold font-mono text-gold">$14.999</span>
-                  <span className="text-muted-foreground">/mes</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">Pesos argentinos - Sin compromiso</p>
+                {promoEndDate ? (
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <span className="text-5xl font-bold font-mono text-gold">GRATIS</span>
+                    <span className="text-muted-foreground line-through text-xl">$14.999/mes</span>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold font-mono text-gold">$14.999</span>
+                    <span className="text-muted-foreground">/mes</span>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-1">
+                  {promoEndDate
+                    ? `Sin costo hasta el ${formatPromoEndDate(promoEndDate)}, luego $14.999/mes`
+                    : "Pesos argentinos - Sin compromiso"}
+                </p>
               </div>
 
               {/* Features */}
@@ -58,7 +88,7 @@ export function Pricing() {
               {/* CTA */}
               <Link href="/register">
                 <Button className="w-full bg-gold hover:bg-gold-light text-black font-bold text-lg py-6 h-auto">
-                  Suscribite ahora
+                  {promoEndDate ? "Registrate gratis" : "Suscribite ahora"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>

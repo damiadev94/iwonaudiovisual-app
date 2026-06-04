@@ -15,6 +15,7 @@ import {
   X,
   Music,
   Images,
+  Megaphone,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { createClient } from "@/lib/supabase/client";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/admin/sorteos", label: "Sorteos", icon: Gift },
   { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
   { href: "/admin/promos", label: "Promos", icon: Film },
+  { href: "/admin/marketing", label: "Marketing", icon: Megaphone },
   { href: "/admin/pagos", label: "Pagos", icon: CreditCard },
   { href: "/admin/portfolio", label: "Portfolio", icon: Images },
 ];

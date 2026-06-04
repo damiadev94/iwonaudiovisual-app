@@ -54,9 +54,22 @@ export default async function CourseDetailPage({
         .single();
 
       const isAdmin = profile?.role === "admin";
-      let hasAccess = isAdmin;
 
-      if (!isAdmin) {
+      // Check active promotions that cover courses
+      const now = new Date().toISOString();
+      const { data: coursePromos } = await adminClient
+        .from("promotions")
+        .select("id")
+        .eq("is_active", true)
+        .lte("starts_at", now)
+        .gte("ends_at", now)
+        .in("type", ["full_access", "courses"])
+        .limit(1);
+
+      const hasPromoAccess = (coursePromos ?? []).length > 0;
+      let hasAccess = isAdmin || hasPromoAccess;
+
+      if (!hasAccess) {
         const { data: subscription } = await adminClient
           .from("subscriptions")
           .select("status")

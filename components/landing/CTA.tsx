@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { formatPromoEndDate } from "@/lib/promo";
 
-export function CTA() {
+interface CTAProps {
+  promoEndDate: Date | null;
+}
+
+export function CTA({ promoEndDate }: CTAProps) {
   return (
     <section className="py-24 bg-iwon-bg relative overflow-hidden">
       {/* Background effect */}
@@ -15,13 +20,17 @@ export function CTA() {
         </h2>
         <Link href="/register">
           <Button size="lg" className="bg-gold hover:bg-gold-light text-black font-bold text-lg px-10 py-6 h-auto">
-            Suscribite por $14.999/mes
+            {promoEndDate
+              ? `Registrate gratis — hasta el ${formatPromoEndDate(promoEndDate)}`
+              : "Suscribite por $14.999/mes"}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </Link>
 
         <p className="mt-4 text-sm text-muted-foreground">
-          Cancelá cuando quieras.
+          {promoEndDate
+            ? `Acceso gratuito hasta el ${formatPromoEndDate(promoEndDate)}, luego $14.999/mes. Cancelá cuando quieras.`
+            : "Cancelá cuando quieras."}
         </p>
       </div>
     </section>

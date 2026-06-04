@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Benefits } from "@/components/landing/Benefits";
@@ -19,15 +20,32 @@ export default async function LandingPage({
     redirect(`/callback?code=${code}`);
   }
 
+  // Fetch active full_access promotion (public RLS policy allows this)
+  const supabase = await createClient();
+  const now = new Date().toISOString();
+  const { data: activePromos } = await supabase
+    .from("promotions")
+    .select("name, type, ends_at")
+    .eq("is_active", true)
+    .eq("type", "full_access")
+    .lte("starts_at", now)
+    .gte("ends_at", now)
+    .limit(1);
+  const activeFullAccessPromo = activePromos?.[0] ?? null;
+
+  const promoEndDate = activeFullAccessPromo
+    ? new Date(activeFullAccessPromo.ends_at)
+    : null;
+
   return (
     <>
-      <Hero />
+      <Hero promoEndDate={promoEndDate} />
       <HowItWorks />
       <Benefits />
       <Portfolio />
-      <Pricing />
+      <Pricing promoEndDate={promoEndDate} />
       <FAQ />
-      <CTA />
+      <CTA promoEndDate={promoEndDate} />
     </>
   );
 }
