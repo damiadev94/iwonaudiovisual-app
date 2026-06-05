@@ -46,7 +46,11 @@ export async function middleware(request: NextRequest) {
 
   if (user && AUTH_ROUTES.includes(pathname)) {
     // Usuario autenticado en ruta de auth → redirigir al dashboard
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const dashboardUrl = new URL("/dashboard", request.url);
+    if (request.nextUrl.searchParams.get("welcome") === "true") {
+      dashboardUrl.searchParams.set("welcome", "true");
+    }
+    return NextResponse.redirect(dashboardUrl);
   }
 
   if (!user && !AUTH_ROUTES.includes(pathname)) {
