@@ -87,7 +87,7 @@ export function Hero({ promoEndDate }: HeroProps) {
           <a href="#portfolio" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto border-iwon-border hover:bg-iwon-card text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 h-auto">
               <Play className="mr-2 h-5 w-5 shrink-0" />
-              Ver videoclips
+              {promoEndDate ? `Ver videoclips` : `QUIERO MI ONESHOT GRATIS`}
             </Button>
           </a>
         </div>
