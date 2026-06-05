@@ -63,7 +63,8 @@ function LoginContent() {
         return;
       }
 
-      router.push("/dashboard");
+      const isWelcome = searchParams.get("welcome") === "true";
+      router.push(isWelcome ? "/dashboard?welcome=true" : "/dashboard");
       router.refresh();
     } finally {
       setLoading(false);

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   // Confirmación de registro → ir al login con mensaje de éxito
   if (type === "signup" || type === "email") {
-    return NextResponse.redirect(`${origin}/login?confirmed=true`);
+    return NextResponse.redirect(`${origin}/login?confirmed=true&welcome=true`);
   }
 
   // Recuperación de contraseña → ir a la página de nueva contraseña

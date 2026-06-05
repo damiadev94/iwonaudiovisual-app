@@ -8,6 +8,8 @@ import { BookOpen, Film, Gift, Users, Crown } from "lucide-react";
 import Link from "next/link";
 import { SubscribeButton } from "@/components/platform/SubscribeButton";
 import { SubscriptionStatus } from "@/components/platform/SubscriptionStatus";
+import { WelcomeModal } from "@/components/platform/WelcomeModal";
+import { Suspense } from "react";
 import type { Subscription } from "@/types";
 
 export default async function DashboardPage() {
@@ -47,6 +49,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <Suspense>
+        <WelcomeModal />
+      </Suspense>
       {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold">
