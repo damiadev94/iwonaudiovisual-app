@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 
-const INSTAGRAM_DM_URL = "https://ig.me/m/iwonaudiovisual";
+const INSTAGRAM_DM_URL = "https://ig.me/m/iwon.audiovisual";
 
 export function WelcomeModal() {
   const router = useRouter();
