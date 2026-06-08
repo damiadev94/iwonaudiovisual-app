@@ -185,8 +185,8 @@ function PromotionForm({
       setSubmitting(false);
       return;
     }
-    if (accessUntilLocal && endsAtLocal && accessUntilLocal <= endsAtLocal) {
-      toast.error("El acceso extendido debe ser posterior a la fecha de fin");
+    if (accessUntilLocal && endsAtLocal && accessUntilLocal < endsAtLocal) {
+      toast.error("El acceso extendido debe ser igual o posterior a la fecha de fin");
       setSubmitting(false);
       return;
     }
