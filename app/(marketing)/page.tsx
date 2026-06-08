@@ -25,7 +25,7 @@ export default async function LandingPage({
   const now = new Date().toISOString();
   const { data: activePromos } = await supabase
     .from("promotions")
-    .select("name, type, ends_at")
+    .select("name, type, ends_at, access_until")
     .eq("is_active", true)
     .eq("type", "full_access")
     .lte("starts_at", now)
@@ -34,7 +34,7 @@ export default async function LandingPage({
   const activeFullAccessPromo = activePromos?.[0] ?? null;
 
   const promoEndDate = activeFullAccessPromo
-    ? new Date(activeFullAccessPromo.ends_at)
+    ? new Date(activeFullAccessPromo.access_until ?? activeFullAccessPromo.ends_at)
     : null;
 
   return (
