@@ -14,7 +14,7 @@ import { Trophy, CheckCircle2, Music2, Star, Upload, Music } from "lucide-react"
 import type { Selection } from "@/types";
 
 const ACCEPTED_TYPES = ["audio/mpeg", "audio/wav", "audio/wave", "audio/x-wav"];
-const MAX_SIZE_BYTES = 50 * 1024 * 1024;
+const MAX_SIZE_BYTES = 1024 * 1024 * 1024;
 
 interface SelectionEventCardProps {
   selection: Selection;
@@ -42,7 +42,7 @@ export function SelectionEventCard({
       return;
     }
     if (selected.size > MAX_SIZE_BYTES) {
-      toast.error("El archivo no puede superar los 50MB");
+      toast.error("El archivo no puede superar 1GB");
       return;
     }
     setFile(selected);
@@ -189,7 +189,7 @@ export function SelectionEventCard({
                 <div className="space-y-2">
                   <Upload className="h-8 w-8 text-muted-foreground mx-auto" />
                   <p className="font-medium text-sm">Seleccioná tu canción</p>
-                  <p className="text-xs text-muted-foreground">MP3 o WAV · Máximo 50MB</p>
+                  <p className="text-xs text-muted-foreground">MP3 o WAV · Máximo 1GB</p>
                 </div>
               )}
             </div>

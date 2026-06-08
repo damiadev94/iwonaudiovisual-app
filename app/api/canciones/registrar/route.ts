@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     const adminClient = createAdminClient();
 
-    // Verificar suscripcion activa o pendiente
+    // Verificar suscripcion activa, pendiente, o acceso por promo
     const { data: sub } = await adminClient
       .from("subscriptions")
       .select("status")
@@ -25,10 +25,22 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (!sub) {
-      return NextResponse.json(
-        { error: "Necesitas una suscripcion activa" },
-        { status: 403 }
-      );
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("promo_access_until")
+        .eq("id", user.id)
+        .single();
+
+      const hasPromo =
+        !!profile?.promo_access_until &&
+        new Date(profile.promo_access_until) > new Date();
+
+      if (!hasPromo) {
+        return NextResponse.json(
+          { error: "Necesitas una suscripcion activa" },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await request.json();

@@ -52,16 +52,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ya aplicaste a esta oleada" }, { status: 400 });
     }
 
-    // Check active subscription
+    // Check active subscription or promo access
     const { data: sub } = await adminClient
       .from("subscriptions")
       .select("status")
       .eq("user_id", user.id)
       .eq("status", "active")
-      .single();
+      .maybeSingle();
 
     if (!sub) {
-      return NextResponse.json({ error: "Necesitas una suscripcion activa" }, { status: 403 });
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("promo_access_until")
+        .eq("id", user.id)
+        .single();
+
+      const hasPromo =
+        !!profile?.promo_access_until &&
+        new Date(profile.promo_access_until) > new Date();
+
+      if (!hasPromo) {
+        return NextResponse.json({ error: "Necesitas una suscripcion activa" }, { status: 403 });
+      }
     }
 
     // Validate file ownership if a file was uploaded

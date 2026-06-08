@@ -13,7 +13,7 @@ import { Upload, Music, CheckCircle, FileAudio } from "lucide-react";
 import type { SongSubmission } from "@/types";
 
 const ACCEPTED_TYPES = ["audio/mpeg", "audio/wav", "audio/wave", "audio/x-wav"];
-const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+const MAX_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   pending: {
@@ -61,7 +61,7 @@ export function CancionUploadForm({
     }
 
     if (selected.size > MAX_SIZE_BYTES) {
-      toast.error("El archivo no puede superar los 50MB");
+      toast.error("El archivo no puede superar 1GB");
       return;
     }
 
@@ -244,7 +244,7 @@ export function CancionUploadForm({
                 <div>
                   <p className="font-medium">Seleccioná tu canción</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    MP3 o WAV · Máximo 50MB
+                    MP3 o WAV · Máximo 1GB
                   </p>
                 </div>
               </div>
